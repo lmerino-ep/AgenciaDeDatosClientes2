@@ -360,3 +360,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/AgenciaDeDatosClientes/Dashboard/Properties/epdata.es+1.p12

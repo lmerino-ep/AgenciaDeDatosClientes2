@@ -1,0 +1,54 @@
+﻿@page "/error/{code?}"
+@model ErrorModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Error";
+    ViewBag.Description = $"Página de error";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="h3 mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error del Sistema
+                    </h1>
+                </div>
+                <div class="card-body">
+                    <h2 class="text-danger mb-4">Ha ocurrido un error inesperado</h2>
+
+                    <p class="lead">
+                        Lo sentimos, pero ha ocurrido un error interno del servidor mientras procesábamos su solicitud.
+                    </p>
+
+                    @if (Model.ShowRequestId)
+                    {
+                        <div class="alert alert-info">
+                            <strong>ID de Error:</strong>
+                            <code class="ms-2">@Model.RequestId</code>
+                        </div>
+
+                        <p class="text-muted small">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Si este error persiste, por favor contacte al soporte técnico proporcionando este ID de error.
+                        </p>
+                    }
+
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary me-2">
+                            <i class="fas fa-home me-1"></i>
+                            Volver al Inicio
+                        </a>
+                        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Volver Atrás
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

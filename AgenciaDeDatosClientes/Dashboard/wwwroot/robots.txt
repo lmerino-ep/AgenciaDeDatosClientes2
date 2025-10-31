@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /
+
+# AgenciaDeDatosClientes - Dashboard de clientes de EpData
+# Este sitio web está destinado únicamente como dashboard privado de consulta y gestión para clientes de EpData
+# No debe ser indexado por motores de búsqueda

@@ -1,0 +1,13 @@
+[
+  //{
+  //  "outputFileName": "wwwroot/js/asincrono/home/main.min.js",
+  //  "inputFiles": [
+  //    "wwwroot/js/include/carga-dinamica.js",
+  //    "wwwroot/js/asincrono/home/main.js"
+  //  ],
+  //  "minify": {
+  //    "enabled": true,
+  //    "renameLocals": false
+  //  }
+  //},
+]
