@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Infraestructura para EpData API Application ECS Task'
+Description: 'Infraestructura para EpData Dashboard (Clientes) Application ECS Task'
 
 Parameters:
   AccountId:
@@ -15,7 +15,7 @@ Parameters:
   
   VpcId:
     Type: AWS::EC2::VPC::Id
-    Description: 'VPC ID donde se ejecutara la aplicacion API'
+    Description: 'VPC ID donde se ejecutara la aplicacion Dashboard'
     Default: 'vpc-88a6edef'
   
   PublicSubnetIds:
@@ -57,8 +57,8 @@ Parameters:
   # ARN del Target Group existente
   ExistingTargetGroupArn:
     Type: String
-    Description: 'ARN del Target Group existente para la API'
-    Default: 'arn:aws:elasticloadbalancing:eu-west-1:442500115196:targetgroup/epdata-tg-api/1e1e2438a06ad928'
+    Description: 'ARN del Target Group existente para el Dashboard'
+    Default: 'arn:aws:elasticloadbalancing:eu-west-1:442500115196:targetgroup/epdata-tg-clientes/053769250265c271'
 
   # Security Group del ALB existente (ya creado por el stack www)
   # Para encontrar el ID: AWS Console -> EC2 -> Security Groups -> buscar "epdata-alb-sg-production"
@@ -69,13 +69,13 @@ Parameters:
 
 Resources:
   # IAM Role para la tarea ECS
-  EpDataApiTaskRole:
+  EpDataClientesTaskRole:
     Type: AWS::IAM::Role
     DependsOn: 
-      - EpDataApiLogGroup
+      - EpDataClientesLogGroup
       - UserLogsDeliveryStream
     Properties:
-      RoleName: !Sub 'epdata-api-task-role-${Environment}'
+      RoleName: !Sub 'epdata-clientes-task-role-${Environment}'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -86,7 +86,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
       Policies:
-        - PolicyName: EpDataApiExecutionPermissions
+        - PolicyName: EpDataClientesExecutionPermissions
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -98,10 +98,10 @@ Resources:
                   - logs:DescribeLogStreams
                   - logs:DescribeLogGroups
                 Resource:
-                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/api'
-                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/api:*'
+                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/clientes'
+                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/clientes:*'
                   - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:*'
-        - PolicyName: EpDataApiPermissions
+        - PolicyName: EpDataClientesPermissions
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -112,6 +112,8 @@ Resources:
                 Resource:
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-valkey*'
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-aurora*'
+                  - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-google-oauth*'
+                  - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-autologin*'
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-cdn-transparent*'
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-s3*'
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-zilliz*'
@@ -137,8 +139,8 @@ Resources:
                   - logs:DescribeLogStreams
                   - logs:DescribeLogGroups
                 Resource:
-                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/api'
-                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/api:*'
+                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/clientes'
+                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/ecs/epdata/clientes:*'
               - Effect: Allow
                 Action:
                   - rds-db:connect
@@ -172,17 +174,17 @@ Resources:
                 Resource: !GetAtt UserLogsDeliveryStream.Arn
 
   # Log Group para los logs del contenedor
-  EpDataApiLogGroup:
+  EpDataClientesLogGroup:
     Type: AWS::Logs::LogGroup
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      LogGroupName: '/aws/ecs/epdata/api'
+      LogGroupName: '/aws/ecs/epdata/clientes'
       Tags:
         - Key: Environment
           Value: !Ref Environment
         - Key: Application
-          Value: epdata-api
+          Value: epdata-clientes
 
   # NOTA: Los recursos de alertas y alarmas ya existen en el cluster EpData
   # Fueron creados por EpDataPregeneracion y no necesitamos recrearlos aqui
@@ -191,12 +193,12 @@ Resources:
   # NOTA: Los Security Groups de Transparent CDN y ALB ya existen (creados por el stack www)
   # Solo los referenciamos mediante parámetros
 
-  # Security Group para la aplicacion API
-  EpDataApiSecurityGroup:
+  # Security Group para la aplicacion Dashboard
+  EpDataClientesSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub 'epdata-api-sg-${Environment}'
-      GroupDescription: 'Security group para EpData API Application ECS Task'
+      GroupName: !Sub 'epdata-clientes-sg-${Environment}'
+      GroupDescription: 'Security group para EpData Dashboard (Clientes) Application ECS Task'
       VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -237,7 +239,7 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
         - Key: Application
-          Value: epdata-api
+          Value: epdata-clientes
 
   # Reglas de seguridad para Aurora - Permitir acceso desde nuestro task
   # Nota: Estas reglas pueden ya existir si EpDataPregeneracion ya las creo
@@ -249,8 +251,8 @@ Resources:
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306
-      SourceSecurityGroupId: !Ref EpDataApiSecurityGroup
-      Description: !Sub 'Allow Aurora access from EpData API task - ${Environment}'
+      SourceSecurityGroupId: !Ref EpDataClientesSecurityGroup
+      Description: !Sub 'Allow Aurora access from EpData Dashboard task - ${Environment}'
 
   AuroraSecurityGroupRule2:
     Type: AWS::EC2::SecurityGroupIngress
@@ -259,8 +261,8 @@ Resources:
       IpProtocol: tcp
       FromPort: 3306
       ToPort: 3306
-      SourceSecurityGroupId: !Ref EpDataApiSecurityGroup
-      Description: !Sub 'Allow Aurora access from EpData API task - ${Environment}'
+      SourceSecurityGroupId: !Ref EpDataClientesSecurityGroup
+      Description: !Sub 'Allow Aurora access from EpData Dashboard task - ${Environment}'
 
   # Regla de seguridad para Redis - Permitir acceso desde nuestro task
   RedisSecurityGroupRule:
@@ -270,8 +272,8 @@ Resources:
       IpProtocol: tcp
       FromPort: 6379
       ToPort: 6379
-      SourceSecurityGroupId: !Ref EpDataApiSecurityGroup
-      Description: !Sub 'Allow Redis access from EpData API task - ${Environment}'
+      SourceSecurityGroupId: !Ref EpDataClientesSecurityGroup
+      Description: !Sub 'Allow Redis access from EpData Dashboard task - ${Environment}'
 
   # Regla de seguridad para permitir ALB -> ECS (agregada como regla separada)
   # Nota: Esta regla puede ya existir si el stack www la creo
@@ -279,31 +281,31 @@ Resources:
   ALBToECSSecurityGroupRule:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      GroupId: !Ref EpDataApiSecurityGroup
+      GroupId: !Ref EpDataClientesSecurityGroup
       IpProtocol: tcp
       FromPort: 8080
       ToPort: 8080
       SourceSecurityGroupId: !Ref ALBSecurityGroupId
-      Description: !Sub 'Allow ALB access to ECS API - ${Environment}'
+      Description: !Sub 'Allow ALB access to ECS Dashboard - ${Environment}'
 
   # Task Definition
-  EpDataApiTaskDefinition:
+  EpDataClientesTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     DependsOn: 
-      - EpDataApiLogGroup
-      - EpDataApiTaskRole
+      - EpDataClientesLogGroup
+      - EpDataClientesTaskRole
     Properties:
-      Family: !Sub 'epdata-api-${Environment}'
+      Family: !Sub 'epdata-clientes-${Environment}'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       Cpu: '1024'
       Memory: '2048'
-      ExecutionRoleArn: !GetAtt EpDataApiTaskRole.Arn
-      TaskRoleArn: !GetAtt EpDataApiTaskRole.Arn
+      ExecutionRoleArn: !GetAtt EpDataClientesTaskRole.Arn
+      TaskRoleArn: !GetAtt EpDataClientesTaskRole.Arn
       ContainerDefinitions:
-        - Name: epdata-api
-          Image: !Sub '${AccountId}.dkr.ecr.eu-west-1.amazonaws.com/epdata/api:2025.10.31.001'
+        - Name: epdata-clientes
+          Image: !Sub '${AccountId}.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2025.10.31.001'
           Essential: true
           PortMappings:
             - ContainerPort: 8080
@@ -324,7 +326,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: '/aws/ecs/epdata/api'
+              awslogs-group: '/aws/ecs/epdata/clientes'
               awslogs-region: eu-west-1
               awslogs-stream-prefix: ecs
           HealthCheck:
@@ -344,19 +346,19 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
         - Key: Application
-          Value: epdata-api
+          Value: epdata-clientes
 
   # ===== ECS SERVICE CON LOAD BALANCER =====
-  EpDataApiService:
+  EpDataClientesService:
     Type: AWS::ECS::Service
     DependsOn: 
-      - EpDataApiLogGroup
-      - EpDataApiTaskDefinition
+      - EpDataClientesLogGroup
+      - EpDataClientesTaskDefinition
       - ALBToECSSecurityGroupRule
     Properties:
-      ServiceName: !Sub 'epdata-api-service-${Environment}'
+      ServiceName: !Sub 'epdata-clientes-service-${Environment}'
       Cluster: !Ref ExistingClusterName
-      TaskDefinition: !Ref EpDataApiTaskDefinition
+      TaskDefinition: !Ref EpDataClientesTaskDefinition
       LaunchType: FARGATE
       DesiredCount: 0 # Ponemos a 0 en el instante de la creacion, luego lo subimos a 1 desde la consola web de AWS
       EnableExecuteCommand: true #esto habilita que podamos conectarnos via bash al contenedor de produccion con el arn de nuestra instancia
@@ -364,11 +366,11 @@ Resources:
         AwsvpcConfiguration:
           Subnets: !Ref PrivateSubnetIds #SUBNETS PRIVADAS
           SecurityGroups:
-            - !Ref EpDataApiSecurityGroup
+            - !Ref EpDataClientesSecurityGroup
           AssignPublicIp: DISABLED #SIN IP PUBLICA
       LoadBalancers:
         - TargetGroupArn: !Ref ExistingTargetGroupArn #USA TARGET GROUP EXISTENTE
-          ContainerName: epdata-api
+          ContainerName: epdata-clientes
           ContainerPort: 8080
       DeploymentConfiguration:
         MaximumPercent: 200
@@ -383,7 +385,7 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
         - Key: Application
-          Value: epdata-api
+          Value: epdata-clientes
 
   # ===== CONFIGURACION DE EXPORTACION AUTOMATICA DE LOGS A S3 =====
 
@@ -393,19 +395,19 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      LogGroupName: '/aws/kinesisfirehose/epdata-api-logs'
+      LogGroupName: '/aws/kinesisfirehose/epdata-clientes-logs'
       Tags:
         - Key: Environment
           Value: !Ref Environment
         - Key: Application
-          Value: epdata-api-logs
+          Value: epdata-clientes-logs
 
   # 2. SEGUNDO: IAM Role para Kinesis Data Firehose
   FirehoseDeliveryRole:
     Type: AWS::IAM::Role
     DependsOn: FirehoseLogGroup
     Properties:
-      RoleName: !Sub 'epdata-api-firehose-role-${Environment}'
+      RoleName: !Sub 'epdata-clientes-firehose-role-${Environment}'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -442,8 +444,8 @@ Resources:
                   - logs:DescribeLogGroups
                   - logs:DescribeLogStreams
                 Resource: 
-                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/kinesisfirehose/epdata-api-logs*'
-                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/kinesisfirehose/epdata-api-logs'
+                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/kinesisfirehose/epdata-clientes-logs*'
+                  - !Sub 'arn:aws:logs:eu-west-1:${AccountId}:log-group:/aws/kinesisfirehose/epdata-clientes-logs'
 
   # 3. TERCERO: Delivery Stream
   UserLogsDeliveryStream:
@@ -452,11 +454,11 @@ Resources:
       - FirehoseDeliveryRole
       - FirehoseLogGroup
     Properties:
-      DeliveryStreamName: !Sub 'epdata-api-logs-${Environment}'
+      DeliveryStreamName: !Sub 'epdata-clientes-logs-${Environment}'
       DeliveryStreamType: DirectPut
       ExtendedS3DestinationConfiguration:
         BucketARN: !Sub 'arn:aws:s3:::file.epdata.es'
-        Prefix: 'logs/api/!{timestamp:yyyy}/!{timestamp:MM}/!{timestamp:dd}/'
+        Prefix: 'logs/clientes/!{timestamp:yyyy}/!{timestamp:MM}/!{timestamp:dd}/'
         ErrorOutputPrefix: 'logs/errors/'
         BufferingHints:
           SizeInMBs: 5  # Enviar cada 5MB
@@ -464,8 +466,8 @@ Resources:
         CompressionFormat: GZIP
         CloudWatchLoggingOptions:
           Enabled: true
-          LogGroupName: '/aws/kinesisfirehose/epdata-api-logs'
-          LogStreamName: 'epdata-api-logs-stream'
+          LogGroupName: '/aws/kinesisfirehose/epdata-clientes-logs'
+          LogStreamName: 'epdata-clientes-logs-stream'
         RoleARN: !GetAtt FirehoseDeliveryRole.Arn
         ProcessingConfiguration:
           Enabled: false  # Sin procesamiento adicional
@@ -475,19 +477,19 @@ Resources:
 Outputs:
   TaskDefinitionArn:
     Description: 'ARN de la Task Definition'
-    Value: !Ref EpDataApiTaskDefinition
+    Value: !Ref EpDataClientesTaskDefinition
     Export:
       Name: !Sub '${AWS::StackName}-TaskDefinitionArn'
   
   TaskRoleArn:
     Description: 'ARN del IAM Role para la tarea'
-    Value: !GetAtt EpDataApiTaskRole.Arn
+    Value: !GetAtt EpDataClientesTaskRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-TaskRoleArn'
   
   SecurityGroupId:
     Description: 'ID del Security Group'
-    Value: !Ref EpDataApiSecurityGroup
+    Value: !Ref EpDataClientesSecurityGroup
     Export:
       Name: !Sub '${AWS::StackName}-SecurityGroupId'
   
@@ -505,13 +507,13 @@ Outputs:
   
   ServiceName:
     Description: 'Nombre del service ECS'
-    Value: !Ref EpDataApiService
+    Value: !Ref EpDataClientesService
     Export:
       Name: !Sub '${AWS::StackName}-ServiceName'
   
   ServiceArn:
     Description: 'ARN del service ECS'
-    Value: !Sub 'arn:aws:ecs:eu-west-1:${AccountId}:service/${ExistingClusterName}/${EpDataApiService}'
+    Value: !Sub 'arn:aws:ecs:eu-west-1:${AccountId}:service/${ExistingClusterName}/${EpDataClientesService}'
     Export:
       Name: !Sub '${AWS::StackName}-ServiceArn'
   
@@ -523,7 +525,7 @@ Outputs:
   
   LogGroupName:
     Description: 'Nombre del Log Group'
-    Value: !Ref EpDataApiLogGroup
+    Value: !Ref EpDataClientesLogGroup
     Export:
       Name: !Sub '${AWS::StackName}-LogGroupName'
   
@@ -561,24 +563,24 @@ Outputs:
 #Compilamos el proyecto en release.
 #   Importante!!!!
 #Construimos la imagen
-#   cd F:\Git\AgenciaDeDatosHerramientaCargaManual\Dashboard
+#   cd F:\Git\AgenciaDeDatosClientes\AgenciaDeDatosClientes\Dashboard
 #   dotnet publish -c Release -o bin/Release/net9.0/publish
-#   docker build --no-cache -t api:2025.10.31.001 .
+#   docker build --no-cache -t clientes:2025.10.31.001 .
 #Si nos da muchos fallos al intentar construir varias veces, puede ser necesario en algun momento limpiar cache. Para ello hariamos:
 #   (opcional) docker system prune -f
 #Etiquetamos:
-#   docker tag api:2025.10.31.001 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/api:2025.10.31.001
+#   docker tag clientes:2025.10.31.001 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2025.10.31.001
 #Hacemos push:
-#   docker push 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/api:2025.10.31.001
+#   docker push 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2025.10.31.001
 #La primera vez, desplegamos la infraestructura con la configuracion de nuestro cloudformation-template.yaml: 
 #Para validar si sintacticamente nuestro yaml es correcto, lanzar en el cmd:
-#   aws cloudformation validate-template --template-body file://cloudformation-template.yaml --region eu-west-1 --output json
+#   aws cloudformation validate-template --template-body file://aws/cloudformation-template.yaml --region eu-west-1 --output json
 #(
 #   Si no falla, el comando mirar en CloudFormation en AWS para ver si se ejcuto correctamente o si se ha hecho rollback. 
 #   Mirar causa raiz del problema, solucionar (suele ser por temas de permisos con el usuario), eliminar y relanzar el comando
 #)
 #    aws cloudformation create-stack \
-#      --stack-name epdata-api-production \
+#      --stack-name epdata-clientes-production \
 #      --template-body file://aws/cloudformation-template.yaml \
 #      --parameters ParameterKey=Environment,ParameterValue=production \
 #      --capabilities CAPABILITY_NAMED_IAM \
@@ -587,7 +589,7 @@ Outputs:
 
 #si cambiamos este yaml, podemos actualizar el stack y los recursos asociados asi:
 #aws cloudformation update-stack \ 
-#    --stack-name epdata-api-production \
+#    --stack-name epdata-clientes-production \
 #    --template-body file://aws/cloudformation-template.yaml \
 #    --parameters ParameterKey=Environment,ParameterValue=production \
 #    --capabilities CAPABILITY_NAMED_IAM \
@@ -595,18 +597,18 @@ Outputs:
 #    --output json
 
 #Si un update stack falla, lo revertimos asi:
-#aws cloudformation cancel-update-stack --stack-name epdata-api-production --region eu-west-1
+#aws cloudformation cancel-update-stack --stack-name epdata-clientes-production --region eu-west-1
 
 #Verificamos que la configuracion esta correcta:
 #    aws ecs describe-services \
 #      --cluster epdata-cluster \
-#      --services epdata-api-service-production \
+#      --services epdata-clientes-service-production \
 #      --region eu-west-1 \
 #      --output json
 #Vemos la descripcion de la pila creada:
-#   aws cloudformation describe-stacks --stack-name epdata-api-production --region eu-west-1 --output json
+#   aws cloudformation describe-stacks --stack-name epdata-clientes-production --region eu-west-1 --output json
 #Logs en tiempo real:
-#    aws logs tail /aws/ecs/epdata/api --follow --region eu-west-1
+#    aws logs tail /aws/ecs/epdata/clientes --follow --region eu-west-1
 #Verificamos alarmas:
 #    aws cloudwatch describe-alarms \
 #      --alarm-names epdata-cluster-health-production \
@@ -615,23 +617,23 @@ Outputs:
 
 #Pasos para publicar:
 
-#cd F:\Git\AgenciaDeDatosHerramientaCargaManual\Dashboard
+#cd F:\Git\AgenciaDeDatosClientes\AgenciaDeDatosClientes\Dashboard
 #dotnet publish -c Release
-#docker build -t api:2025.10.31.001 .
-#docker tag api:2025.10.31.001 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/api:2025.10.31.001
-#docker push 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/api:2025.10.31.001
+#docker build -t clientes:2025.10.31.001 .
+#docker tag clientes:2025.10.31.001 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2025.10.31.001
+#docker push 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2025.10.31.001
 
-#Vamos al ECS de AWS y en la definicion de tareas seleccionamos la nuestra (epdata-api-production), la revision mas reciente -> Crear revision
-#Definimos la uri de la imagen con la tag nueva: 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/api:2025.10.31.001
+#Vamos al ECS de AWS y en la definicion de tareas seleccionamos la nuestra (epdata-clientes-production), la revision mas reciente -> Crear revision
+#Definimos la uri de la imagen con la tag nueva: 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2025.10.31.001
 #Guardamos.
 #OJO: hay que anular la revision anterior (anular registro), para que no conviva con la nueva. Esto no cancelara las tareas actuales que la implementen
-#Luego en el servicio del cluster epdata-api-service-production, le damos a actualizar servicio -> revision de definicion de tarea: ponemos la nueva y le damos a forzar una nueva implementacion (esto creara una tarea de la revision nueva y cuando este funcionando, ira desaprovisionando y eliminando las tareas de la revision anterior que esta ya inactiva)
+#Luego en el servicio del cluster epdata-clientes-service-production, le damos a actualizar servicio -> revision de definicion de tarea: ponemos la nueva y le damos a forzar una nueva implementacion (esto creara una tarea de la revision nueva y cuando este funcionando, ira desaprovisionando y eliminando las tareas de la revision anterior que esta ya inactiva)
 
 #Para depurar proyecto en local hay que correr valkey en nuestra maquina. Para ello levantamos un docker:
 #docker run -d --name servidor-local-valkey -p 6379:6379 valkey/valkey
 
 #Para el certificado ssl si arrancamos con kestrel (docker)
-#cd F:\Git\AgenciaDeDatosHerramientaCargaManual\Dashboard\Properties && mkcert -pkcs12 epdata.es *.epdata.es
+#cd F:\Git\AgenciaDeDatosClientes\AgenciaDeDatosClientes\Dashboard\Properties && mkcert -pkcs12 epdata.es *.epdata.es
 
 #Para limpiar cache de docker:
 #docker system prune -a --volumes

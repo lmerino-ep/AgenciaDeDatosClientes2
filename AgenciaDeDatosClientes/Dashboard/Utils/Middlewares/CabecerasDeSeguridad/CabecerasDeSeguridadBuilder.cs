@@ -60,7 +60,7 @@
             string sFrame = $"frame-src 'self' *.epdata.es static01-europapress-net.s3.eu-west-1.amazonaws.com {googleDomains} {googleAdServices} {googleOtherServices} {googleAdTraffic} *.sensic.net *.flourish.studio flo.uri.sh *.jwplayer.com *.infogram.com datawrapper.dwcdn.net *.carto.com carto.com";
             string sFenceFrame = $"fenced-frame-src 'self' *.epdata.es static01-europapress-net.s3.eu-west-1.amazonaws.com {googleDomains} {googleAdServices} {googleOtherServices} {googleAdTraffic} *.sensic.net *.flourish.studio flo.uri.sh *.jwplayer.com *.infogram.com datawrapper.dwcdn.net *.carto.com carto.com";
             string sFuentes = "font-src 'self' *.epdata.es static01-europapress-net.s3.eu-west-1.amazonaws.com fonts.gstatic.com fonts.googleapis.com cdnjs.cloudflare.com";
-            string sMedia = "media-src 'self' *.epdata.es static01-europapress-net.s3.eu-west-1.amazonaws.com";
+            string sMedia = "media-src 'self' *.epdata.es europapress.net *.europapress.net static01-europapress-net.s3.eu-west-1.amazonaws.com";
             //Para no perjudicar al pagespeed con errores de consola, admitimos todas las imágenes cargadas con el contenido en base64 en el src habilitando toda url del schema data:, aunque es menos seguro
             string sImagenes = $"img-src 'self' *.epdata.es static01-europapress-net.s3.eu-west-1.amazonaws.com {googleDomains} {googleAdServices} {googleOtherServices} {googleAdTraffic} cdnjs.cloudflare.com *.europapress.es *.flourish.studio *.mapbox.com *.cartocdn.com *.arcgisonline.com *.jwplayer.com data:";
             string sCss = "style-src 'self' 'unsafe-inline' *.epdata.es static01-europapress-net.s3.eu-west-1.amazonaws.com fonts.googleapis.com cdnjs.cloudflare.com";
