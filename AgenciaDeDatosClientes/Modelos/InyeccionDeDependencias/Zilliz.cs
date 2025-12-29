@@ -1,4 +1,4 @@
-﻿using Amazon.S3.Model;
+using Amazon.S3.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

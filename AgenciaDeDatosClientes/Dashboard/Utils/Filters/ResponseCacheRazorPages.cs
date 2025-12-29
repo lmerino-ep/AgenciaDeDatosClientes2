@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Primitives;
 using Polly.Caching;
 
-namespace Dashboard.Utils.Filters
+namespace Utils.Filters
 {
     public class ResponseCacheRazorPages : IAsyncPageFilter
     {
@@ -25,7 +25,7 @@ namespace Dashboard.Utils.Filters
 
         public async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
         {
-            //Ejecuta el onGet de la página Razor:
+            //Ejecuta el onGet de la p�gina Razor:
             var resultContext = await next();
 
             if (resultContext.Result != null && resultContext.Result is PageResult)

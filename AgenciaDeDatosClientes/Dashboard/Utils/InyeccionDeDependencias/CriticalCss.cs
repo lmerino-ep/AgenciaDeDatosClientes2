@@ -1,6 +1,6 @@
-ï»¿using Dashboard.ViewComponents;
+using ViewComponents;
 
-namespace Dashboard.Utils.InyeccionDeDependencias
+namespace Utils.InyeccionDeDependencias
 {
     public class CriticalCss
     {
@@ -32,7 +32,7 @@ namespace Dashboard.Utils.InyeccionDeDependencias
             }
             if (String.IsNullOrEmpty(ruta))
             {
-                throw new DirectoryNotFoundException($"No se pudo encontrar la carpeta de CSS crÃ­tico en ninguna de las rutas: {string.Join(", ", rutasPosibles)}");
+                throw new DirectoryNotFoundException($"No se pudo encontrar la carpeta de CSS crítico en ninguna de las rutas: {string.Join(", ", rutasPosibles)}");
             }
 
             List<string> aNombreArchivoCssCritico = Directory.GetFiles(ruta, "*.min.css").Select(Path.GetFileName).ToList();
@@ -62,12 +62,12 @@ namespace Dashboard.Utils.InyeccionDeDependencias
                     }
                     else
                     {
-                        throw new FileNotFoundException($"No se pudo encontrar el archivo CSS crÃ­tico: {sRuta}");
+                        throw new FileNotFoundException($"No se pudo encontrar el archivo CSS crítico: {sRuta}");
                     }
                 }
                 else
                 {
-                    throw new FileNotFoundException($"No se pudo encontrar el archivo CSS crÃ­tico: {sNombreArchivoCssCritico}");
+                    throw new FileNotFoundException($"No se pudo encontrar el archivo CSS crítico: {sNombreArchivoCssCritico}");
                 }
             }
             */

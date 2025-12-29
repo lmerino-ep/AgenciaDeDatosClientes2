@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using Modelos.Autenticacion;
 
-namespace Dashboard.Utils.Autenticacion
+namespace Utils.Autenticacion
 {
-    public class ClaimsPersonalizados : UserClaimsPrincipalFactory<Modelos.Autenticacion.Usuario>
+    public class ClaimsPersonalizados : UserClaimsPrincipalFactory<Usuario>
     {
-        public ClaimsPersonalizados(UserManager<Modelos.Autenticacion.Usuario> userManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, optionsAccessor)
+        public ClaimsPersonalizados(UserManager<Usuario> userManager, IOptions<IdentityOptions> optionsAccessor) : base(userManager, optionsAccessor)
         {
         }
 
@@ -22,7 +23,7 @@ namespace Dashboard.Utils.Autenticacion
 
         // This method is called only when login. It means that "the drawback   
         // of calling the database with each HTTP request" never happen.  
-        public async override Task<ClaimsPrincipal> CreateAsync(Modelos.Autenticacion.Usuario user)
+        public async override Task<ClaimsPrincipal> CreateAsync(Usuario user)
         {
             var principal = await base.CreateAsync(user);
 

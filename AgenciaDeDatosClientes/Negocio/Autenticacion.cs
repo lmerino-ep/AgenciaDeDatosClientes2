@@ -1,4 +1,4 @@
-﻿using AgenciaDeDatosBD;
+using AgenciaDeDatosBD;
 using Modelos.Autenticacion;
 using Modelos.InyeccionDeDependencias;
 using System;

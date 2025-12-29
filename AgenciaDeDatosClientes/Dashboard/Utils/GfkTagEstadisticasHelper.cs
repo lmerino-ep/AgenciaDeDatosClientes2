@@ -1,23 +1,23 @@
-ï»¿using System.Text;
+using System.Text;
 
-namespace Dashboard.Utils
+namespace Utils
 {
     public static class GfkTagEstadisticasHelper
     {
 
-        public const string TagBeginGfk = "<!-- BEGIN GFK TAG -->"; //Por si alguna vez tenemos que localizarlo para suprimir o modificar ... YA TÃš SABES!
+        public const string TagBeginGfk = "<!-- BEGIN GFK TAG -->"; //Por si alguna vez tenemos que localizarlo para suprimir o modificar ... YA TÚ SABES!
         public const string TagEndGfk = "<!-- END GFK TAG -->";
 
         /*
-         En el caso de EpData vamos a medir el impacto a nivel global. Por tanto, los customParameters y en especÃ­fico
-         el c2 serÃ¡ homepage
-            Para mÃ¡s informaciÃ³n https://europapress.visualstudio.com/webep/_wiki/wikis/webep.wiki/158/Gfk-Tag-Estad%C3%ADsticas
+         En el caso de EpData vamos a medir el impacto a nivel global. Por tanto, los customParameters y en específico
+         el c2 será homepage
+            Para más información https://europapress.visualstudio.com/webep/_wiki/wikis/webep.wiki/158/Gfk-Tag-Estad%C3%ADsticas
          */
 
         /// <summary>
-        /// Obtiene la configuraciÃ³n para envÃ­ar a Gfk        /// 
+        /// Obtiene la configuración para envíar a Gfk        /// 
         /// </summary>
-        /// <returns>Devuelve empty si no hemos podido generar el tag; el tag con la configuraciÃ³n y ejecuciÃ³n en caso de todo correcto</returns>
+        /// <returns>Devuelve empty si no hemos podido generar el tag; el tag con la configuración y ejecución en caso de todo correcto</returns>
         public static String GetScriptSeguimientoGfk(string nonce)
         {
             StringBuilder localWriter = new StringBuilder();
@@ -75,7 +75,7 @@ namespace Dashboard.Utils
             StringBuilder localWriter = new StringBuilder();
             localWriter.Append($@"<div> 
                                     <a href=""https://insights.gfk.es/sello-gfk-dam?hs_preview=qRNhKeWr-133497780591"" target=""_blank""> 
-                                        <img height=""120"" src=""https://campo.gfk.es/dam/seal?uuid=AB34D3B4-8D5D-451E-91F2-55FCE7C003C3&desid={formatoFondoClaro}"" alt=""Certificado bajo mediciÃ³n GfK DAM"">
+                                        <img height=""120"" src=""https://campo.gfk.es/dam/seal?uuid=AB34D3B4-8D5D-451E-91F2-55FCE7C003C3&desid={formatoFondoClaro}"" alt=""Certificado bajo medición GfK DAM"">
                                     </a>
                                  </div>");
         }
@@ -190,7 +190,7 @@ namespace Dashboard.Utils
         {
             /**
             * For preproduction config-preproduction.sensic.net/s2s-web.js
-            * Una vez comprobado se debe mantener la url de producciÃ³n config.sensic.net/s2s-web.js
+            * Una vez comprobado se debe mantener la url de producción config.sensic.net/s2s-web.js
             */
 
             return "config.sensic.net/s2s-web.js";

@@ -1,9 +1,9 @@
-﻿using Amazon.SecretsManager;
+using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
 using Polly;
 using System.Text.Json;
 
-namespace Dashboard.Utils.Secretos
+namespace Utils.Secretos
 {
     public class Secretos : ISecretos
     {
@@ -75,7 +75,7 @@ namespace Dashboard.Utils.Secretos
                     return value.GetString() ?? string.Empty;
                 }
 
-                throw new KeyNotFoundException($"La clave '{key}' no se encontró en el secret string");
+                throw new KeyNotFoundException($"La clave '{key}' no se encontr� en el secret string");
             }
             catch (Exception ex)
             {

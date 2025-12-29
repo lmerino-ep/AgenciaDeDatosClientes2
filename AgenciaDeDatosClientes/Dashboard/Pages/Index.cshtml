@@ -1,9 +1,199 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    Layout = "_Layout";
+    ViewData["Title"] = "Dashboard de Gestión";
 }
 
-<div>
-    <h1>Welcome</h1>
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">Bienvenido al Dashboard de Gestión</h1>
+    <p class="page-description">
+        Panel de control administrativo para la gestión de usuarios, métricas y documentación de EpData.
+    </p>
 </div>
+
+<!-- Estadísticas Rápidas -->
+@if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
+     User.IsInRole("Dashboard - Gestión de Usuarios") ||
+     User.IsInRole("Dashboard - Consulta de Métricas") ||
+     User.IsInRole("Dashboard - Auditoría") ||
+     User.IsInRole("Dashboard - Acceso total"))
+{
+    <section class="seccion-estadisticas">
+        @if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
+             User.IsInRole("Dashboard - Gestión de Usuarios") ||
+             User.IsInRole("Dashboard - Acceso total"))
+        {
+            <div class="tarjeta-estadistica">
+                <div class="contenido">
+                    <div class="info">
+                        <div class="titulo">Usuarios Activos</div>
+                        <div class="valor">-</div>
+                        <div class="cambio neutro">Próximamente</div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
+             User.IsInRole("Dashboard - Exportación de Métricas") ||
+             User.IsInRole("Dashboard - Acceso total"))
+        {
+            <div class="tarjeta-estadistica">
+                <div class="contenido">
+                    <div class="info">
+                        <div class="titulo">Actividad Mensual</div>
+                        <div class="valor">-</div>
+                        <div class="cambio neutro">Próximamente</div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (User.IsInRole("Dashboard - Gestión de Documentación") || User.IsInRole("Dashboard - Acceso total"))
+        {
+            <div class="tarjeta-estadistica">
+                <div class="contenido">
+                    <div class="info">
+                        <div class="titulo">Documentos</div>
+                        <div class="valor">-</div>
+                        <div class="cambio neutro">Próximamente</div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (User.IsInRole("Dashboard - Auditoría") || User.IsInRole("Dashboard - Acceso total"))
+        {
+            <div class="tarjeta-estadistica">
+                <div class="contenido">
+                    <div class="info">
+                        <div class="titulo">Acciones Hoy</div>
+                        <div class="valor">-</div>
+                        <div class="cambio neutro">Próximamente</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </section>
+}
+
+<!-- Acciones Rápidas -->
+<section class="seccion-acciones">
+    <h2 class="titulo-seccion">
+        Acciones Rápidas
+    </h2>
+
+    @if (User.IsInRole("Dashboard - Gestión de Usuarios") ||
+         User.IsInRole("Dashboard - Consulta de Usuarios") ||
+         User.IsInRole("Dashboard - Consulta de Métricas") ||
+         User.IsInRole("Dashboard - Auditoría") ||
+         User.IsInRole("Dashboard - Gestión de Documentación") ||
+         User.IsInRole("Dashboard - Acceso total"))
+    {
+        <div class="grid-acciones">
+            @if (User.IsInRole("Dashboard - Gestión de Usuarios") || User.IsInRole("Dashboard - Acceso total"))
+            {
+                <a asp-page="/usuarios/crear" class="boton-accion">
+                    <span class="texto">Crear Usuario</span>
+                </a>
+                <a asp-page="/usuarios/listado" class="boton-accion">
+                    <span class="texto">Ver Usuarios</span>
+                </a>
+            }
+
+            @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
+                 User.IsInRole("Dashboard - Exportación de Métricas") ||
+                 User.IsInRole("Dashboard - Acceso total"))
+            {
+                <a asp-page="/metricas/listado" class="boton-accion">
+                    <span class="texto">Ver Métricas</span>
+                </a>
+            }
+
+            @if (User.IsInRole("Dashboard - Auditoría") || User.IsInRole("Dashboard - Acceso total"))
+            {
+                <a asp-page="/auditoria/listado" class="boton-accion">
+                    <span class="texto">Ver Auditoría</span>
+                </a>
+            }
+
+            @if (User.IsInRole("Dashboard - Gestión de Documentación") || User.IsInRole("Dashboard - Acceso total"))
+            {
+                <a asp-page="/documentacion/listado" class="boton-accion">
+                    <span class="texto">Ver Documentos</span>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="sin-permisos">
+            No tienes permisos asignados para acceder a las funcionalidades del dashboard.
+            Contacta con un administrador para solicitar acceso.
+        </div>
+    }
+</section>
+
+<!-- Información del Sistema -->
+<section class="seccion-info">
+    <div class="card-info">
+        <h2 class="titulo-seccion">
+            Información del Sistema
+        </h2>
+
+        <div class="info-item">
+            <div class="contenido">
+                <div class="etiqueta">Versión del Dashboard</div>
+                <div class="valor">1.0.0</div>
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="contenido">
+                <div class="etiqueta">Última actualización</div>
+                <div class="valor">@DateTime.Now.ToString("dd/MM/yyyy")</div>
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="contenido">
+                <div class="etiqueta">Estado del Sistema</div>
+                <div class="valor">Operativo</div>
+            </div>
+        </div>
+
+        <div class="info-item">
+            <div class="contenido">
+                <div class="etiqueta">Base de Datos</div>
+                <div class="valor">Aurora MySQL</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-ayuda">
+        <h2 class="titulo-seccion">
+            Ayuda
+        </h2>
+
+        <p class="descripcion">¿Necesitas ayuda con el dashboard?</p>
+
+        <ul class="listado-enlaces">
+            <li class="item">
+                <a href="https://www.epdata.es" target="_blank" class="enlace">
+                    <span>Visitar EpData.es</span>
+                </a>
+            </li>
+            <li class="item">
+                <a href="mailto:soporte@epdata.es" class="enlace">
+                    <span>Contactar Soporte</span>
+                </a>
+            </li>
+            <li class="item">
+                <a asp-page="/documentacion/listado" class="enlace">
+                    <span>Ver Documentación</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</section>

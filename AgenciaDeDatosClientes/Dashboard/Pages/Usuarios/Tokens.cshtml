@@ -1,0 +1,291 @@
+@page "/usuarios/tokens/{id:int}"
+@model Pages.Usuarios.TokensModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+@attribute [Authorize(Policy = PoliticasAutorizacion.Politicas.GestionTokens)]
+
+@{
+    ViewData["Title"] = $"Tokens - {Model.TokensUsuario?.Nombre} {Model.TokensUsuario?.Apellidos}";
+    ViewBag.Description = "Gestión de refresh tokens del usuario";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/main/usuarios-tokens.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/main/usuarios-tokens.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
+
+<div class="page-header">
+    <h1 class="page-title">Gestión de Tokens</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/Usuarios/Listado">Usuarios</a>
+        <span class="separador">/</span>
+        <span>Tokens</span>
+    </div>
+</div>
+
+@if (Model.TokensUsuario != null)
+{
+    @if (!string.IsNullOrEmpty(Model.MensajeExito))
+    {
+        <div class="alerta alerta-exito">
+            @Model.MensajeExito
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.MensajeError))
+    {
+        <div class="alerta alerta-error">
+            @Model.MensajeError
+        </div>
+    }
+
+    <section class="seccion-datos-usuario">
+        <div class="card">
+            <h2 class="titulo-seccion">Información del Usuario</h2>
+            <div class="info-usuario">
+                <div class="campo">
+                    <span class="etiqueta">Email:</span>
+                    <span class="valor">@Model.TokensUsuario.Email</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Nombre:</span>
+                    <span class="valor">@Model.TokensUsuario.Nombre @Model.TokensUsuario.Apellidos</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="seccion-tokens">
+        <div class="card">
+            <h2 class="titulo-seccion">Refresh Tokens</h2>
+
+            <div class="grid-tokens">
+                <!-- RefreshToken1 -->
+                <div class="token-card">
+                    <div class="token-header">
+                        <h3 class="token-titulo">RefreshToken1</h3>
+                        @if (Model.TokensUsuario.TieneRefreshToken1)
+                        {
+                            <span class="badge badge-exito">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-error">Sin Token</span>
+                        }
+                    </div>
+
+                    <div class="token-valor">
+                        @if (Model.TokensUsuario.TieneRefreshToken1)
+                        {
+                            <code>@Model.TokensUsuario.RefreshToken1Parcial</code>
+                        }
+                        else
+                        {
+                            <span class="texto-sin-token">No generado</span>
+                        }
+                    </div>
+
+                    <div class="token-acciones">
+                        <form method="post" asp-page-handler="GenerarToken1" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Id" value="@Model.Id" />
+                            <div class="grupo-checkbox">
+                                <label>
+                                    <input type="checkbox" name="EnviarPorEmail" value="true" />
+                                    Enviar por email
+                                </label>
+                            </div>
+                            <button type="submit" class="boton boton-primario">
+                                @(Model.TokensUsuario.TieneRefreshToken1 ? "Regenerar" : "Generar")
+                            </button>
+                        </form>
+
+                        @if (Model.TokensUsuario.TieneRefreshToken1)
+                        {
+                            <form method="post" asp-page-handler="RevocarToken1" style="display: inline;" onsubmit="return confirmarRevocacion('token1')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="Id" value="@Model.Id" />
+                                <button type="submit" class="boton boton-peligro">
+                                    Revocar
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+
+                <!-- RefreshToken2 -->
+                <div class="token-card">
+                    <div class="token-header">
+                        <h3 class="token-titulo">RefreshToken2</h3>
+                        @if (Model.TokensUsuario.TieneRefreshToken2)
+                        {
+                            <span class="badge badge-exito">Activo</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-error">Sin Token</span>
+                        }
+                    </div>
+
+                    <div class="token-valor">
+                        @if (Model.TokensUsuario.TieneRefreshToken2)
+                        {
+                            <code>@Model.TokensUsuario.RefreshToken2Parcial</code>
+                        }
+                        else
+                        {
+                            <span class="texto-sin-token">No generado</span>
+                        }
+                    </div>
+
+                    <div class="token-acciones">
+                        <form method="post" asp-page-handler="GenerarToken2" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Id" value="@Model.Id" />
+                            <div class="grupo-checkbox">
+                                <label>
+                                    <input type="checkbox" name="EnviarPorEmail" value="true" />
+                                    Enviar por email
+                                </label>
+                            </div>
+                            <button type="submit" class="boton boton-primario">
+                                @(Model.TokensUsuario.TieneRefreshToken2 ? "Regenerar" : "Generar")
+                            </button>
+                        </form>
+
+                        @if (Model.TokensUsuario.TieneRefreshToken2)
+                        {
+                            <form method="post" asp-page-handler="RevocarToken2" style="display: inline;" onsubmit="return confirmarRevocacion('token2')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="Id" value="@Model.Id" />
+                                <button type="submit" class="boton boton-peligro">
+                                    Revocar
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="seccion-acciones-globales">
+                <form method="post" asp-page-handler="GenerarAmbos" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                    <div class="grupo-checkbox">
+                        <label>
+                            <input type="checkbox" name="EnviarPorEmail" value="true" />
+                            Enviar por email
+                        </label>
+                    </div>
+                    <button type="submit" class="boton boton-secundario">
+                        Generar Ambos Tokens
+                    </button>
+                </form>
+
+                @if (Model.TokensUsuario.TieneRefreshToken1 || Model.TokensUsuario.TieneRefreshToken2)
+                {
+                    <form method="post" asp-page-handler="RevocarTodos" style="display: inline;" onsubmit="return confirmarRevocacion('todos')">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        <button type="submit" class="boton boton-peligro">
+                            Revocar Todos los Tokens
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="seccion-access-token">
+        <div class="card">
+            <h2 class="titulo-seccion">Access Token Activo</h2>
+
+            @if (Model.TokensUsuario.TieneAccessToken)
+            {
+                <div class="info-access-token">
+                    <div class="campo">
+                        <span class="etiqueta">Token (parcial):</span>
+                        <code>@Model.TokensUsuario.AccessTokenParcial</code>
+                    </div>
+                    <div class="campo">
+                        <span class="etiqueta">Caducidad:</span>
+                        <span class="valor">
+                            @if (Model.TokensUsuario.CaducidadAccessToken.HasValue)
+                            {
+                                @Model.TokensUsuario.CaducidadAccessToken.Value.ToString("dd/MM/yyyy HH:mm:ss")
+
+                                @if (Model.TokensUsuario.AccessTokenValido)
+                                {
+                                    <span class="badge badge-exito">Válido</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-error">Expirado</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="texto-sin-info">Sin fecha de caducidad</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="mensaje-vacio">
+                    <p>No hay access token activo para este usuario.</p>
+                    <p class="nota">El access token se genera automáticamente cuando el usuario usa un refresh token para autenticarse en la API.</p>
+                </div>
+            }
+        </div>
+    </section>
+
+    <div class="acciones-pie">
+        <a href="/Usuarios/Listado" class="boton boton-secundario">
+            Volver al Listado
+        </a>
+        <a href="/Usuarios/Roles/@Model.Id" class="boton boton-secundario">
+            Ver Roles
+        </a>
+    </div>
+
+    <!-- Modal para mostrar token completo -->
+    <div id="modal-token" class="modal" style="display: none;">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3 id="token-display">Token Generado</h3>
+                <button class="boton-cerrar" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alerta alerta-advertencia">
+                    <strong>IMPORTANTE:</strong> Este token solo se mostrará una vez. Cópialo y guárdalo de forma segura.
+                </div>
+                <div class="token-completo">
+                    <code id="token-value"></code>
+                </div>
+                <button class="boton boton-primario" onclick="copiarToken()">
+                    Copiar al Portapapeles
+                </button>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="mensaje-error">
+        <p>Usuario no encontrado.</p>
+        <a href="/Usuarios/Listado" class="boton boton-secundario">Volver al Listado</a>
+    </div>
+}

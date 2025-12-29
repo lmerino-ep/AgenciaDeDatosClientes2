@@ -1,0 +1,174 @@
+@page "/usuarios/listado"
+@model Pages.Usuarios.ListadoModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Listado de Usuarios";
+    ViewBag.Description = "Gestión de usuarios del sistema";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Listado de Usuarios</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <span>Usuarios</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeExito))
+{
+    <div class="alerta alerta-exito">
+        @Model.MensajeExito
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        @Model.MensajeError
+    </div>
+}
+
+<!-- Filtros -->
+<section class="seccion-filtros">
+    <div class="card">
+        <h2 class="titulo-seccion">Filtros</h2>
+        <form method="get" class="form-filtros">
+            <div class="grid-filtros">
+                <div class="form-group">
+                    <label for="FK_UsuarioTipo">Tipo de Usuario:</label>
+                    <select name="FK_UsuarioTipo" id="FK_UsuarioTipo" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var tipo in Model.TiposUsuario)
+                        {
+                            <option value="@tipo.Id" selected="@(Model.FK_UsuarioTipo == tipo.Id)">@tipo.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Activo">Estado:</label>
+                    <select name="Activo" id="Activo" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="true" selected="@(Model.Activo == true)">Activo</option>
+                        <option value="false" selected="@(Model.Activo == false)">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Busqueda">Búsqueda (Email, Nombre, Apellidos):</label>
+                    <input type="text" name="Busqueda" id="Busqueda" class="form-control" value="@Model.Busqueda" placeholder="Buscar...">
+                </div>
+
+                <div class="form-group">
+                    <label for="TamanoPagina">Registros por página:</label>
+                    <select name="TamanoPagina" id="TamanoPagina" class="form-control">
+                        <option value="25" selected="@(Model.TamanoPagina == 25)">25</option>
+                        <option value="50" selected="@(Model.TamanoPagina == 50)">50</option>
+                        <option value="100" selected="@(Model.TamanoPagina == 100)">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="boton boton-primario">Filtrar</button>
+                <a href="/usuarios/listado" class="boton boton-secundario">Limpiar</a>
+                @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionUsuarios) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+                {
+                    <a href="/usuarios/crear" class="boton boton-primario">Crear Usuario</a>
+                }
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Tabla de usuarios -->
+<section class="seccion-tabla">
+    <div class="card">
+        <div class="header-con-accion">
+            <h2 class="titulo-seccion">Usuarios (@Model.TotalUsuarios)</h2>
+        </div>
+
+        @if (Model.Usuarios.Any())
+        {
+            <div class="tabla-responsive">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Nombre</th>
+                            <th>Empresa</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var usuario in Model.Usuarios)
+                        {
+                            <tr>
+                                <td><a href="/usuarios/editar/@usuario.Id">@usuario.Email</a></td>
+                                <td>@usuario.Nombre @usuario.Apellidos</td>
+                                <td>@(usuario.Empresa ?? "-")</td>
+                                <td><span class="badge badge-tipo">@usuario.TipoUsuarioNombre</span></td>
+                                <td>
+                                    @if (usuario.Activo)
+                                    {
+                                        <span class="badge badge-exito">Activo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-error">Inactivo</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="acciones-tabla">
+                                        <a href="/usuarios/roles/@usuario.Id" class="boton boton-pequeno boton-secundario" title="Ver Roles">Roles</a>
+                                        @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionTokens) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+                                        {
+                                            <a href="/usuarios/tokens/@usuario.Id" class="boton boton-pequeno boton-secundario" title="Ver Tokens">Tokens</a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <div class="paginacion">
+                    @if (Model.Pagina > 0)
+                    {
+                        <a href="?Pagina=@(Model.Pagina - 1)&FK_UsuarioTipo=@Model.FK_UsuarioTipo&Activo=@Model.Activo&Busqueda=@Model.Busqueda&TamanoPagina=@Model.TamanoPagina" class="boton boton-secundario">Anterior</a>
+                    }
+
+                    <span class="info-paginacion">
+                        Página @(Model.Pagina + 1) de @Model.TotalPaginas (@Model.TotalUsuarios usuarios)
+                    </span>
+
+                    @if (Model.Pagina < Model.TotalPaginas - 1)
+                    {
+                        <a href="?Pagina=@(Model.Pagina + 1)&FK_UsuarioTipo=@Model.FK_UsuarioTipo&Activo=@Model.Activo&Busqueda=@Model.Busqueda&TamanoPagina=@Model.TamanoPagina" class="boton boton-secundario">Siguiente</a>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="mensaje-vacio">
+                <p>No se encontraron usuarios con los filtros especificados.</p>
+            </div>
+        }
+    </div>
+</section>
+

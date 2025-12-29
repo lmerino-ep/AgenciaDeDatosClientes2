@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Middlewares.CdnHeaders
+namespace Utils.Middlewares.CdnHeaders
 {
     /// <summary>
     /// Política de configuración para el middleware de cabeceras de CDN

@@ -1,0 +1,105 @@
+@page "/usuarios/crear"
+@model Pages.Usuarios.CrearModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Crear Usuario";
+    ViewBag.Description = "Crear un nuevo usuario en el sistema";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Crear Usuario</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/usuarios/listado">Usuarios</a>
+        <span class="separador">/</span>
+        <span>Crear</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        @Model.MensajeError
+    </div>
+}
+
+<form method="post" class="form-usuario">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="All" class="alerta alerta-error"></div>
+
+    <section class="seccion-formulario">
+        <div class="card">
+            <h2 class="titulo-seccion">Información del Usuario</h2>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Email">Email *</label>
+                <input asp-for="Modelo.Email" class="form-control" type="email" required />
+                <span asp-validation-for="Modelo.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Nombre">Nombre *</label>
+                <input asp-for="Modelo.Nombre" class="form-control" required />
+                <span asp-validation-for="Modelo.Nombre" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Apellidos">Apellidos *</label>
+                <input asp-for="Modelo.Apellidos" class="form-control" required />
+                <span asp-validation-for="Modelo.Apellidos" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Empresa">Empresa</label>
+                <input asp-for="Modelo.Empresa" class="form-control" />
+                <span asp-validation-for="Modelo.Empresa" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.FK_UsuarioTipo">Tipo de Usuario *</label>
+                <select asp-for="Modelo.FK_UsuarioTipo" class="form-control" required>
+                    <option value="">-- Seleccione un tipo --</option>
+                    @foreach (var tipo in Model.TiposUsuario)
+                    {
+                        <option value="@tipo.Id">@tipo.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="Modelo.FK_UsuarioTipo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Password">Contraseña *</label>
+                <input asp-for="Modelo.Password" class="form-control" type="password" required minlength="8" />
+                <small class="form-text text-muted">Mínimo 8 caracteres, 1 mayúscula, 1 número</small>
+                <span asp-validation-for="Modelo.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.ConfirmarPassword">Confirmar Contraseña *</label>
+                <input asp-for="Modelo.ConfirmarPassword" class="form-control" type="password" required />
+                <span asp-validation-for="Modelo.ConfirmarPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input asp-for="Modelo.Activo" type="checkbox" checked />
+                    Usuario Activo
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button type="submit" class="boton boton-primario">Crear Usuario</button>
+        <a href="/usuarios/listado" class="boton boton-secundario">Cancelar</a>
+    </div>
+</form>
+

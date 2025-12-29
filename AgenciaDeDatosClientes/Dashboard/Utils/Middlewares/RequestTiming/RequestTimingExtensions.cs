@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Middlewares.RequestTiming
+namespace Utils.Middlewares.RequestTiming
 {
     /// <summary>
     /// Extensiones para registrar el middleware de timing de requests

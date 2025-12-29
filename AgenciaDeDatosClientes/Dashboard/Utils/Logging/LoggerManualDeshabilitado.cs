@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 
-namespace Dashboard.Utils.Logging
+namespace Utils.Logging
 {
     public class LoggerManualDeshabilitado : LoggerManual
     {

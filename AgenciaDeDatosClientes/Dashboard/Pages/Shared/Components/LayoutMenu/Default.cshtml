@@ -1,0 +1,62 @@
+@using ViewComponents
+@using Modelos.DTO.Imagen
+
+@model LayoutMenuModel
+
+<nav class="cabecera">
+    <div class="visible-en-xs">
+        <details class="desplegable" name="navegacion" onclick="fOpcionesMenuMovil()">
+            <summary class="desplegador icono-cierre-menu-lateral-izquierdo">
+                <span class="icono-menu"></span>
+            </summary>
+        </details>
+        <div class="contenedor-desplegable menu-lateral-izquierdo">
+            <div class="contenido-desplegable">
+                <div class="menu" id="contenido-menu-movil">
+                    <span class="texto">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="logo" href="/">
+        <partial name="Components/Herramientas/Imagen" model="@(new Imagen {
+            MostrandoEnPrimerPantallazo = true,
+            Alt = "Logotipo de Dashboard EpData",
+            ClasesCss = "imagen",
+            Ancho = 140,
+            Alto = 46,
+            UrlPorIntrinsicWidthFormatoAvif = new Dictionary<int, string>()
+            {
+                { 210, Imagen.GetUrlAbsoluta("cms/estaticos/logoeditepdata.png") }
+            },
+            UrlPorIntrinsicWidthFormatoWebp = new Dictionary<int, string>()
+            {
+                { 210, Imagen.GetUrlAbsoluta("cms/estaticos/logoeditepdata.png") }
+            },
+            UrlPorIntrinsicWidthFormatoFallback = new Dictionary<int, string>()
+            {
+                { 210, Imagen.GetUrlAbsoluta("cms/estaticos/logoeditepdata.png") }
+            }
+        })" />
+    </a>
+    <div class="enlaces oculto-en-xs">
+        <!-- Enlaces simplificados - solo logo y mi cuenta -->
+    </div>
+    <div>
+        <details class="desplegable" name="navegacion" onclick="fOpcionesMiCuenta()">
+            <summary class="desplegador icono-cierre-menu-lateral-derecho">
+                <span class="icono">
+                    <i class="icono-usuario"></i>
+                </span>
+                <span class="texto-enlace oculto-en-xs">Mi Cuenta</span>
+            </summary>
+        </details>
+        <div class="contenedor-desplegable menu-lateral-derecho">
+            <div class="contenido-desplegable">
+                <div class="menu" id="contenido-opciones-mi-cuenta">
+                    <span class="texto">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

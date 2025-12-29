@@ -1,7 +1,7 @@
 using AutoLogin.Token;
 using AutoLogin.Verification.Interfaces;
-using Dashboard.Utils.Filters;
-using Dashboard.Utils.Logging;
+using Utils.Filters;
+using Utils.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
@@ -11,11 +11,11 @@ using NugetPortable.Cache;
 using NugetPortable.Herramientas.CDN;
 using NugetPortable.SQS;
 
-namespace Dashboard.Pages
+namespace Pages
 {
     public class IndexModel : PageModel
     {
-        public ETag ETag { get; set; } //Ojo: esta propiedad debe llamarse así. No cambiar, porque lo casteamos cmomo dynamic con este nombre (ETag) desde el ETagFilterControllers para evitar usar reflection
+        public ETag ETag { get; set; } //Ojo: esta propiedad debe llamarse asÃ­. No cambiar, porque lo casteamos cmomo dynamic con este nombre (ETag) desde el ETagFilterControllers para evitar usar reflection
         private readonly ILogger<IndexModel> _logger;
 
         public IndexModel(
@@ -28,7 +28,6 @@ namespace Dashboard.Pages
             Zilliz zilliz,
             Configuracion configuracion,
             Transparent transparentCDN,
-            Modelos.InyeccionDeDependencias.Google google,
             ITokenHandler autoLoginTokenHandler,
             ITokenDbService autoLoginTokenDbService,
             S3 s3,
@@ -45,8 +44,6 @@ namespace Dashboard.Pages
                 s3.SecretAccessKey,
                 transparentCDN
             );
-
-            //TODO: Incluímos en el constructor todas las DI solo para probar que el proyecto está correctamente configurado
         }
 
         public void OnGet()

@@ -1,8 +1,8 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System;
 using Microsoft.Net.Http.Headers;
 
-namespace Dashboard.Utils.Filters
+namespace Utils.Filters
 {
     public class ETag
     {
@@ -115,7 +115,7 @@ namespace Dashboard.Utils.Filters
                     double minutosTranscurridos = DateTime.UtcNow.Subtract(lastModifiedCliente.Value).TotalMinutes;
                     if (minutosTranscurridos > minutos)
                     {
-                        //Han pasado más minutos de los permitidos:
+                        //Han pasado m�s minutos de los permitidos:
                         lastModifiedConCaducidadCadaXMinutos = DateTime.UtcNow;
                     }
                     else

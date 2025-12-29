@@ -2,27 +2,29 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Modelos.InyeccionDeDependencias;
-using Dashboard.Utils.Secretos;
+using Utils.Secretos;
 using NugetPortable.Cache;
 using NugetPortable.SQS;
 using Amazon.SQS;
 using Ganss.Xss;
-using Dashboard.Utils.Servicios;
-using Dashboard.Utils.InyeccionDeDependencias;
+using Utils.Servicios;
+using Utils.InyeccionDeDependencias;
 using Microsoft.AspNetCore.Identity;
 using Amazon.CloudWatchLogs;
 using Amazon.SecretsManager;
 using Amazon;
 using Amazon.S3.Model;
 using Polly;
-using Dashboard.Utils.Logging;
-using Dashboard.Utils.Autenticacion;
+using Utils.Logging;
+using Utils.Autenticacion;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Dashboard.Utils.Filters;
+using Utils.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Amazon.KinesisFirehose;
+using Datos;
+using Negocio;
 
-namespace Dashboard.Utils.Servicios
+namespace Utils.Servicios
 {
     /// <summary>
     /// Extension methods para configurar servicios de la aplicación
@@ -145,8 +147,23 @@ namespace Dashboard.Utils.Servicios
             CriticalCss criticalCss = new CriticalCss(Path.GetFullPath("wwwroot"));
             services.AddSingleton(x => criticalCss);
 
+
             var sanitizerContraXSS = new HtmlSanitizer();
             services.AddSingleton(x => sanitizerContraXSS);
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configura los servicios de negocio y repositorios
+        /// </summary>
+        public static IServiceCollection AddBusinessServices(this IServiceCollection services)
+        {
+            // ===== REPOSITORIOS =====
+            services.AddSingleton<RepositorioAuditoria>();
+
+            // ===== SERVICIOS DE NEGOCIO =====
+            services.AddScoped<IServicioAuditoria, ServicioAuditoria>();
 
             return services;
         }
@@ -160,12 +177,12 @@ namespace Dashboard.Utils.Servicios
             // Obtener Aurora config para los stores personalizados
             var auroraConfig = services.BuildServiceProvider().GetRequiredService<Modelos.InyeccionDeDependencias.Aurora>();
 
-            var userStore = new Dashboard.Utils.Autenticacion.UserStore(auroraConfig);
+            var userStore = new Utils.Autenticacion.UserStore(auroraConfig);
             services.AddSingleton<Microsoft.AspNetCore.Identity.IUserStore<Modelos.Autenticacion.Usuario>>(userStore);
             services.AddSingleton<Microsoft.AspNetCore.Identity.IPasswordHasher<Modelos.Autenticacion.Usuario>>(userStore);
-            services.AddSingleton<Microsoft.AspNetCore.Identity.IRoleStore<AgenciaDeDatosBD.Rol>, Dashboard.Utils.Autenticacion.RoleStore>();
+            services.AddSingleton<Microsoft.AspNetCore.Identity.IRoleStore<AgenciaDeDatosBD.Rol>, Utils.Autenticacion.RoleStore>();
 
-            services.AddScoped<Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<Modelos.Autenticacion.Usuario>, Dashboard.Utils.Autenticacion.ClaimsPersonalizados>();
+            services.AddScoped<Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<Modelos.Autenticacion.Usuario>, Utils.Autenticacion.ClaimsPersonalizados>();
 
             services.AddIdentity<Modelos.Autenticacion.Usuario, AgenciaDeDatosBD.Rol>(options =>
             {
@@ -228,6 +245,40 @@ namespace Dashboard.Utils.Servicios
                 options.AddPolicy("CrearEditarPluginsYBibliotecas", policy => policy.RequireRole("Crear y Editar Plugins y Bibliotecas"));
                 options.AddPolicy("EditorCMS", policy => policy.RequireRole("Editor CMS"));
                 options.AddPolicy("GestionarElementosYEstructuraCMS", policy => policy.RequireRole("Gestionar elementos y estructura CMS"));
+
+                // ===== POLÍTICAS DEL DASHBOARD DE GESTIÓN =====
+                // Gestión de usuarios
+                options.AddPolicy("Dashboard.GestionUsuarios", policy =>
+                    policy.RequireRole("Dashboard - Gestión de Usuarios", "Dashboard - Acceso total"));
+
+                options.AddPolicy("Dashboard.ConsultaUsuarios", policy =>
+                    policy.RequireRole("Dashboard - Consulta de Usuarios", "Dashboard - Gestión de Usuarios", "Dashboard - Acceso total"));
+
+                // Gestión de roles y tokens
+                options.AddPolicy("Dashboard.GestionRoles", policy =>
+                    policy.RequireRole("Dashboard - Gestión de Roles", "Dashboard - Acceso total"));
+
+                options.AddPolicy("Dashboard.GestionTokens", policy =>
+                    policy.RequireRole("Dashboard - Gestión de Tokens", "Dashboard - Acceso total"));
+
+                // Métricas
+                options.AddPolicy("Dashboard.ConsultaMetricas", policy =>
+                    policy.RequireRole("Dashboard - Consulta de Métricas", "Dashboard - Exportación de Métricas", "Dashboard - Acceso total"));
+
+                options.AddPolicy("Dashboard.ExportacionMetricas", policy =>
+                    policy.RequireRole("Dashboard - Exportación de Métricas", "Dashboard - Acceso total"));
+
+                // Documentación
+                options.AddPolicy("Dashboard.GestionDocumentacion", policy =>
+                    policy.RequireRole("Dashboard - Gestión de Documentación", "Dashboard - Acceso total"));
+
+                // Auditoría
+                options.AddPolicy("Dashboard.Auditoria", policy =>
+                    policy.RequireRole("Dashboard - Auditoría", "Dashboard - Acceso total"));
+
+                // Acceso total al dashboard (superusuario)
+                options.AddPolicy("Dashboard.AccesoTotal", policy =>
+                    policy.RequireRole("Dashboard - Acceso total"));
             });
 
             return services;
@@ -258,7 +309,7 @@ namespace Dashboard.Utils.Servicios
                         : Amazon.RegionEndpoint.EUWest1;
                     
                     // Configurar logging para CloudWatch usando el provider personalizado
-                    logging.AddProvider(new Dashboard.Utils.Logging.CloudWatchLogsProvider(
+                    logging.AddProvider(new Utils.Logging.CloudWatchLogsProvider(
                         logGroupName: cloudWatchConfig.LogGroupName,
                         region: region,
                         logLevel: logLevel
@@ -333,7 +384,12 @@ namespace Dashboard.Utils.Servicios
                 options.SuppressAsyncSuffixInActionNames = false;
             });
 
-            //services.AddAuthentication();
+            // Configurar routing para que todas las rutas sean minúsculas
+            services.Configure<Microsoft.AspNetCore.Routing.RouteOptions>(options =>
+            {
+                options.LowercaseUrls = true;
+                options.LowercaseQueryStrings = true;
+            });
 
             services.AddRazorPages(options =>
             {                
@@ -341,10 +397,10 @@ namespace Dashboard.Utils.Servicios
                 options.Conventions.AddPageApplicationModelConvention("/Index", model =>
                     model.Filters.Add(new ResponseCacheRazorPages("Public", 240, false, "Accept-Encoding", ResponseCacheLocation.Any))
                 );
-            }).AddMvcOptions(options =>
-            {
-                options.Filters.Add(new ETagFilterRazorPages()); //Se podría añadir solo el filtro a las rutas de AddRazorPages individualmente, pero lo ponemos aquí para que aplique a cualquiera
-            });
+        }).AddMvcOptions(options =>
+        {
+            options.Filters.Add(new ETagFilterRazorPages()); //Se podría añadir solo el filtro a las rutas de AddRazorPages individualmente, pero lo ponemos aquí para que aplique a cualquiera
+        });
 
             return services;
         }
@@ -454,7 +510,7 @@ namespace Dashboard.Utils.Servicios
             }
 
             // Transferir ISecretos (este servicio no tiene problemas de dispose)
-            services.AddSingleton(tempServiceProvider.GetRequiredService<Dashboard.Utils.Secretos.ISecretos>());
+            services.AddSingleton(tempServiceProvider.GetRequiredService<Utils.Secretos.ISecretos>());
             
             // ===== CONFIGURAR LOGGING =====
             // Para ILogger, es mejor configurarlo directamente en lugar de transferir

@@ -1,4 +1,4 @@
-Ôªøusing Dashboard.Controllers;
+using Controllers;
 using Azure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -7,7 +7,7 @@ using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
 using System.Net;
 
-namespace Dashboard.Utils.Filters
+namespace Utils.Filters
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class ETagFilterControllers : ActionFilterAttribute, IAsyncActionFilter
@@ -20,7 +20,7 @@ namespace Dashboard.Utils.Filters
         {
             if (context?.Controller != null)
             {
-                //Casteamos a dynamic porque no queremos usar reflexion para ver qu√© controller es
+                //Casteamos a dynamic porque no queremos usar reflexion para ver quÈ controller es
                 ETag eTag = ((dynamic)context.Controller).ETag;
 
                 if(eTag != null)
@@ -30,23 +30,23 @@ namespace Dashboard.Utils.Filters
 
                     if (
                         request.Method == HttpMethod.Get.Method &&
-                        //response.StatusCode == (int)HttpStatusCode.OK && //Aqu√≠ la respuesta del action del controller a√∫n no se ha generado, porque lo que ser√° siempre 200 (por defecto)
+                        //response.StatusCode == (int)HttpStatusCode.OK && //AquÌ la respuesta del action del controller a˙n no se ha generado, porque lo que ser· siempre 200 (por defecto)
                         eTag.Devolver304(request)
                     )
                     {
                         response.StatusCode = (int)HttpStatusCode.NotModified;
-                        response.ContentLength = 0; //Importante: hacemos esto antes de establecer a vac√≠o el contenido
-                        //context.Result = new EmptyResult(); //Devolvemos body vac√≠o
+                        response.ContentLength = 0; //Importante: hacemos esto antes de establecer a vacÌo el contenido
+                        //context.Result = new EmptyResult(); //Devolvemos body vacÌo
                         context.Result = new StatusCodeResult(304);
 
-                        //Como devolvemos body vac√≠o, el html cacheado en el navegador del cliente tendr√° un nonce que no es el nuestro. 
-                        //Asumimos que si la petici√≥n 200 que cache√≥ era leg√≠tima y pas√≥ nuestra pol√≠tica de CSP, entonces podemos dejar la 304 sin enviar CSP:
+                        //Como devolvemos body vacÌo, el html cacheado en el navegador del cliente tendr· un nonce que no es el nuestro. 
+                        //Asumimos que si la peticiÛn 200 que cacheÛ era legÌtima y pasÛ nuestra polÌtica de CSP, entonces podemos dejar la 304 sin enviar CSP:
                         response.Headers.Remove("Content-Security-Policy");
                     }
 
                     if (eTag.LastModified != null)
                     {
-                        // A√±adimos siempre la etiqueta de ETag en la cabecera de la respuesta
+                        // AÒadimos siempre la etiqueta de ETag en la cabecera de la respuesta
                         response.Headers.Add(HeaderNames.LastModified, new[] { ETag.GetEtagResponse((DateTime)eTag.LastModified) });
                     }
                 }                
@@ -58,26 +58,26 @@ namespace Dashboard.Utils.Filters
             //Antes de ejecutar el action del controller.ini
             //AntesDelActionDelController(context);
             //Antes de ejecutar el action del controller.fin
-            //Ejecuci√≥n del action del controller.ini
+            //EjecuciÛn del action del controller.ini
             await next();
-            //Ejecuci√≥n del action del controller.fin
-            //Despu√©s de ejecutar el action del controller.ini
+            //EjecuciÛn del action del controller.fin
+            //DespuÈs de ejecutar el action del controller.ini
             DespuesDelActionDelController(context);
-            //Despu√©s de ejecutar el action del controller.fin
+            //DespuÈs de ejecutar el action del controller.fin
         }
 
         //public override void OnActionExecuted(ActionExecutedContext context)
         //{
-        //    //Despu√©s de ejecutar el action del controller.ini
+        //    //DespuÈs de ejecutar el action del controller.ini
         //    DespuesDelActionDelControllerAsync(context);
-        //    //Despu√©s de ejecutar el action del controller.fin
+        //    //DespuÈs de ejecutar el action del controller.fin
         //}
 
         //public override void OnResultExecuted(ResultExecutedContext context)
         //{
             
-        //    //Solo aqu√≠ el status code est√° generado
-        //    //Pero aqu√≠ no podemo modificar el context.Result, pues ya est√° generado y es de solo lectura
+        //    //Solo aquÌ el status code est· generado
+        //    //Pero aquÌ no podemo modificar el context.Result, pues ya est· generado y es de solo lectura
         //}
     }
 }

@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Middlewares.GlobalExceptionHandler
+namespace Utils.Middlewares.GlobalExceptionHandler
 {
     /// <summary>
     /// Extensiones para configurar el middleware de manejo global de excepciones

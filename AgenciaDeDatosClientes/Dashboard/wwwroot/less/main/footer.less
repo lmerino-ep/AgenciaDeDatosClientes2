@@ -1,0 +1,248 @@
+@import "../helper.less";
+
+.pie-de-pagina {
+    @tamTexto: 14px;
+    @paddingBottom: 30px;
+    @paddingTop: 80px;
+
+    background: linear-gradient(#ffffff, @ColorEpData);
+    display: flex;
+    justify-content: end;
+    align-content: center;
+    flex-direction: column;
+    font-size: @tamTexto;
+    padding-top: @paddingTop;
+    padding-bottom: @paddingBottom;
+
+    & > .listados {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        & > .listado {
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+
+            & > .elemento {
+                margin: 0 5px;
+                display: flex;
+                justify-content: center;
+                align-content: center;
+
+                & > .enlace {
+                    text-align: center;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    font-size: 14px;
+                    padding: 0;
+                    font-family: 'Lucida Sans Unicode', sans-serif;
+
+                    &, &:visited, &:focus, &:active, &:hover {
+                        color: black;
+                        text-decoration: underline;
+                    }
+                }
+
+                & > .separador {
+                }
+            }
+        }
+    }
+
+    & > .copyright {
+        margin: 10px auto 0 auto;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-content: center;
+
+        & > .texto {
+            margin-right: 6px;
+
+            & > .enlace {
+                &, &:visited, &:focus, &:active, &:hover {
+                    color: black;
+                    text-decoration: underline;
+                }
+            }
+        }
+
+        & > .editado {
+            display: flex;
+            padding-left: 5px;
+            gap: 5px;
+
+            & > .enlace {
+                &, &:visited, &:focus, &:active, &:hover {
+                    color: black;
+                    text-decoration: underline;
+                }
+
+                & > .icono {
+                    .icono-europa-press {
+                        .icono-europa-press(@tamTexto);
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 990px) {
+    //Solo sm y xs
+    .pie-de-pagina {
+        & > .listados {
+            flex-direction: column;
+
+            & > .listado {
+                & > .elemento {
+                    &.visible-solo-md-lg {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 767px) {
+    //Solo xs
+    .pie-de-pagina {
+        .oculto-xs {
+            display: none;
+        }
+
+        padding-top: 100px;
+
+        & > .listados {
+            & > .listado {
+                flex-wrap: wrap;
+
+                & > .elemento {
+                    flex: 50%;
+
+                    &.oculto-en-xs {
+                        display: none;
+                    }
+
+                    & > .enlace {
+                        margin-bottom: 15px;
+                    }
+                }
+            }
+        }
+
+        & > .copyright {
+            flex-direction: column;
+            gap: 10px;
+
+            & > .texto {
+                text-align: center;
+            }
+        }
+    }
+}
+
+//Iconos de men� mi-cuenta cargados as�ncronamente.ini
+.icono {
+    width: 16px;
+    height: 16px;
+
+    .iniciar-sesion {
+        .icono-encendido(1);
+    }
+
+    .icono-mas {
+        .icono-mas();
+    }
+
+    .mi-cuenta {
+        .icono-casa();
+    }
+
+    .home {
+        .icono-casa();
+    }
+
+    .crear-representacion {
+        min-height: auto;
+        .icono-grafico();
+    }
+
+    .editor-de-plantillas {
+        .icono-archivo();
+    }
+
+    .noticias-automaticas {
+        .icono-bombilla();
+    }
+
+    .gestion-de-usuarios {
+        .icono-cara();
+    }
+
+    .asociar-entidades {
+        .icono-flechas-bidireccionales();
+    }
+
+    .isla-de-datos {
+        .icono-nube();
+        min-height: auto;
+    }
+
+    .gestion-integracion {
+        .icono-add-extension();
+        padding: 0;
+        min-height: auto;
+    }
+
+    .gestion-solicitudes {
+        .icono-sobre();
+    }
+
+    .gestion-formulas {
+        .icono-teclado();
+    }
+
+    .editor-de-plugins {
+        .icono-script();
+    }
+
+    .gestion-cache {
+        .icono-rayo();
+    }
+
+    .europa-press {
+        .icono-ep();
+    }
+
+    .calendario {
+        .icono-calendario();
+    }
+
+    .editar {
+        .icono-lapiz();
+    }
+
+    .mis-graficas {
+        .icono-ecualizador();
+    }
+
+    .gestion-listados {
+        .icono-lista();
+    }
+
+    .icono-salir {
+        .icono-encendido();
+    }
+
+    .spa-series-y-datos {
+        .icono-ecualizador();
+    }
+}
+//Iconos de men� mi-cuenta cargados as�ncronamente.fin

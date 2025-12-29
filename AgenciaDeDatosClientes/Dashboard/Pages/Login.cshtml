@@ -1,0 +1,68 @@
+@page "/login"
+@model Pages.LoginModel
+
+@using Microsoft.AspNetCore.Http;
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Iniciar sesión - EpData Dashboard";
+    ViewBag.Description = $"Iniciar sesión en el Dashboard de Gestión";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/critical/login.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+@section scripts {
+    <environment include="Development">
+        <script async src="~/js/login.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script async src="~/js/login.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
+
+<form method="post" onsubmit="fMostrarCargando('@HttpContext.Items["CSP_NONCE"]?.ToString()')">
+    @Html.AntiForgeryToken()
+    <div class="login">
+        <section class="caja">
+            <div class="decoracion">
+                <span class="icono">
+                    <i class="icono-usuario"></i>
+                </span>
+            </div>
+            <div class="contenido">
+                <div id="divError" asp-validation-summary="All" style="display: none; visibility: hidden;"></div>
+                @if (HttpContext.Request.Query.ContainsKey("expired"))
+                {
+                    <div style="display: block; visibility: visible; padding: 15px; margin-bottom: 20px; background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; border-radius: 4px;">
+                        <strong>Sesión expirada:</strong> Tu sesión ha expirado o las credenciales de seguridad han cambiado. Por favor, inicia sesión nuevamente.
+                    </div>
+                }
+                <h1 class="titulo">Iniciar sesión</h1>
+                <div class="campos">
+                    <div class="fila">
+                        <label asp-for="Email" class="nombre">Email</label>
+                        <input asp-for="Email" class="valor" type="text" placeholder="Email..." value="" />
+                    </div>
+                    <div class="fila">
+                        <label asp-for="Password" class="nombre">Password</label>
+                        <input asp-for="Password" class="valor" type="password" placeholder="Contraseña..." value="" />
+                    </div>
+                    <div class="fila">
+                        <label class="checkbox">
+                            <label asp-for="Recordar" class="recordar">Recordar</label>
+                            <input asp-for="Recordar" class="checkbox" type="checkbox" checked="checked">
+                            <span class="tick"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="botonera">
+                    <button type="submit" class="iniciar-sesion">Entrar</button>
+                    <a href="https://www.epdata.es/mi-cuenta?source=dashboard" class="enlace-cambiar-password">¿Necesitas cambiar tu contraseña?</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</form>

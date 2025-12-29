@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Dashboard.Utils.Middlewares.ResponseCompressionFix
+namespace Utils.Middlewares.ResponseCompressionFix
 {
     /// <summary>
     /// Extensiones para configurar el middleware de corrección de compresión

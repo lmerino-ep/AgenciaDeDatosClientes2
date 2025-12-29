@@ -1,0 +1,31 @@
+@using Modelos.DTO.Imagen;
+@model Imagen
+
+@{
+    Model.GenerarPropiedades();
+}
+
+<picture class="@Html.Raw(Model.ClasesCss)">
+    @if (!String.IsNullOrEmpty(Model.SrcSetAvif))
+    {
+        <source type="image/avif"
+                srcset="@Html.Raw(Model.SrcSetAvif)"
+                sizes="@Html.Raw(Model.Sizes)" />
+    }
+    @if (!String.IsNullOrEmpty(Model.SrcSetWebp))
+    {
+        <source type="image/webp"
+                srcset="@Html.Raw(Model.SrcSetWebp)"
+                sizes="@Html.Raw(Model.Sizes)" />
+    }
+    <img src="@Html.Raw(Model.UrlFallback)"
+         sizes="@Html.Raw(Model.Sizes)"
+         alt="@Html.Raw(Model.Alt)"
+    @(Html.Raw(Model.Ancho > 0 ? $"width=\"{Model.Ancho}\"" : String.Empty))
+    @(Html.Raw(Model.Alto > 0 ? $"height=\"{Model.Alto}\"" : String.Empty))
+    @(String.IsNullOrEmpty(Model.SrcSetFallback) ? String.Empty : Html.Raw($"srcset=\"{Model.SrcSetFallback}\""))
+    @(Model.MostrandoEnPrimerPantallazo ? Html.Raw(@"fetchpriority=""high""") : Html.Raw(@"
+         loading=""lazy""
+         decoding=""async""
+         ")) />
+</picture>

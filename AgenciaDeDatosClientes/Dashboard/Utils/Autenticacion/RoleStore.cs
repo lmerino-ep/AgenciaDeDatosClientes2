@@ -1,7 +1,7 @@
-﻿using AgenciaDeDatosBD;
+using AgenciaDeDatosBD;
 using Microsoft.AspNetCore.Identity;
 
-namespace Dashboard.Utils.Autenticacion
+namespace Utils.Autenticacion
 {
     public class RoleStore : IRoleStore<Rol>
     {

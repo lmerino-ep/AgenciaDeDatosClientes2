@@ -1,4 +1,4 @@
-ï»¿using AgenciaDeDatosBD;
+using AgenciaDeDatosBD;
 using AgenciaDeDatosBD.Herramientas;
 using Dapper;
 using Modelos.Autenticacion;
@@ -196,7 +196,7 @@ namespace Datos
             ";
 
             Modelos.Autenticacion.Usuario usuario;
-            //Ojo: no utlizamos conexiÃ³n de lectura porque este mÃ©todo  lo utiliza el _signInManager, y podemos llegar aquÃ­ justo despuÃ©s de restablecer password y un pelÃ­n antes de que la rÃ©plica de lectura reciba el cambio.
+            //Ojo: no utlizamos conexión de lectura porque este método  lo utiliza el _signInManager, y podemos llegar aquí justo después de restablecer password y un pelín antes de que la réplica de lectura reciba el cambio.
             using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
                 using (var multi = bd.ConexionLectura().QueryMultiple(sql, new { Email = email }))

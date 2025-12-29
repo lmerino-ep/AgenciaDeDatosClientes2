@@ -1,0 +1,139 @@
+@page "/usuarios/roles/editar/{id:int}"
+@model Pages.Usuarios.RolesEditarModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+@attribute [Authorize(Policy = PoliticasAutorizacion.Politicas.GestionRoles)]
+
+@{
+    ViewData["Title"] = $"Editar Roles - {Model.Usuario?.Nombre} {Model.Usuario?.Apellidos}";
+    ViewBag.Description = "Modificar roles asignados a usuario";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/main/usuarios-roles-editar.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/main/usuarios-roles-editar.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
+
+<div class="page-header">
+    <h1 class="page-title">Editar Roles de Usuario</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/Usuarios/Listado">Usuarios</a>
+        <span class="separador">/</span>
+        <a href="/Usuarios/Roles/@Model.Id">Roles</a>
+        <span class="separador">/</span>
+        <span>Editar</span>
+    </div>
+</div>
+
+@if (Model.Usuario != null)
+{
+    @if (!string.IsNullOrEmpty(Model.MensajeExito))
+    {
+        <div class="alerta alerta-exito">
+            @Model.MensajeExito
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.MensajeError))
+    {
+        <div class="alerta alerta-error">
+            @Model.MensajeError
+        </div>
+    }
+
+    <section class="seccion-datos-usuario">
+        <div class="card">
+            <h2 class="titulo-seccion">Información del Usuario</h2>
+            <div class="info-usuario">
+                <div class="campo">
+                    <span class="etiqueta">Email:</span>
+                    <span class="valor">@Model.Usuario.Email</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Nombre:</span>
+                    <span class="valor">@Model.Usuario.Nombre @Model.Usuario.Apellidos</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Tipo de Usuario:</span>
+                    <span class="badge badge-tipo">@Model.Usuario.TipoUsuario</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <form method="post" onsubmit="return confirmarCambios(event)">
+        @Html.AntiForgeryToken()
+
+        <section class="seccion-seleccion-roles">
+            <div class="card">
+                <div class="header-con-accion">
+                    <h2 class="titulo-seccion">Seleccionar Roles</h2>
+                    <label class="checkbox-toggle">
+                        <input type="checkbox" onchange="toggleTodosRoles(this)" />
+                        <span>Seleccionar Todos</span>
+                    </label>
+                </div>
+
+                <div class="grid-roles-editar">
+                    @foreach (var rol in Model.TodosLosRoles)
+                    {
+                        bool estaAsignado = Model.RolesAsignadosIds.Contains(rol.Id);
+                        string claseTarjeta = estaAsignado ? "rol-card-editable asignado" : "rol-card-editable";
+
+                        <div class="@claseTarjeta">
+                            <label class="rol-checkbox">
+                                <input
+                                    type="checkbox"
+                                    name="RolesSeleccionados"
+                                    value="@rol.Id"
+                                    @(estaAsignado ? "checked" : "") />
+                                <div class="rol-info">
+                                    <div class="rol-header">
+                                        <span class="rol-nombre">@rol.Nombre</span>
+                                        @if (estaAsignado)
+                                        {
+                                            <span class="badge badge-exito">Asignado</span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(rol.Descripcion))
+                                    {
+                                        <div class="rol-descripcion">
+                                            @rol.Descripcion
+                                        </div>
+                                    }
+                                </div>
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <div class="acciones-pie">
+            <a href="/Usuarios/Roles/@Model.Id" class="boton boton-secundario">
+                Cancelar
+            </a>
+            <button type="submit" class="boton boton-primario">
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+}
+else
+{
+    <div class="mensaje-error">
+        <p>Usuario no encontrado.</p>
+        <a href="/Usuarios/Listado" class="boton boton-secundario">Volver al Listado</a>
+    </div>
+}

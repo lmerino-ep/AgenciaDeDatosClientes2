@@ -1,4 +1,4 @@
-﻿namespace Dashboard.Utils.Logging
+namespace Utils.Logging
 {
     public class CloudWatchLogger : ILogger
     {

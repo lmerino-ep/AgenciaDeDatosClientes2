@@ -1,6 +1,22 @@
 ﻿[
-  //{
-  //  "outputFile": "wwwroot/css/critical/cabecera.css",
-  //  "inputFile": "wwwroot/less/critical/cabecera.less"
-  //},
+  {
+    "outputFile": "wwwroot/css/critical/cabecera.css",
+    "inputFile": "wwwroot/less/critical/cabecera.less"
+  },
+  {
+    "outputFile": "wwwroot/css/critical/login.css",
+    "inputFile": "wwwroot/less/critical/login.less"
+  },
+  {
+    "outputFile": "wwwroot/css/main/dashboard.css",
+    "inputFile": "wwwroot/less/main/dashboard.less"
+  },
+  {
+    "outputFile": "wwwroot/css/main/footer.css",
+    "inputFile": "wwwroot/less/main/footer.less"
+  },
+  {
+    "outputFile": "wwwroot/js/main/metricas-kpis.es5.js",
+    "inputFile": "wwwroot/js/main/metricas-kpis.js"
+  }
 ]

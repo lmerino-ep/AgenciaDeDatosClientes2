@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Middlewares.RequestTiming
+namespace Utils.Middlewares.RequestTiming
 {
     /// <summary>
     /// Middleware para medir el tiempo de respuesta de las requests

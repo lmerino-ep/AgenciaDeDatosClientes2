@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Dashboard.Utils.Logging
+namespace Utils.Logging
 {
     /// <summary>
     /// Logger específico para búsquededas de usuarios y otros logs específicos

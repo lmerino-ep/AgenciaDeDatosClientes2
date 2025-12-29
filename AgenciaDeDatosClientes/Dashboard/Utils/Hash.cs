@@ -1,7 +1,7 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
-namespace Dashboard.Utils
+namespace Utils
 {
     public static class Hash
     {

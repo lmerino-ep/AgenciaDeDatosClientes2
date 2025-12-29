@@ -1,17 +1,142 @@
-﻿<!DOCTYPE html>
+@using ViewComponents
+@using Modelos.DTO.Imagen
+
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+
+<!DOCTYPE html>
 <html lang="es" xml:lang="es" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Dashboard</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>@ViewData["Title"] - Dashboard de Gestión | EpData</title>
+
+    <link rel="preconnect" href="https://file.epdata.es">
+    <link rel="dns-prefetch" href="https://file.epdata.es" />
+
+    @await RenderSectionAsync("precargas", required: false)
+
+    <!--estilos.ini-->
+    <link href="~/css/critical/cabecera.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/main/dashboard.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/main/footer.css" rel="stylesheet" asp-append-version="true" />
+
+    @await RenderSectionAsync("estilos", required: false)
+    <!--estilos.fin-->
+
+    <!--scripts.ini-->
+    <script type="text/javascript" nonce="@Html.Raw(Context.Items["CSP_NONCE"]?.ToString())">
+        window.AntiForgeryToken = '@Antiforgery.GetAndStoreTokens(Context).RequestToken';
+    </script>
+
+    <script type="text/javascript" nonce="@Html.Raw(Context.Items["CSP_NONCE"]?.ToString())">
+        function fOpcionesMiCuenta() {
+            try {
+                var domContenido = document.getElementById("contenido-opciones-mi-cuenta");
+                if (domContenido !== null && domContenido !== undefined) {
+                    // Siempre recargar el menú para reflejar cambios en el estado de autenticación
+                    var oParametros = {};
+                    var sRuta = "/opciones-mi-cuenta";
+                    fetch(sRuta, {
+                        method: 'POST',
+                        headers: {
+                            "Content-type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        body: JSON.stringify(oParametros)
+                    }).then(function json(oRespuesta) {
+                        oRespuesta.json().then(jRespuesta => {
+                            if (jRespuesta.bCorrecto) {
+                                domContenido.innerHTML = jRespuesta.sHtml;
+                                domContenido.dataset.relleno = "true";
+                            } else {
+                                console.error(jRespuesta.sMotivo);
+                            }
+                        });
+                    }).catch(function (error) {
+                        console.error("No pudimos conectar con el servidor, por favor, inténtelo de nuevo más tarde");
+                    });
+                }
+            } catch (error) {
+                console.error("No pudimos conectar con el servidor, por favor, inténtelo de nuevo más tarde");
+            }
+        }
+
+        function fOpcionesMenuMovil() {
+            try {
+                var domContenido = document.getElementById("contenido-menu-movil");
+                if (domContenido !== null && domContenido !== undefined) {
+                    // Siempre recargar el menú para reflejar cambios en el estado de autenticación
+                    var oParametros = {};
+                    var sRuta = "/opciones-mi-cuenta";
+                    fetch(sRuta, {
+                        method: 'POST',
+                        headers: {
+                            "Content-type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        body: JSON.stringify(oParametros)
+                    }).then(function json(oRespuesta) {
+                        oRespuesta.json().then(jRespuesta => {
+                            if (jRespuesta.bCorrecto) {
+                                domContenido.innerHTML = jRespuesta.sHtml;
+                                domContenido.dataset.relleno = "true";
+                            } else {
+                                console.error(jRespuesta.sMotivo);
+                            }
+                        });
+                    }).catch(function (error) {
+                        console.error("No pudimos conectar con el servidor, por favor, inténtelo de nuevo más tarde");
+                    });
+                }
+            } catch (error) {
+                console.error("No pudimos conectar con el servidor, por favor, inténtelo de nuevo más tarde");
+            }
+        }
+    </script>
+    <!--scripts.fin-->
 </head>
-<body>
-    <header>
+<body data-nonce="@Html.Raw(Context.Items["CSP_NONCE"]?.ToString())">
+    <header class="layout-header">
+        @await Component.InvokeAsync("LayoutMenu")
     </header>
-    <main role="main">
+    <section class="layout-body">
         @RenderBody()
-    </main>
-    <footer>
+    </section>
+    <footer class="layout-footer">
+        <div class="pie-de-pagina">
+            <div class="listados">
+                <ul class="listado">
+                    <li class="elemento">
+                        <a href="https://www.epdata.es/contacto" target="_blank" class="enlace">Contacto</a>
+                    </li>
+                    <li class="elemento">
+                        <span class="separador">|</span>
+                    </li>
+                    <li class="elemento">
+                        <a href="https://www.epdata.es/aviso-legal" target="_blank" class="enlace">Aviso Legal</a>
+                    </li>
+                    <li class="elemento">
+                        <span class="separador">|</span>
+                    </li>
+                    <li class="elemento">
+                        <a href="https://www.epdata.es/politica-privacidad" target="_blank" class="enlace">Política de Privacidad</a>
+                    </li>
+                </ul>
+            </div>
+            <p class="copyright">
+                <span class="texto">
+                    © @DateTime.Now.Year - EpData Dashboard de Gestión
+                </span>
+                <span class="editado">
+                    <span>por</span>
+                    <a href="https://www.europapress.es" target="_blank" class="enlace">Europa Press</a>
+                </span>
+            </p>
+        </div>
     </footer>
+
+    @await RenderSectionAsync("scripts", required: false)
 </body>
 </html>

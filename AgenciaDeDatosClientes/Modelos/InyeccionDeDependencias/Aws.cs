@@ -1,4 +1,4 @@
-ï»¿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace Modelos.InyeccionDeDependencias
 {
     /// <summary>
-    /// ConfiguraciÃ³n de credenciales AWS
+    /// Configuración de credenciales AWS
     /// </summary>
     public class Aws
     {
         /// <summary>
-        /// RegiÃ³n de AWS
+        /// Región de AWS
         /// </summary>
         public string Region { get; set; } = "eu-west-1";
 

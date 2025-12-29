@@ -1,26 +1,18 @@
-using Dashboard.Utils.Servicios;
-using AutoLogin.Token;
-using AutoLogin.Verification.Data;
-using AutoLogin.Verification.Interfaces;
-using AutoLogin.Verification.Services;
+using Utils.Servicios;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.ResponseCompression;
 using Modelos.InyeccionDeDependencias;
 using StackExchange.Redis;
 using System.IO.Compression;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===== DEBUGGING: Verificar que se está usando el código correcto en producción.ini =====
-//var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-//logger.LogInformation("=== CÓDIGO ACTUALIZADO - VERSIÓN 2025.09.22.002 ===");
-// ===== DEBUGGING: Verificar que se está usando el código correcto en producción.fin =====
 
 // 1. Configuración de servicios básicos (incluyendo AWS)
 builder.Services.AddApplicationServices(builder.Configuration, builder.Environment);
 builder.Services.AddHttpContextAccessor();  //sirve para poder acceder al httpcontext desde cualquier punto de la aplicación, incluso desde el constructor de una razor page
 builder.Services.AddMvcAndRazorPages();
-builder.Services.AddCorsPolicies();
 
 // ===== CONFIGURACIÓN DE COMPRESIÓN ESTÁNDAR =====
 builder.Services.AddResponseCompression(options =>
@@ -96,7 +88,7 @@ tempServices.AddSingleton(autoLoginConfig);
 tempServices.AddSingleton(s3Config);
 tempServices.AddSingleton(aplicacionConfig);
 tempServices.AddSingleton(cdnConfig);
-tempServices.AddSingleton<Dashboard.Utils.Secretos.ISecretos, Dashboard.Utils.Secretos.Secretos>();
+tempServices.AddSingleton<Utils.Secretos.ISecretos, Utils.Secretos.Secretos>();
 
 // Agregar servicios AWS necesarios para la inicialización
 if (builder.Environment.IsDevelopment())
@@ -129,7 +121,7 @@ tempServices.AddLogging(logging =>
 
 var tempServiceProvider = tempServices.BuildServiceProvider();
 
-var initializationService = new Dashboard.Utils.Servicios.InfrastructureInitializationService(
+var initializationService = new Utils.Servicios.InfrastructureInitializationService(
     tempServiceProvider.GetRequiredService<Amazon.SQS.IAmazonSQS>(),
     tempServiceProvider.GetRequiredService<Amazon.SecretsManager.IAmazonSecretsManager>(),
     sqsConfig,
@@ -142,7 +134,7 @@ var initializationService = new Dashboard.Utils.Servicios.InfrastructureInitiali
     autoLoginConfig,
     s3Config,
     cdnConfig,
-    tempServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Dashboard.Utils.Servicios.InfrastructureInitializationService>>(),
+    tempServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Utils.Servicios.InfrastructureInitializationService>>(),
     tempServiceProvider,
     tempServices);
 
@@ -155,30 +147,27 @@ builder.Services.TransferServicesFromTemp(tempServiceProvider, builder);
 // ===== ELIMINAMOS EL SERVICEPROVIDER TEMPORAL =====
 tempServiceProvider.Dispose();
 
-// ===== CONFIGURACIÓN DE DATAPROTECTION CON REDIS YA INICIALIZADO =====
-// CRÍTICO: Esta configuración es esencial para entornos autoescalables como ECS
-// CRÍTICO: DataProtection debe configurarse ANTES de AddAuthenticationServices y AddSessionAndAntiforgery
-// porque estos servicios automáticamente usan DataProtection
-// DataProtection se usa para encriptar cookies de autenticación, tokens antiforgery y datos de sesión
-// Sin esta configuración, cada instancia de ECS tendría claves diferentes, causando:
-// - Cookies de autenticación inválidas entre instancias
-// - Tokens antiforgery rotos al cambiar de instancia
-// - Sesiones perdidas y errores de autenticación
-// Con Redis como almacén compartido, todas las instancias usan las mismas claves de encriptación
-
+// 3. Configuración de DataProtection (después de inicializar secretos)
 var redisConfigInicializado = builder.Services.BuildServiceProvider().GetRequiredService<Modelos.InyeccionDeDependencias.Redis>();
 
-// 3. Configuración de DataProtection (después de inicializar secretos)
+// Crear y registrar ConnectionMultiplexer como singleton para que esté disponible para todos los servicios
+var redisConnection = ConnectionMultiplexer.Connect(redisConfigInicializado.Host);
+builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+
 builder.Services.AddDataProtection()
     .PersistKeysToStackExchangeRedis(
-        ConnectionMultiplexer.Connect(redisConfigInicializado.Host),
+        redisConnection,
         "DataProtection-Keys-Clientes"
     );
 
 // ===== CONFIGURAR SERVICIOS CON CONFIGURACIONES YA INICIALIZADAS =====
 builder.Services.AddInfrastructureServices(); // Ahora usa las configuraciones correctas
 builder.Services.AddUtilityServices();
+builder.Services.AddBusinessServices(); // Servicios de negocio y repositorios
+builder.Services.AddRepositoriosDashboard(); // Repositorios del Dashboard
+builder.Services.AddServiciosDashboard(); // Servicios del Dashboard
 builder.Services.AddAuthorizationPolicies();
+builder.Services.AddCorsPolicies();
 builder.Services.AddCloudWatchLogging(builder.Configuration, builder.Environment);
 builder.Services.AddLoggingManual(builder.Configuration, builder.Environment);
 builder.Services.AddAuthenticationServices();
@@ -187,7 +176,7 @@ builder.Services.AddAutologin(autoLoginConfig);
 
 // 4. Configuración de ETag para cacheo de estáticos
 DateTime ahora = DateTime.UtcNow;
-Dashboard.Utils.Filters.ETag._fechaActualCompilacion = new DateTime(ahora.Year, ahora.Month, ahora.Day, ahora.Hour, ahora.Minute, ahora.Second);
+Utils.Filters.ETag._fechaActualCompilacion = new DateTime(ahora.Year, ahora.Month, ahora.Day, ahora.Hour, ahora.Minute, ahora.Second);
 
 var app = builder.Build();
 

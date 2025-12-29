@@ -1,4 +1,4 @@
-﻿namespace Dashboard.Utils.Secretos
+namespace Utils.Secretos
 {
     public interface ISecretos
     {

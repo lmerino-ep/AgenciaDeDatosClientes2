@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Dashboard.ViewComponents
+namespace ViewComponents
 {
     public class LayoutFooter : ViewComponent
     {

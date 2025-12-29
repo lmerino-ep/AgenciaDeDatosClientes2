@@ -1,0 +1,141 @@
+@page "/usuarios/roles/{id:int}"
+@model Pages.Usuarios.RolesModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+@attribute [Authorize(Policy = PoliticasAutorizacion.Politicas.ConsultaUsuarios)]
+
+@{
+    ViewData["Title"] = $"Roles de {Model.Usuario?.Nombre} {Model.Usuario?.Apellidos}";
+    ViewBag.Description = "Consulta de roles asignados a usuario";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Roles de Usuario</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/Usuarios/Listado">Usuarios</a>
+        <span class="separador">/</span>
+        <span>Roles</span>
+    </div>
+</div>
+
+@if (Model.Usuario != null)
+{
+    <section class="seccion-datos-usuario">
+        <div class="card">
+            <h2 class="titulo-seccion">Información del Usuario</h2>
+            <div class="info-usuario">
+                <div class="campo">
+                    <span class="etiqueta">Email:</span>
+                    <span class="valor">@Model.Usuario.Email</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Nombre:</span>
+                    <span class="valor">@Model.Usuario.Nombre @Model.Usuario.Apellidos</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Tipo de Usuario:</span>
+                    <span class="badge badge-tipo">@Model.Usuario.TipoUsuario</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="seccion-roles">
+        <div class="card">
+            <div class="header-con-accion">
+                <h2 class="titulo-seccion">Roles Asignados (@Model.Usuario.RolesAsignados.Count)</h2>
+                @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionRoles) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+                {
+                    <a href="/Usuarios/Roles/Editar/@Model.Id" class="boton boton-primario">
+                        Modificar Roles
+                    </a>
+                }
+            </div>
+
+            @if (Model.Usuario.RolesAsignados.Any())
+            {
+                <div class="grid-roles">
+                    @foreach (var rol in Model.Usuario.RolesAsignados)
+                    {
+                        <div class="rol-card asignado">
+                            <div class="rol-header">
+                                <span class="rol-nombre">@rol.Nombre</span>
+                                <span class="badge badge-exito">Asignado</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(rol.Descripcion))
+                            {
+                                <div class="rol-descripcion">
+                                    @rol.Descripcion
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="mensaje-vacio">
+                    <p>Este usuario no tiene roles asignados.</p>
+                    @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionRoles) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+                    {
+                        <a href="/Usuarios/Roles/Editar/@Model.Id" class="boton boton-secundario">
+                            Asignar Roles
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    @if (Model.Usuario.RolesDisponibles.Any())
+    {
+        <section class="seccion-roles-disponibles">
+            <div class="card">
+                <h2 class="titulo-seccion">Roles Disponibles (@Model.Usuario.RolesDisponibles.Count)</h2>
+                <div class="grid-roles">
+                    @foreach (var rol in Model.Usuario.RolesDisponibles)
+                    {
+                        <div class="rol-card disponible">
+                            <div class="rol-header">
+                                <span class="rol-nombre">@rol.Nombre</span>
+                                <span class="badge badge-neutro">Disponible</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(rol.Descripcion))
+                            {
+                                <div class="rol-descripcion">
+                                    @rol.Descripcion
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+    <div class="acciones-pie">
+        <a href="/Usuarios/Listado" class="boton boton-secundario">
+            Volver al Listado
+        </a>
+        @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionTokens) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+        {
+            <a href="/Usuarios/Tokens/@Model.Id" class="boton boton-secundario">
+                Ver Tokens
+            </a>
+        }
+    </div>
+}
+else
+{
+    <div class="mensaje-error">
+        <p>Usuario no encontrado.</p>
+        <a href="/Usuarios/Listado" class="boton boton-secundario">Volver al Listado</a>
+    </div>
+}

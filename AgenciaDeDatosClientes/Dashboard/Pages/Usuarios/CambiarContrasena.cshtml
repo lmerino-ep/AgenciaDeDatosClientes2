@@ -1,0 +1,111 @@
+@page "/usuarios/cambiar-contrasena/{id:int}"
+@model Pages.Usuarios.CambiarContrasenaModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Cambiar Contraseña";
+    ViewBag.Description = "Cambiar la contraseña de un usuario";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/main/usuarios-cambiar-contrasena.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/main/usuarios-cambiar-contrasena.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
+
+<div class="page-header">
+    <h1 class="page-title">Cambiar Contraseña</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/usuarios/listado">Usuarios</a>
+        <span class="separador">/</span>
+        <a href="/usuarios/editar/@Model.Id">Editar</a>
+        <span class="separador">/</span>
+        <span>Cambiar Contraseña</span>
+    </div>
+</div>
+
+@if (Model.Usuario != null)
+{
+    <section class="seccion-datos-usuario">
+        <div class="card">
+            <h2 class="titulo-seccion">Información del Usuario</h2>
+            <div class="info-usuario">
+                <div class="campo">
+                    <span class="etiqueta">Email:</span>
+                    <span class="valor">@Model.Usuario.Email</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Nombre:</span>
+                    <span class="valor">@Model.Usuario.Nombre @Model.Usuario.Apellidos</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (!string.IsNullOrEmpty(Model.MensajeError))
+    {
+        <div class="alerta alerta-error">
+            @Model.MensajeError
+        </div>
+    }
+
+    <form method="post" class="form-usuario">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="alerta alerta-error"></div>
+
+        <input type="hidden" asp-for="Modelo.IdUsuario" />
+
+        <section class="seccion-formulario">
+            <div class="card">
+                <h2 class="titulo-seccion">Nueva Contraseña</h2>
+
+                <div class="form-group">
+                    <label asp-for="Modelo.NuevaPassword">Nueva Contraseña *</label>
+                    <div class="input-group">
+                        <input asp-for="Modelo.NuevaPassword" class="form-control" type="password" required minlength="8" id="Modelo_NuevaPassword" />
+                        <button type="button" class="boton boton-secundario" onclick="generarPassword()">Generar Automática</button>
+                    </div>
+                    <small class="form-text text-muted">Mínimo 8 caracteres, 1 mayúscula, 1 número</small>
+                    <span asp-validation-for="Modelo.NuevaPassword" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Modelo.ConfirmarPassword">Confirmar Contraseña *</label>
+                    <input asp-for="Modelo.ConfirmarPassword" class="form-control" type="password" required id="Modelo_ConfirmarPassword" />
+                    <span asp-validation-for="Modelo.ConfirmarPassword" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input asp-for="Modelo.EnviarPorEmail" type="checkbox" />
+                        Enviar contraseña por email al usuario
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <div class="form-actions">
+            <button type="submit" class="boton boton-primario">Cambiar Contraseña</button>
+            <a href="/usuarios/editar/@Model.Id" class="boton boton-secundario">Cancelar</a>
+        </div>
+    </form>
+}
+else
+{
+    <div class="mensaje-error">
+        <p>Usuario no encontrado.</p>
+        <a href="/usuarios/listado" class="boton boton-secundario">Volver al Listado</a>
+    </div>
+}
+

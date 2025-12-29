@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Dashboard.Utils.Authorization
+namespace Utils.Authorization
 {
     /// <summary>
     /// Extensiones para facilitar el uso de la configuración centralizada de hosts permitidos

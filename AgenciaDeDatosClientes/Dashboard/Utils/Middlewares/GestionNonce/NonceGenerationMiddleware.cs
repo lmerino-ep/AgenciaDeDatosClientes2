@@ -1,6 +1,6 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
-namespace Dashboard.Utils.Middlewares.GestionNonce
+namespace Utils.Middlewares.GestionNonce
 {
     public class NonceGenerationMiddleware
     {

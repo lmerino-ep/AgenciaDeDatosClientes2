@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Dashboard.Controllers
+namespace Controllers
 {
     public class HealthCheckController : ControllerBase
     {

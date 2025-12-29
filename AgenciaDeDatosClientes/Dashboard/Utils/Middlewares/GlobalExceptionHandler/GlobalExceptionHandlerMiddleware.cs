@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace Dashboard.Utils.Middlewares.GlobalExceptionHandler
+namespace Utils.Middlewares.GlobalExceptionHandler
 {
     /// <summary>
     /// Middleware para capturar excepciones no controladas y registrarlas en los logs

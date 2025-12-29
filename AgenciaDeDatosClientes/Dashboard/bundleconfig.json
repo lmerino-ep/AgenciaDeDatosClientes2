@@ -1,13 +1,52 @@
 [
-  //{
-  //  "outputFileName": "wwwroot/js/asincrono/home/main.min.js",
-  //  "inputFiles": [
-  //    "wwwroot/js/include/carga-dinamica.js",
-  //    "wwwroot/js/asincrono/home/main.js"
-  //  ],
-  //  "minify": {
-  //    "enabled": true,
-  //    "renameLocals": false
-  //  }
-  //},
+  {
+    "outputFileName": "wwwroot/js/login.min.js",
+    "inputFiles": [
+      "wwwroot/js/login.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/metricas-kpis.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/metricas-kpis.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/usuarios-tokens.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/usuarios-tokens.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/usuarios-roles-editar.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/usuarios-roles-editar.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/usuarios-cambiar-contrasena.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/usuarios-cambiar-contrasena.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  }
 ]

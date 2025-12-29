@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Authorization
+namespace Utils.Authorization
 {
     /// <summary>
     /// Clase estática que centraliza la configuración de hosts permitidos para la aplicación

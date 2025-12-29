@@ -1,6 +1,6 @@
-ï»¿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
-namespace Dashboard.Utils.Middlewares.CabecerasDeSeguridad
+namespace Utils.Middlewares.CabecerasDeSeguridad
 {
     public class CabecerasDeSeguridad
     {
@@ -48,14 +48,14 @@ namespace Dashboard.Utils.Middlewares.CabecerasDeSeguridad
 
                     if (string.IsNullOrEmpty(nonce))
                     {
-                        // Fallback si no se generÃ³ (no deberÃ­a pasar)
+                        // Fallback si no se generó (no debería pasar)
                         var nonceBytes = new byte[32];
                         RandomNumberGenerator.Fill(nonceBytes);
                         nonce = Convert.ToBase64String(nonceBytes);
                     }
 
                     headers[headerValuePair.Key] = string.Format(headerValuePair.Value, nonce);
-                    //headers["X-CSP"] = nonce; //Generamos y guardamos en el contexto, asÃ­ no aÃ±adimos una cabecera a todas las requests
+                    //headers["X-CSP"] = nonce; //Generamos y guardamos en el contexto, así no añadimos una cabecera a todas las requests
                 }
                 else
                 {

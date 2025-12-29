@@ -1,18 +1,18 @@
-Ôªøusing Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Dashboard.Utils.Filters
+namespace Utils.Filters
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class GestionCacheCdnControllers : ActionFilterAttribute
     {
         public override void OnActionExecuted(ActionExecutedContext filterContext)
         {
-            //Cdn(filterContext); //No necesitamos de momento hacer nada espec√≠fico m√°s all√° de lo implementado en ProxyHeadersMiddleware
+            //Cdn(filterContext); //No necesitamos de momento hacer nada especÌfico m·s all· de lo implementado en ProxyHeadersMiddleware
             base.OnActionExecuted(filterContext);
         }
 

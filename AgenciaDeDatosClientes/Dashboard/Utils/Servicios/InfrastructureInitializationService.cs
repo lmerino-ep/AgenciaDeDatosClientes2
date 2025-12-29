@@ -1,16 +1,16 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Modelos.InyeccionDeDependencias;
-using Dashboard.Utils.Secretos;
+using Utils.Secretos;
 using Amazon.SQS;
 using Amazon.SecretsManager;
-using Dashboard.Utils.Servicios;
+using Utils.Servicios;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
-namespace Dashboard.Utils.Servicios
+namespace Utils.Servicios
 {
     /// <summary>
     /// Servicio para inicializar infraestructura (Redis y SQS) de manera asíncrona

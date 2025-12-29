@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Dashboard.Utils.Middlewares.ResponseCompressionFix
+namespace Utils.Middlewares.ResponseCompressionFix
 {
     /// <summary>
     /// Middleware para solucionar problemas de compresión con respuestas 304

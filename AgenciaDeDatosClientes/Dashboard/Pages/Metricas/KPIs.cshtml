@@ -1,0 +1,206 @@
+@page "/metricas/kpis"
+@model Pages.Metricas.KPIsModel
+@{
+    ViewData["Title"] = "Consulta de KPIs";
+}
+
+<div class="container-metricas">
+    <h1>Consulta de Métricas y KPIs</h1>
+
+    @if (!string.IsNullOrEmpty(Model.MensajeError))
+    {
+        <div class="alert alert-error">
+            <strong>Error:</strong> @Model.MensajeError
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-error">
+            <strong>Error:</strong> @TempData["Error"]
+        </div>
+    }
+
+    <!-- Selector de KPI -->
+    <div class="form-selector-kpi">
+        <form method="get" id="formKpi">
+            <div class="form-group">
+                <label for="kpiSeleccionado">Seleccione un KPI:</label>
+                <select name="kpiSeleccionado" id="kpiSeleccionado" class="form-control">
+                    <option value="">-- Seleccione un KPI --</option>
+                    @foreach (var categoria in Model.KpisDisponibles.GroupBy(k => k.Categoria))
+                    {
+                        <optgroup label="@categoria.Key">
+                            @foreach (var kpi in categoria)
+                            {
+                                var isSelected = Model.KpiSeleccionado == kpi.Id;
+                                <option value="@kpi.Id"
+                                        data-parametros='@System.Text.Json.JsonSerializer.Serialize(kpi.Parametros)'
+                                        selected="@isSelected">
+                                    @kpi.Nombre
+                                </option>
+                            }
+                        </optgroup>
+                    }
+                </select>
+                <small class="form-text text-muted" id="descripcionKpi"></small>
+            </div>
+
+            <!-- Contenedor dinámico para parámetros -->
+            <div id="contenedorParametros" style="margin-top: 20px;"></div>
+
+            <!-- Opciones adicionales -->
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="forzarRecalculo" value="true" @(Model.ForzarRecalculo ? "checked" : "")>
+                    Forzar recalculo (ignorar caché)
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Ejecutar KPI</button>
+                <button type="button" class="btn btn-secondary" id="btnLimpiar">Limpiar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resultados -->
+    @if (Model.Resultado != null)
+    {
+        <div class="resultados-kpi">
+            <h2>Resultados: @Model.Resultado.Nombre</h2>
+
+            <!-- Información del resultado -->
+            <div class="info-resultado">
+                <div class="info-item">
+                    <span class="label">Total de registros:</span>
+                    <span class="value">@Model.Resultado.TotalRegistros</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Duración:</span>
+                    <span class="value">@Model.Resultado.DuracionMs ms</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Desde caché:</span>
+                    <span class="value">
+                        @if (Model.Resultado.DesdCache)
+                        {
+                            <span class="badge badge-success">Sí</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-info">No</span>
+                        }
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Generado:</span>
+                    <span class="value">@Model.Resultado.TimestampGeneracion.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</span>
+                </div>
+            </div>
+
+            <!-- Botones de exportación -->
+            <div class="acciones-exportacion">
+                <a href="/Metricas/KPIs?handler=ExportarJson&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)"
+                   class="btn btn-export btn-json">
+                    <i class="icon-download"></i> Exportar JSON
+                </a>
+                <a href="/Metricas/KPIs?handler=ExportarCsv&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)"
+                   class="btn btn-export btn-csv">
+                    <i class="icon-download"></i> Exportar CSV
+                </a>
+            </div>
+
+            <!-- Gráfico (si hay datos) -->
+            @if (Model.Resultado.Datos.Count > 0)
+            {
+                <div class="contenedor-grafico">
+                    <canvas id="chartKpi" width="400" height="200"></canvas>
+                </div>
+            }
+
+            <!-- Tabla de resultados -->
+            @if (Model.Resultado.Datos.Count > 0)
+            {
+                <div class="tabla-resultados">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                @foreach (var columna in Model.Resultado.Datos[0].Keys)
+                                {
+                                    <th>@columna</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var fila in Model.Resultado.Datos.Take(100)) // Mostrar máximo 100 filas
+                            {
+                                <tr>
+                                    @foreach (var valor in fila.Values)
+                                    {
+                                        <td>@(valor?.ToString() ?? "-")</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (Model.Resultado.Datos.Count > 100)
+                    {
+                        <p class="nota-paginacion">
+                            Mostrando los primeros 100 de @Model.Resultado.TotalRegistros registros.
+                            Use la exportación para obtener el conjunto completo de datos.
+                        </p>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="sin-resultados">
+                    <p>No se encontraron resultados para este KPI con los parámetros especificados.</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section scripts {
+    <!-- Datos de KPIs para JavaScript -->
+    <script type="application/json" id="kpis-data" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.KpisDisponibles.Select(k => new {
+                id = k.Id,
+                nombre = k.Nombre,
+                descripcion = k.Descripcion,
+                categoria = k.Categoria,
+                parametros = k.Parametros.Select(p => new {
+                    nombre = p.Nombre,
+                    tipo = p.Tipo,
+                    requerido = p.Requerido,
+                    valorPorDefecto = p.ValorPorDefecto,
+                    descripcion = p.Descripcion
+                })
+            })
+        ))
+    </script>
+
+    @if (Model.Resultado != null && Model.Resultado.Datos.Count > 0)
+    {
+        <!-- Datos del resultado para el gráfico -->
+        <script type="application/json" id="resultado-datos" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Datos))
+        </script>
+        <script type="text/plain" id="nombre-kpi" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">@Model.Resultado.Nombre</script>
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+                integrity="sha256-VN8LOX18pTDGPH8/CT6jM+TQ+wVAq5WLhLUYF+N+1M4="
+                crossorigin="anonymous"></script>
+    }
+
+    <environment include="Development">
+        <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}

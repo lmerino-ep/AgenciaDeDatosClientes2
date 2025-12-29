@@ -1,0 +1,191 @@
+﻿
+@import "../helper.less";
+
+.login {
+    min-height: calc(100vh - @tamCabecera - @tamPieDePaginaLg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    & > .caja {
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+        align-items: center;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        background-color: @ColorEpDataClaro;
+
+        & > .decoracion {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            .icono {
+                @tam: 3;
+                width: 150px;
+                height: calc(15px * @tam);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                .icono-usuario {
+                    color: @ColorEpDataComplementario;
+                    .icono-usuario(@tam);
+                }
+            }
+        }
+
+        & > .contenido {
+            min-width: 400px;
+            padding: 0 20px;
+            background-color: white;
+            color: @ColorEpDataComplementario;
+
+            & > .titulo {
+                text-align: center;
+                margin: 25px auto;
+                padding: 0;
+                font-size: 22px;
+            }
+
+            & > .campos {
+                & > .fila {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-start;
+                    align-items: flex-start;
+                    margin: 20px auto;
+
+                    input:-webkit-autofill {
+                        -webkit-box-shadow: 0 0 0px 1000px @ColorEpDataClaro inset;
+                    }
+
+                    .nombre {
+                        text-align: left;
+                    }
+
+                    .valor {
+                        width: 100%;
+                        padding: 12px 20px;
+                        display: inline-block;
+                        border: 1px solid #ccc;
+                        box-sizing: border-box;
+                    }
+
+                    .recordar {
+                        cursor: pointer;
+                    }
+
+                    .checkbox {
+                        .input-checkbox(@ColorEpDataClaro, @ColorEpDataComplementario, @ColorEpDataComplementario, @ColorEpDataComplementario);
+                    }
+                }
+            }
+
+            & > .botonera {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                align-items: center;
+                margin-bottom: 20px;
+                gap: 15px;
+
+                .iniciar-sesion {
+                    cursor: pointer;
+                    .enlace(white, none);
+                    font-size: 17px;
+                    border: none;
+                    display: inline-flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 45px;
+                    padding: 0 20px;
+                    background-color: @ColorEpDataComplementario;
+                }
+
+                & > .enlace-cambiar-password {
+                    text-align: center;
+                    .enlace(@ColorEpDataComplementario);
+                    font-size: 0.9em;
+                }
+            }
+        }
+    }
+
+    & > .informacion {
+        background-color: @ColorEpDataClaro;
+        color: @ColorEpDataComplementario;
+        margin-top: 40px;
+
+        .texto {
+            text-align: center;
+            padding: 10px 20px;
+        }
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    //Solo sm
+    .login {
+        min-height: calc(100vh - @tamCabecera - @tamPieDePaginaSm);
+    }
+}
+
+@media (max-width: 767px) {
+    //Solo xs
+
+    .login {
+        margin: 50px auto;
+        min-height: calc(100vh - @tamCabecera - @tamPieDePaginaXs);
+
+        & > .caja {
+
+            & > .decoracion {
+                display: none;
+
+                .icono {
+                    .icono-usuario {
+                    }
+                }
+            }
+
+            & > .contenido {
+                width: 80vw;
+                min-width: auto;
+                max-width: 400px;
+
+                & > .titulo {
+                    margin: 15px auto 0 auto;
+                }
+
+                & > .campos {
+                    & > .fila {
+                        .nombre {
+                        }
+
+                        .valor {
+                        }
+
+                        .recordar {
+                        }
+
+                        .checkbox {
+                        }
+                    }
+                }
+
+                & > .botonera {
+
+                    .iniciar-sesion {
+                    }
+                }
+            }
+        }
+
+        & > .informacion {
+            .texto {
+            }
+        }
+    }
+}

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Dashboard.Utils.Authorization
+namespace Utils.Authorization
 {
     /// <summary>
     /// Atributo personalizado que aplica la restricción de hosts permitidos usando la configuración centralizada

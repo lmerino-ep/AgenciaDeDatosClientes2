@@ -9,19 +9,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoLogin" Version="1.0.13" />
-    <PackageReference Include="AutoLogin.Verification" Version="1.0.3" />
-    <PackageReference Include="AWSSDK.CloudWatchLogs" Version="4.0.4" />
-    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.1" />
-    <PackageReference Include="AWSSDK.KinesisFirehose" Version="4.0.2.2" />
-    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.0.13" />
-    <PackageReference Include="HtmlSanitizer" Version="9.0.876" />
-
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <None Remove="BREAKPOINTS_DEBUG.md" />
+    <None Remove="COMPARACION_PIPELINE.md" />
+    <None Remove="PIPELINE_DEBUG.md" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\css\" />
+    <PackageReference Include="AutoLogin" Version="1.0.14" />
+    <PackageReference Include="AutoLogin.Verification" Version="1.0.6" />
+    <PackageReference Include="AWSSDK.CloudWatchLogs" Version="4.0.14" />
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.17" />
+    <PackageReference Include="AWSSDK.KinesisFirehose" Version="4.0.3.8" />
+    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.4.1" />
+    <PackageReference Include="HtmlSanitizer" Version="9.0.889" />
+
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\js\" />
     <Folder Include="wwwroot\less\" />
   </ItemGroup>

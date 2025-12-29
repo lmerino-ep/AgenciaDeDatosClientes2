@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -25,6 +25,7 @@ namespace Modelos.Autenticacion
         public string RefreshToken1EpDataApi { get; set; }
         public string RefreshToken2EpDataApi { get; set; }
         public string AccessTokenActivoEpDataApi { get; set; }
+        public DateTime? CaducidadAccessTokenActivoEpDataApi { get; set; }
         //////////////////////////////////////
         public bool Activo { get; set; }
         //////////////////////////////////////

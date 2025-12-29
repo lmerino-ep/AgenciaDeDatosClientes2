@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Dashboard.Utils
+namespace Utils
 {
     /// <summary>
     /// Clase para validación segura de entrada de datos

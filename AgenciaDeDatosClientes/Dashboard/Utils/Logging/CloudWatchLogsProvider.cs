@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Dashboard.Utils.Logging
+namespace Utils.Logging
 {
     /// <summary>
     /// Provider personalizado para enviar logs de ILogger a AWS CloudWatch Logs

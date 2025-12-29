@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Middlewares.ProxyHeaders
+namespace Utils.Middlewares.ProxyHeaders
 {
     /// <summary>
     /// Extensiones para registrar el middleware de cabeceras de proxy

@@ -1,4 +1,4 @@
-﻿namespace Dashboard.Utils.Middlewares.CabecerasDeSeguridad
+namespace Utils.Middlewares.CabecerasDeSeguridad
 {
     public static class CabecerasDeSeguridadExtensions
     {

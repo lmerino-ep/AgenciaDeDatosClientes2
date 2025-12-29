@@ -1,0 +1,56 @@
+@using Modelos.DTO.Cabecera
+@model OpcionesMiCuenta
+
+<ul class="opciones">
+    @foreach (var opcion in Model.Opciones)
+    {
+        if (opcion.Url != null)
+        {
+            <li class="opcion">
+                <a href="@opcion.Url" class="enlace">
+                    <span class="icono">
+                        <i class="@opcion.Icono"></i>
+                    </span>
+                    <span class="texto">@opcion.Texto</span>
+                </a>
+            </li>
+        }        
+        else
+        {
+            <li class="opcion">
+                @if (!String.IsNullOrEmpty(opcion.Controlador) && !String.IsNullOrEmpty(opcion.Accion))
+                {
+                    <a asp-controller="@opcion.Controlador" asp-action="@opcion.Accion" class="enlace">
+                        <span class="icono">
+                            <i class="@opcion.Icono"></i>
+                        </span>
+                        <span class="texto">@opcion.Texto</span>
+                    </a>
+                }
+                else
+                {
+                    <a asp-page="@opcion.Pagina" class="enlace">
+                        <span class="icono">
+                            <i class="@opcion.Icono"></i>
+                        </span>
+                        <span class="texto">@opcion.Texto</span>
+                    </a>
+                }
+            </li>
+        }
+    }
+    @if (Model.HaySesion)
+    {
+        <li class="opcion">
+            <form asp-area="" asp-controller="Autenticacion" asp-action="Logout" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="enlace">
+                    <span class="icono">
+                        <i class="icono-salir"></i>
+                    </span>
+                    <span class="texto">Salir</span>
+                </button>
+            </form>
+        </li>
+    }
+</ul>

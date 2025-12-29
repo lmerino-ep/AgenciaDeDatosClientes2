@@ -1,4 +1,4 @@
-﻿using AgenciaDeDatosBD;
+using AgenciaDeDatosBD;
 using Microsoft.AspNetCore.Identity;
 using Modelos.Autenticacion;
 using Modelos.InyeccionDeDependencias;
@@ -6,9 +6,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace Dashboard.Utils.Autenticacion
+namespace Utils.Autenticacion
 {
-    public class UserStore : IUserSecurityStampStore<Modelos.Autenticacion.Usuario>, // implementamos IUserSecurityStampStore para evitar que la sesión expire cada 30 minutos
+    public class UserStore : IUserSecurityStampStore<Modelos.Autenticacion.Usuario>, // implementamos IUserSecurityStampStore para evitar que la sesi�n expire cada 30 minutos
         IUserPasswordStore<Modelos.Autenticacion.Usuario>,
         IPasswordHasher<Modelos.Autenticacion.Usuario>,
         IUserRoleStore<Modelos.Autenticacion.Usuario>,
@@ -219,7 +219,7 @@ namespace Dashboard.Utils.Autenticacion
 
         public async Task<Modelos.Autenticacion.Usuario> FindByLoginAsync(string proveedor, string accessToken, CancellationToken cancellationToken)
         {
-            //Aquí llegamos mediante el _signInManager.ExternalLoginSignInAsync
+            //Aqu� llegamos mediante el _signInManager.ExternalLoginSignInAsync
             switch (proveedor)
             {
                 case "Google":

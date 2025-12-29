@@ -1,10 +1,10 @@
-Ôªøusing Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Dashboard.Utils.Filters
+namespace Utils.Filters
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class GestionCacheCdnRazorPages : ActionFilterAttribute
@@ -15,7 +15,7 @@ namespace Dashboard.Utils.Filters
         //}
         public override void OnResultExecuted(ResultExecutedContext context)
         {
-            //Cdn(context); //No necesitamos de momento hacer nada espec√≠fico m√°s all√° de lo implementado en ProxyHeadersMiddleware
+            //Cdn(context); //No necesitamos de momento hacer nada especÌfico m·s all· de lo implementado en ProxyHeadersMiddleware
             base.OnResultExecuted(context);
         }
                

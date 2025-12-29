@@ -1,14 +1,14 @@
-ï»¿using Dashboard.Utils.Filters;
+using Utils.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Diagnostics;
 
-namespace Dashboard.Pages
+namespace Pages
 {
     [IgnoreAntiforgeryToken]
     public class ErrorModel : PageModel
     {
-        public ETag ETag { get; set; } //Ojo: esta propiedad debe llamarse asÃ­. No cambiar, porque lo casteamos cmomo dynamic con este nombre (ETag) desde el ETagFilterControllers para evitar usar reflection
+        public ETag ETag { get; set; } //Ojo: esta propiedad debe llamarse así. No cambiar, porque lo casteamos cmomo dynamic con este nombre (ETag) desde el ETagFilterControllers para evitar usar reflection
 
         public string? RequestId { get; set; }
 
@@ -23,30 +23,30 @@ namespace Dashboard.Pages
 
         public void OnGet(string? code = null)
         {
-            // ===== PATRÃ“N OFICIAL DE MICROSOFT =====
+            // ===== PATRÓN OFICIAL DE MICROSOFT =====
             // Referencia: https://learn.microsoft.com/aspnet/core/fundamentals/error-handling
 
-            // 1. Intentar obtener la excepciÃ³n desde UseExceptionHandler (PatrÃ³n Microsoft)
+            // 1. Intentar obtener la excepción desde UseExceptionHandler (Patrón Microsoft)
             var exceptionFeature = HttpContext.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>();
             if (exceptionFeature?.Error != null)
             {
-                // Generar GUID Ãºnico para tracking en CloudWatch
+                // Generar GUID único para tracking en CloudWatch
                 var exceptionId = Guid.NewGuid().ToString();
                 RequestId = exceptionId;
 
                 // Establecer status code 500 para excepciones
                 Response.StatusCode = 500;
 
-                // Loggear con GUID para bÃºsqueda posterior en CloudWatch
+                // Loggear con GUID para búsqueda posterior en CloudWatch
                 _logger.LogError(exceptionFeature.Error,
-                    "ExcepciÃ³n no controlada. ExceptionId: {ExceptionId}, Path: {Path}",
+                    "Excepción no controlada. ExceptionId: {ExceptionId}, Path: {Path}",
                     exceptionId, exceptionFeature.Path);
 
                 return;
             }
 
-            // 2. Si no es una excepciÃ³n, es un cÃ³digo de estado HTTP (ej: 404)
-            // Establecer el status code desde el parÃ¡metro de ruta
+            // 2. Si no es una excepción, es un código de estado HTTP (ej: 404)
+            // Establecer el status code desde el parámetro de ruta
             if (!string.IsNullOrEmpty(code) && int.TryParse(code, out int statusCode))
             {
                 Response.StatusCode = statusCode;
@@ -56,10 +56,10 @@ namespace Dashboard.Pages
                 Response.StatusCode = 500; // Por defecto
             }
 
-            // 3. Usar TraceIdentifier para cÃ³digos de estado (no excepciones)
+            // 3. Usar TraceIdentifier para códigos de estado (no excepciones)
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
 
-            _logger.LogWarning("CÃ³digo de estado HTTP {StatusCode}. TraceId: {TraceId}",
+            _logger.LogWarning("Código de estado HTTP {StatusCode}. TraceId: {TraceId}",
                 Response.StatusCode, RequestId);
         }
     }

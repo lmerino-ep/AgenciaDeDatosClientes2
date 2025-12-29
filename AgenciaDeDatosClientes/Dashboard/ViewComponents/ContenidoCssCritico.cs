@@ -1,7 +1,7 @@
-﻿using Dashboard.Utils.InyeccionDeDependencias;
+using Utils.InyeccionDeDependencias;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Dashboard.ViewComponents
+namespace ViewComponents
 {
     public class ContenidoCssCritico : ViewComponent
     {

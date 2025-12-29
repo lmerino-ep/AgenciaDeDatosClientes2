@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Middlewares.ProxyHeaders
+namespace Utils.Middlewares.ProxyHeaders
 {
     /// <summary>
     /// Política de configuración para el middleware de cabeceras de proxy

@@ -1,4 +1,4 @@
-﻿namespace Dashboard.Utils.Middlewares.GestionNonce
+namespace Utils.Middlewares.GestionNonce
 {
     public static class NonceGenerationExtensions
     {

@@ -1,0 +1,110 @@
+@page "/usuarios/editar/{id:int}"
+@model Pages.Usuarios.EditarModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Editar Usuario";
+    ViewBag.Description = "Editar información de usuario";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Editar Usuario</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/usuarios/listado">Usuarios</a>
+        <span class="separador">/</span>
+        <span>Editar</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        @Model.MensajeError
+    </div>
+}
+
+<form method="post" class="form-usuario">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="All" class="alerta alerta-error"></div>
+
+    <input type="hidden" asp-for="Modelo.Id" />
+
+    <section class="seccion-formulario">
+        <div class="card">
+            <h2 class="titulo-seccion">Información del Usuario</h2>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input asp-for="Modelo.Email" class="form-control" readonly />
+                <small class="form-text text-muted">El email no se puede modificar</small>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Nombre">Nombre *</label>
+                <input asp-for="Modelo.Nombre" class="form-control" required />
+                <span asp-validation-for="Modelo.Nombre" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Apellidos">Apellidos *</label>
+                <input asp-for="Modelo.Apellidos" class="form-control" required />
+                <span asp-validation-for="Modelo.Apellidos" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.Empresa">Empresa</label>
+                <input asp-for="Modelo.Empresa" class="form-control" />
+                <span asp-validation-for="Modelo.Empresa" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Modelo.FK_UsuarioTipo">Tipo de Usuario *</label>
+                <select asp-for="Modelo.FK_UsuarioTipo" class="form-control" required>
+                    @foreach (var tipo in Model.TiposUsuario)
+                    {
+                        <option value="@tipo.Id" selected="@(Model.Modelo.FK_UsuarioTipo == tipo.Id)">@tipo.Nombre</option>
+                    }
+                </select>
+                <span asp-validation-for="Modelo.FK_UsuarioTipo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input asp-for="Modelo.Activo" type="checkbox" />
+                    Usuario Activo
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button type="submit" class="boton boton-primario">Guardar Cambios</button>
+        <a href="/usuarios/listado" class="boton boton-secundario">Cancelar</a>
+        <a href="/usuarios/cambiar-contrasena/@Model.Id" class="boton boton-secundario">Cambiar Contraseña</a>
+    </div>
+</form>
+
+@if (Model.Usuario != null && Model.Usuario.Activo)
+{
+    <section class="seccion-eliminar">
+        <div class="card">
+            <h2 class="titulo-seccion">Zona de Peligro</h2>
+            <div class="alerta alerta-advertencia">
+                <p><strong>ADVERTENCIA:</strong> Esta acción marcará el usuario como inactivo (soft delete). El usuario no podrá iniciar sesión, pero sus datos se conservarán en el sistema.</p>
+            </div>
+            <form method="post" asp-page-handler="Eliminar" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción quedará registrada en la auditoría.');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="boton boton-peligro">Eliminar Usuario</button>
+            </form>
+        </div>
+    </section>
+}
+

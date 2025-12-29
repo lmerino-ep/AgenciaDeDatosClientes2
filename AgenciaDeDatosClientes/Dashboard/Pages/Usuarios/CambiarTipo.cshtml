@@ -1,0 +1,94 @@
+@page "/usuarios/cambiar-tipo/{id:int}"
+@model Pages.Usuarios.CambiarTipoModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Cambiar Tipo de Usuario";
+    ViewBag.Description = "Cambiar el tipo de usuario";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Cambiar Tipo de Usuario</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/usuarios/listado">Usuarios</a>
+        <span class="separador">/</span>
+        <a href="/usuarios/editar/@Model.Id">Editar</a>
+        <span class="separador">/</span>
+        <span>Cambiar Tipo</span>
+    </div>
+</div>
+
+@if (Model.Usuario != null)
+{
+    <section class="seccion-datos-usuario">
+        <div class="card">
+            <h2 class="titulo-seccion">Información del Usuario</h2>
+            <div class="info-usuario">
+                <div class="campo">
+                    <span class="etiqueta">Email:</span>
+                    <span class="valor">@Model.Usuario.Email</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Nombre:</span>
+                    <span class="valor">@Model.Usuario.Nombre @Model.Usuario.Apellidos</span>
+                </div>
+                <div class="campo">
+                    <span class="etiqueta">Tipo Actual:</span>
+                    <span class="badge badge-tipo">@Model.Usuario.TipoUsuarioNombre</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (!string.IsNullOrEmpty(Model.MensajeError))
+    {
+        <div class="alerta alerta-error">
+            @Model.MensajeError
+        </div>
+    }
+
+    <form method="post" class="form-usuario">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="alerta alerta-error"></div>
+
+        <input type="hidden" asp-for="Modelo.IdUsuario" />
+
+        <section class="seccion-formulario">
+            <div class="card">
+                <h2 class="titulo-seccion">Nuevo Tipo de Usuario</h2>
+
+                <div class="form-group">
+                    <label asp-for="Modelo.FK_UsuarioTipo">Tipo de Usuario *</label>
+                    <select asp-for="Modelo.FK_UsuarioTipo" class="form-control" required>
+                        @foreach (var tipo in Model.TiposUsuario)
+                        {
+                            <option value="@tipo.Id" selected="@(Model.Modelo.FK_UsuarioTipo == tipo.Id)">@tipo.Nombre</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Modelo.FK_UsuarioTipo" class="text-danger"></span>
+                </div>
+            </div>
+        </section>
+
+        <div class="form-actions">
+            <button type="submit" class="boton boton-primario">Cambiar Tipo</button>
+            <a href="/usuarios/editar/@Model.Id" class="boton boton-secundario">Cancelar</a>
+        </div>
+    </form>
+}
+else
+{
+    <div class="mensaje-error">
+        <p>Usuario no encontrado.</p>
+        <a href="/usuarios/listado" class="boton boton-secundario">Volver al Listado</a>
+    </div>
+}
+

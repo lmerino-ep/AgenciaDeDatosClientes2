@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Net.Http.Headers;
 using System.Net;
 
-namespace Dashboard.Utils.Middlewares
+namespace Utils.Middlewares
 {
     public class RedirectWwwRule : IRule
     {

@@ -1,4 +1,4 @@
-namespace Dashboard.Utils.Middlewares.CdnHeaders
+namespace Utils.Middlewares.CdnHeaders
 {
     /// <summary>
     /// Extensiones para registrar el middleware de cabeceras de CDN

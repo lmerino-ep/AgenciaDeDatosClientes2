@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Net;
 
-namespace Dashboard.Utils.Middlewares.ProxyHeaders
+namespace Utils.Middlewares.ProxyHeaders
 {
     /// <summary>
     /// Middleware para manejar cabeceras de proxy de AWS ALB y Transparent CDN

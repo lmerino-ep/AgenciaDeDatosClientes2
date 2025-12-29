@@ -1,4 +1,4 @@
-Ôªøusing NugetPortable.SQS;
+using NugetPortable.SQS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +14,8 @@ namespace Modelos.InyeccionDeDependencias
         public Colas ColasPlantillaWeb { get; set; }
         public Colas ColasCargaInicial { get; set; }
         public Colas ColasParsers { get; set; }
-        public int NumeroMaximoDeMensajesPorRequest { get; set; } = 10; //10 es el m√°ximo que podemos leer en una sola request contra el SQS de AWS
-        public int LimiteDeSegundosDeEsperaHastaRecibirMensajes { get; set; } = 5; //20 es el m√°ximo de segundos que podemos esperar a ver si entra alg√∫n mensaje en la cola que podamos consumir
+        public int NumeroMaximoDeMensajesPorRequest { get; set; } = 10; //10 es el m·ximo que podemos leer en una sola request contra el SQS de AWS
+        public int LimiteDeSegundosDeEsperaHastaRecibirMensajes { get; set; } = 5; //20 es el m·ximo de segundos que podemos esperar a ver si entra alg˙n mensaje en la cola que podamos consumir
         public int SegundosOcultoParaSucesivasRequestsDespuesDeHaberSidoConsultadoPorNuestroProceso { get; set; }
         public int SegundosDeEsperaSiNoHayMensajesQueProcesar { get; set; }
     }

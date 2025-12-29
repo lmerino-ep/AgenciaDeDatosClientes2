@@ -1,0 +1,3312 @@
+﻿
+@tamCabecera: 70px;
+@tamPieDePagina: 80px; // Valor por defecto para Dashboard
+@tamPieDePaginaLg: 162px;
+@tamPieDePaginaMd: 162px;
+@tamPieDePaginaSm: 183px;
+@tamPieDePaginaXs: 338px;
+@ColorEpData: #a4f1fa; //#00bcd4;
+@ColorEpDataOscuro: #19d8f1;
+@ColorEpDataSuperoscuro: #0D7F91; //Color epdta lo suficientemente oscuro para ser accesible sobre letras blancas
+@ColorEpDataEnlace: #0D7F91; //Color epdata para enlaces que es accesible sobre letras blancas
+@ColorGrisClaro: #595959; //Color gris más claro que contrasta lo suficiente para ser accesible sobre fondo blanco
+@ColorGrisSuperClaro: #f9f9f9;
+@ColorEpDataClaro: #dff5f7;
+@ColorEpDataComplementario: #05576B;
+@ColorEpDataComplementarioClaro: #448b9b;
+@ColorEpDataSecundario: #ffde05;
+@ColorEpDataSecundarioOscuro: #66561F;
+@ColorErrorPeligro: #ff5722;
+@ColorNaranjaAdvertencia: #cf9725;
+@ColorNegro: #383838;
+// Variables de color para Dashboard
+@ColorExito: #398917;
+@ColorError: #cd0000;
+@ColorInformacion: #209acf;
+@ColorAdvertencia: #cf9725;
+@alturaBannerSuperior: 90px;
+@alturaBannerSuperiorXs: 90px;
+@marginTopBannerSuperior: 0; //5px
+@marginBottomBannerSuperior: 0; //5px
+@alturaBotoneraRepresentacion: 100px;
+@altoRepresentacion: 600px; //600px definido en js para la representación. Lo definimos aquí para vitar layout shifts
+
+//&&&&&&&&&&&&&&&&&&&&& Colores proceso estado.ini &&&&&&&&&&&&&&&&&&&&&//
+@ColorPendiente: #209acf;
+@ColorEjecutando: #a7740d;
+@ColorReintentando: #4b2b8f;
+@ColorFallido: #cd0000;
+@ColorCancelado: #656565;
+@ColorFinalizado: #398917;
+@ColorEsperando: #3b5998;
+@ColorEsperando: #3b5998;
+@ProcesadoETL1: #2c7e60;
+@ProcesadoETL2: #7e2c5e;
+@ProcesadoETL3: #66561F;
+@ColorEjecutandoSeriesDeSinDefinir: #1f663b;
+//&&&&&&&&&&&&&&&&&&&&& Colores proceso estado.fin &&&&&&&&&&&&&&&&&&&&&//
+
+.banner-superior() {
+    height: @alturaBannerSuperior;
+    width: 100%;
+    contain: paint; //Descendants of the element don't display outside its bounds. If the containing box is offscreen, the browser does not need to paint its contained elements
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: @marginTopBannerSuperior auto @marginBottomBannerSuperior auto;
+
+    @media (max-width: 767px) {
+        /*Solo xs*/
+        height: @alturaBannerSuperiorXs;
+    }
+}
+
+.eliminar-estilos-boton() {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+}
+
+.estilos-caja() {
+    background: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    border-radius: 4px;
+}
+
+.tabla(@color: @ColorEpDataComplementario) {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    table-layout: fixed;
+
+    tr {
+        background-color: #f8f8f8;
+        border: 1px solid #ddd;
+        padding: .35em;
+    }
+
+    th, td {
+        padding: .625em;
+        text-align: center;
+
+        .vacio {
+            display: inline-block;
+        }
+    }
+
+    th {
+        font-size: .85em;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: @color;
+    }
+
+    @media screen and (max-width: 600px) {
+        border: 0;
+
+        thead {
+            border: none;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+
+        tr {
+            border-bottom: 3px solid #ddd;
+            display: block;
+            margin-bottom: .625em;
+        }
+
+        td {
+            border-bottom: 1px solid #ddd;
+            display: block;
+            font-size: .8em;
+            text-align: right;
+        }
+
+        td::before {
+            content: attr(data-label);
+            float: left;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        td:last-child {
+            border-bottom: 0;
+        }
+    }
+}
+
+.barra-de-progreso(@colorBarra: @ColorEpDataComplementario, @colorTexto: @ColorEpDataComplementario, @alto: 35px, @ancho-input: 61px) {
+    --progreso: 0%; //valor por defecto
+
+    @paddingVertical: 6px;
+    @paddingHorizontal: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    & > .progreso {
+        background-color: @ColorGrisSuperClaro;
+        flex-grow: 1;
+        height: @alto;
+        min-width: calc(@ancho-input - 1px); //restamos el borde left
+        border-left: 1px solid #ccc;
+        border-top: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 -1px 4px rgba(0, 0, 0, 0.15);
+
+        & > .barra {
+            background: linear-gradient( 90deg, lighten(@colorBarra, 5%), darken(@colorBarra, 5%) );
+            height: 100%;
+            width: var(--progreso);
+            transition: width 0.4s ease;
+        }
+    }
+
+    & > .valor {
+        width: calc(@ancho-input - @paddingHorizontal - @paddingHorizontal - 2px); //Restamos los bordes left y right
+        height: calc(@alto - @paddingVertical - @paddingVertical);
+        font-weight: bold;
+        padding: @paddingVertical @paddingHorizontal;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #555;
+        background-color: white;
+        background-image: none;
+        border: 1px solid #ccc;
+        transition: border-color ease-in-out .15s;
+
+        &::placeholder {
+            color: @ColorNegro;
+            opacity: 0.5;
+        }
+
+        text-align: center;
+    }
+}
+
+.pestagna(@color) {
+    color: @color;
+    border: 1px solid @color;
+    border-bottom: none;
+    background-color: white;
+    white-space: nowrap;
+    text-align: center;
+    font-size: 15px;
+    padding-top: 5px;
+    padding-bottom: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-right: 3px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    font-weight: bold;
+
+    &.activa {
+        &, &:visited, &:focus, &:active, &:hover {
+            color: white;
+        }
+
+        border: none;
+        background-color: @color;
+        margin-top: 0;
+        padding-bottom: 10px;
+        padding-top: 10px;
+        padding-left: 15px;
+        padding-right: 15px;
+        cursor: auto;
+    }
+
+    &, &:visited, &:focus, &:active, &:hover {
+        color: @color;
+        text-decoration: none;
+    }
+
+    @media (max-width: 767px) {
+        /*Solo xs*/
+        white-space: normal;
+        font-size: 13px;
+    }
+}
+
+
+/************************************ sticky.ini ***********************************/
+.contenedor-sticky() {
+    /**
+    * For IE 6/7 only
+    * Include this rule to trigger hasLayout and contain floats.
+    */
+    *zoom: 1;
+
+    .hermanomayor, .sticky {
+        float: left;
+    }
+
+    .sticky {
+        position: sticky;
+        top: 80px;
+        /*el position relative del col-xs-x aplica este top como si fuera margen al elemento en edge y otros navegadores antiguos*/
+    }
+
+    &:before, &:after {
+        /*
+        * For modern browsers
+        * 1. The space content is one way to avoid an Opera bug when the
+        *    contenteditable attribute is included anywhere else in the document.
+        *    Otherwise it causes space to appear at the top and bottom of elements
+        *    that are clearfixed.
+        * 2. The use of `table` rather than `block` is only necessary if using
+        *    `:before` to contain the top-margins of child elements.
+        */
+        content: " "; /* 1 */
+        display: table; /* 2 */
+    }
+
+    &:after {
+        clear: both;
+    }
+}
+
+.modulo-contenedor-resultadoMd() {
+    .resultado {
+        flex-direction: column;
+        gap: 15px;
+
+        & > .elemento {
+            padding-bottom: 0;
+
+            &.con-representacion {
+                max-width: 100%;
+
+                &::after {
+                    display: none;
+                }
+
+                & > .informacion {
+                    border-right: none;
+                    padding-right: 0;
+                    margin-right: auto;
+                }
+            }
+        }
+
+        .botonera {
+            &.visible-lg {
+                display: none;
+            }
+
+            &.oculto-lg {
+                display: inline-flex;
+                margin-bottom: 30px;
+            }
+
+            & > .boton {
+            }
+        }
+    }
+}
+
+
+.modulo-contenedor-resultadoXs() {
+    .resultado {
+        flex-direction: column;
+        gap: 15px;
+
+        & > .representacion {
+            margin: 20px auto;
+        }
+
+        & > .elemento {
+            padding-left: 15px;
+            padding-right: 15px;
+            padding-bottom: 0;
+
+            &.con-representacion {
+                max-width: 100%;
+
+                &::after {
+                    display: none;
+                }
+
+                & > .informacion {
+                    border-right: none;
+                    padding-left: 15px;
+                    padding-right: 15px;
+                    margin-right: auto;
+                }
+            }
+
+            & > .informacion {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+        }
+
+        .botonera {
+            margin-left: 15px;
+
+            &.visible-lg {
+                display: none;
+            }
+
+            &.oculto-lg {
+                display: inline-flex;
+                margin-bottom: 30px;
+            }
+
+            & > .boton {
+            }
+        }
+    }
+}
+
+.modulo-contenedor-resultadoSm() {
+    .resultado {
+        flex-direction: column;
+        gap: 15px;
+
+        & > .elemento {
+            padding-bottom: 0;
+
+            &.con-representacion {
+                max-width: 100%;
+
+                &::after {
+                    display: none;
+                }
+
+                & > .informacion {
+                    border-right: none;
+                    padding-right: 0;
+                    margin-right: auto;
+                }
+            }
+        }
+
+        .botonera {
+            &.visible-lg {
+                display: none;
+            }
+
+            &.oculto-lg {
+                display: inline-flex;
+                margin-bottom: 30px;
+            }
+
+            & > .boton {
+            }
+        }
+    }
+}
+
+.modulo-contenedor-resultado(@tamFuenteTitulo, @sonResultadosDeBusqueda: true, @padding: 30px) {
+    .resultado {
+        padding-top: @padding;
+        display: flex;
+        justify-content: flex-start;
+        align-items: stretch;
+        border-bottom: 1px solid @ColorEpDataOscuro;
+        width: 100%;
+
+        &:first-child {
+            padding-top: 0;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        & > .representacion {
+            filter: grayscale(100%);
+
+            &:hover {
+                cursor: pointer;
+                filter: grayscale(0);
+            }
+
+            @altoRepresentacion: 400px; //400px definido en js para la representación. Lo definimos aquí para vitar layout shifts
+            @alturaBotoneraRepresentacion: 0; //No la pintamos
+
+            content-visibility: auto;
+            contain-intrinsic-size: auto calc(@altoRepresentacion + @alturaBotoneraRepresentacion); //width height //Intrinsic size es el tamaño del elemento sin estilos de css y rendered size es el tamaño con estilos css
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin: 0 auto;
+            width: 100%;
+
+            .componente-representacion {
+                position: relative;
+                width: 100%;
+                height: calc(@altoRepresentacion + @alturaBotoneraRepresentacion);
+
+                .contenedor-pintado {
+                    //height: @altoRepresentacion;
+                }
+
+                .componente-descripcion-seo {
+                    height: @altoRepresentacion;
+                    overflow: auto;
+                }
+
+                .gestiongrafica-titulo-titulo {
+                    font-size: 17px;
+                }
+
+                .gestiongrafica-titulo-subtitulo, .gestiongrafica-nombresescalas-contenedor, .gestiongrafica-eje, .gestiongrafica-leyenda {
+                    font-size: 13px;
+                }
+            }
+        }
+
+        & > .elemento {
+            &.con-representacion {
+                max-width: 40%;
+                position: relative;
+
+                &::after {
+                    content: '';
+                    width: 1px;
+                    height: calc(100% - @padding);
+                    background-color: lightgrey;
+                    position: absolute;
+                    right: 10px;
+                }
+
+                & > .informacion {
+                    padding-right: 20px;
+                    margin-right: 10px;
+                    max-height: 500px;
+                    overflow-y: auto;
+                }
+            }
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 30px;
+
+            & > .informacion {
+                height: 100%;
+                max-height: 500px;
+                overflow-y: auto;
+
+                & > .el-mejor {
+                    font-size: @tamFuenteTitulo;
+                    color: @ColorEpDataSecundarioOscuro;
+                    margin: 0;
+                    padding-left: 1px;
+                    display: flex;
+
+                    & > .texto {
+                        padding-left: 15px;
+                    }
+
+                    & > .icono {
+                        width: 11px;
+                        height: 18px;
+
+                        & > .icono-mejor {
+                            .icono-corona(1);
+                        }
+                    }
+
+                    & when (@sonResultadosDeBusqueda = false) {
+                        display: none;
+                    }
+                }
+
+                & > .titulo {
+                    color: @ColorEpDataComplementario;
+                    font-size: @tamFuenteTitulo;
+                    font-weight: bold;
+                    margin: 0;
+                    padding-left: 1px;
+                    padding-top: 5px;
+                }
+
+                & > .parrafo {
+                    margin: auto;
+                    color: @ColorGrisClaro;
+                    padding-left: 1px;
+                    padding-top: 10px;
+                    padding-bottom: 5px;
+                }
+            }
+        }
+
+        .botonera {
+            &.oculto-lg {
+                display: none;
+            }
+
+            & > .boton {
+                background-color: white;
+                border: 1px solid @ColorEpDataComplementario;
+                color: @ColorEpDataComplementario;
+                padding: 5px 15px;
+                text-align: center;
+                text-decoration: none;
+                font-size: 16px;
+                cursor: pointer;
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+    }
+}
+
+.modulo-contenedor-serietipos(@margen, @tamTitulo: 22px, @ancho: clamp(1px, 500px, 40vw), @alto: 400px, @paddingVertical: 15px) when not (@alto = auto) {
+    & > .contenedor-serietipos {
+        height: calc(@alto + @paddingVertical + @paddingVertical);
+    }
+
+    .logica-modulo-contenedor-serietipos(@margen, @tamTitulo, @ancho, @alto, @paddingVertical);
+}
+
+.modulo-contenedor-serietipos(@margen, @tamTitulo: 22px, @ancho: clamp(1px, 500px, 40vw), @alto: 400px, @paddingVertical: 15px) when (@alto = auto) {
+    & > .contenedor-serietipos {
+        height: @alto;
+    }
+
+    .logica-modulo-contenedor-serietipos(@margen, @tamTitulo, @ancho, @alto, @paddingVertical);
+}
+
+.logica-modulo-contenedor-serietipos(@margen, @tamTitulo: 22px, @ancho: clamp(1px, 500px, 40vw), @alto: 400px, @paddingVertical: 15px) {
+    & > .contenedor-serietipos {
+        @tamContenedorListadoEnlaces: @ancho;
+        padding-left: @margen;
+        padding-right: @margen;
+        width: @tamContenedorListadoEnlaces;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+
+        & > .titulo {
+            font-size: @tamTitulo;
+            font-weight: bold;
+            color: @ColorEpDataComplementario;
+            margin: 0 auto;
+            padding: 10px 30px;
+            display: inline-flex;
+            width: calc(100% - 30px - 30px);
+            text-align: left;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background-color: @ColorEpDataSecundario;
+        }
+
+        & > .listado {
+            height: @alto;
+            overflow-y: auto;
+            //box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            scrollbar-color: @ColorEpDataOscuro white;
+            margin: 0;
+            padding: @paddingVertical 30px;
+            width: calc(100% - 30px - 30px);
+            list-style: none;
+
+            & > .elemento {
+                padding-top: 10px;
+                padding-bottom: @paddingVertical;
+                border-top: 1px solid @ColorEpDataOscuro;
+
+                &:last-child {
+                    border-bottom: 1px solid @ColorEpDataOscuro;
+                }
+
+                &:not(:first-child) {
+                    margin: auto;
+                    padding-top: @paddingVertical;
+                }
+
+                & > .enlace {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    justify-content: center;
+
+                    &, &:visited, &:focus, &:active, &:hover {
+                        color: black;
+                        text-decoration: none;
+                    }
+
+                    & > .operacion {
+                        font-weight: bold;
+                        font-size: 17px;
+                        text-decoration: underline;
+                    }
+
+                    & > .serietipo {
+                        color: #595959;
+                        font-size: 15px;
+                    }
+
+                    & > .lastupdate {
+                        color: @ColorEpDataComplementario;
+                        font-size: 15px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.modulo-contenedor-fuentes(@margen, @margenTop: 0, @tamTitulo: 22px, @ancho: clamp(1px, 500px, 40vw), @alto: 400px) {
+    & > .contenedor-fuentes {
+        @paddingVertical: 15px;
+        @tamContenedorListadoEnlaces: @ancho;
+        padding-left: @margen;
+        padding-right: @margen;
+        width: @tamContenedorListadoEnlaces;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        height: calc(@alto + @paddingVertical + @paddingVertical);
+
+        & > .titulo {
+            font-size: @tamTitulo;
+            font-weight: bold;
+            color: @ColorEpDataComplementario;
+            margin: 0 auto;
+            padding: 10px 30px;
+            display: inline-flex;
+            width: calc(100% - 30px - 30px);
+            text-align: left;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background-color: @ColorEpDataSecundario;
+        }
+
+        & > .listado {
+            height: @alto;
+            overflow-y: auto;
+            //box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            scrollbar-color: @ColorEpDataOscuro white;
+            margin: 0;
+            padding: @paddingVertical 30px;
+            width: calc(100% - 30px - 30px);
+
+            & > .grupo {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                padding-bottom: @paddingVertical;
+                border-top: 1px solid @ColorEpDataOscuro;
+
+                &:not(:first-child) {
+                    margin: auto;
+                    padding-top: 10px;
+                }
+
+                &:last-child {
+                    border-bottom: 1px solid @ColorEpDataOscuro;
+                }
+
+                & > .fuente {
+                    padding-bottom: 5px;
+                    font-weight: bold;
+                }
+
+                & > .fuente-tipo {
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+
+                    & > .texto {
+                        font-size: 17px;
+                        color: @ColorGrisClaro;
+                    }
+                }
+
+                .enlace {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    justify-content: center;
+
+                    &, &:visited, &:focus, &:active, &:hover {
+                        color: black;
+                        text-decoration: none;
+                    }
+
+                    & > .texto {
+                        font-weight: bold;
+                        font-size: 15px;
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+//&&&&&&&&&&&&&&&&&&&&
+
+.text-ellipsis-multilinea(@numeroDeLineas, @altoLinea: 25px) {
+    display: -webkit-box;
+    -webkit-line-clamp: @numeroDeLineas; //Número de líneas a mostrar
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: @altoLinea * @numeroDeLineas;
+}
+
+.ol() {
+    list-style-type: none;
+
+    li {
+        counter-increment: step-counter;
+        margin-bottom: 5px;
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: 0;
+            padding: 3px 5px;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            z-index: 0;
+            background-color: @ColorEpDataComplementario;
+        }
+
+        &::before {
+            content: counter(step-counter);
+            z-index: 2;
+            position: relative;
+            margin-right: 10px;
+            font-size: 95%;
+            background-color: transparent;
+            color: white;
+            font-weight: bold;
+            padding-left: 14px;
+            -ms-border-radius: 50%;
+            border-radius: 50%;
+            line-height: 25px;
+        }
+    }
+}
+
+.boton(@colorFondo: @ColorEpDataComplementario, @colorTexto: white) {
+    display: inline-block;
+    padding: 8px 16px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    user-select: none;
+    background-image: none;
+    border: 1px solid @colorTexto;
+    border-radius: 4px;
+    background-color: @colorFondo;
+    color: @colorTexto;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.input-number(@padding: 5px) {
+    //for absolutely positioning spinners
+    position: relative;
+    padding: @padding;
+    padding-right: 25px;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        opacity: 1;
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: inner-spin-button !important;
+        width: 25px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+    }
+}
+
+.enlace(@color: black, @textDecoration: underline) {
+    &, &:visited, &:focus, &:active, &:hover {
+        color: @color;
+        text-decoration: @textDecoration;
+    }
+}
+
+.card(@padding: 20px) {
+    background: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    padding: @padding;
+
+    &:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+        transform: translateY(-4px);
+    }
+}
+
+.alert(@colorBorde: @ColorAdvertencia, @colorFondo: lighten(@ColorAdvertencia, 45%)) {
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border: 1px solid @colorBorde;
+    border-radius: 4px;
+    background-color: @colorFondo;
+    color: darken(@colorBorde, 30%);
+
+    a {
+        color: darken(@colorBorde, 40%);
+        font-weight: 600;
+    }
+}
+
+.input-checkbox(@color: @ColorEpDataComplementario, @colorTick: white, @colorTexto: black, @colorBorde: @ColorEpDataComplementario, @colorFondoSinSeleccionar: @ColorEpDataClaro) {
+    display: inline-block;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover input ~ .tick {
+        background-color: @colorFondoSinSeleccionar;
+    }
+
+    input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+
+        &:checked ~ .tick {
+            background-color: @color;
+        }
+
+        &:checked ~ .tick:after, &:checked ~ .tick:before {
+            display: block;
+        }
+    }
+
+    .label {
+        color: @colorTexto;
+        text-align: left;
+        vertical-align: middle;
+        padding: 0;
+        font-size: 16px;
+        line-height: normal;
+        white-space: normal;
+    }
+
+    .tick {
+        position: absolute;
+        top: 2px;
+        left: 0px;
+        height: 20px;
+        width: 21px;
+        border-radius: .125rem;
+        background-color: @colorFondoSinSeleccionar;
+        border: 1px solid @colorBorde;
+
+        &:after {
+            display: none;
+            content: "";
+            position: absolute;
+            left: 3px;
+            top: -2px;
+            width: 7px;
+            height: 19px;
+            border: solid @colorTick;
+            border-width: 0 3px 0px 0;
+            transform: rotate(45deg);
+        }
+
+        &:before {
+            display: none;
+            content: "";
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 7px;
+            height: 19px;
+            border: solid @colorTick;
+            border-width: 0 3px 0px 0;
+            transform: rotate(-45deg);
+        }
+    }
+}
+
+.input-radiobutton(@color: white) {
+    text-align: left;
+    display: block;
+
+    .texto {
+        color: @color;
+        cursor: pointer;
+    }
+
+    .input {
+        display: none;
+
+        & + *::before {
+            content: "";
+            display: inline-block;
+            vertical-align: bottom;
+            width: 15px;
+            height: 15px;
+            margin-right: 10px;
+            margin-bottom: 3px;
+            border-radius: 50%;
+            border-style: solid;
+            border-width: 0.1rem;
+            border-color: @color;
+            cursor: pointer;
+        }
+
+        &:checked + .texto {
+            font-weight: bold;
+        }
+
+        &:checked + *::before {
+            background: radial-gradient(transparent, @color, transparent 50%, transparent);
+            border-color: @color;
+        }
+
+        & + * {
+            padding: 0.5rem 1rem;
+        }
+    }
+}
+
+.input-text(@altura: 34px) {
+    height: @altura;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.09);
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+
+    &::placeholder {
+        color: @ColorNegro;
+        opacity: 0.5;
+    }
+}
+
+.input-text-multilinea() {
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.09);
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+
+    &::placeholder {
+        color: @ColorNegro;
+        opacity: 0.5;
+    }
+}
+
+.hr(@color, @alto: 2px) {
+    color: @color;
+    background: -webkit-linear-gradient(left, white, @color, white); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(right, white, @color, white); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(right, white, @color, white); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to right, white, @color, white); /* Standard syntax (must be last) */
+    padding: 0;
+    border: none;
+    text-align: center;
+    height: @alto;
+}
+
+.calendario() {
+    display: flex;
+
+    label {
+        padding-right: 5px;
+        padding-left: 6px;
+        padding-top: 12px;
+        padding-bottom: 0px;
+        background-color: @ColorEpDataComplementario;
+        color: white;
+    }
+
+    i {
+        .icono-calendario(1.4);
+    }
+
+    input[type="date"] {
+        padding-left: 20px;
+        padding-right: 10px;
+        border-top-right-radius: 30px;
+        border-bottom-right-radius: 0;
+        padding-top: 1px;
+        position: relative;
+
+        &, &:focus, &:hover, &:active, &:valid {
+            border-color: @ColorEpDataComplementario;
+        }
+
+        &::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+            cursor: pointer;
+        }
+    }
+}
+//&&&&&&&&&&&&&&&&&&&&& iconos en pure css.ini &&&&&&&&&&&&&&&&&&&&&//
+.icono-audio() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-top-left-radius: 120px;
+    border-top-right-radius: 120px;
+    border: 2px solid;
+    border-bottom: 0;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border: 2px solid;
+        width: 6px;
+        height: 8px;
+        top: 8px;
+    }
+
+    &::before {
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+        left: -2px;
+    }
+
+    &::after {
+        border-top-left-radius: 2px;
+        border-bottom-left-radius: 2px;
+        left: 10px;
+    }
+}
+
+.icono-analisis() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 22px;
+    height: 22px;
+    background: ~"linear-gradient(to left, currentcolor 8px, transparent 0) no-repeat left top/8px 8px, linear-gradient(to left, currentcolor 8px, transparent 0) no-repeat center (3px/8px) 2px, linear-gradient(to left, currentcolor 8px, transparent 0) no-repeat 10px (17px/6px) 2px, linear-gradient(to left, currentcolor 8px, transparent 0) no-repeat 10px (3px/2px) 16px";
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border: 2px solid;
+        right: 0;
+    }
+
+    &::after {
+        bottom: 0;
+    }
+}
+
+.icono-cerrar(@tam: 32px, @color: #333, @grosor: 2px) {
+    right: @tam;
+    top: @tam;
+    width: @tam;
+    height: @tam;
+
+    &:before, &:after {
+        position: absolute;
+        left: (@tam / 2);
+        content: ' ';
+        height: (@tam + (@grosor / 2));
+        width: @grosor;
+        background-color: @color;
+    }
+
+    &:before {
+        transform: rotate(45deg);
+    }
+
+    &:after {
+        transform: rotate(-45deg);
+    }
+}
+
+.icono-usuario(@tam: 1) {
+    &,
+    &::after,
+    &::before {
+        display: block;
+        box-sizing: border-box;
+        border: calc(2px * @tam) solid;
+        border-radius: 100px;
+    }
+
+    overflow: hidden;
+    //transform: scale(var(--ggs,1));
+    width: calc(22px * @tam);
+    height: calc(22px * @tam);
+    position: relative;
+    bottom: 0;
+
+    &::after,
+    &::before {
+        content: "";
+        position: absolute;
+        top: calc(2px * @tam);
+        left: calc(5px * @tam);
+        width: calc(8px * @tam);
+        height: calc(8px * @tam);
+    }
+
+    &::after {
+        border-radius: 200px;
+        top: calc(11px * @tam);
+        left: 0px;
+        width: calc(18px * @tam);
+        height: calc(18px * @tam);
+    }
+}
+
+.icono-encendido(@tam: 1, @grosor: 2px) {
+    //Fuente: https://css.gg/app
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    border-radius: (16px * @tam);
+    border: @grosor solid;
+    //transform: scale(var(--ggs,1));
+    width: (16px * @tam);
+    height: (16px * @tam);
+    border-top: @grosor solid transparent;
+    bottom: 2px;
+    margin-left: 5px;
+
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: (3px * @tam);
+        height: (8px * @tam);
+        width: (2px * @tam);
+        background: currentColor;
+        left: (5px * @tam);
+        bottom: (6px * @tam);
+    }
+}
+
+.icono-menos(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 16px;
+    height: @tam * 2px;
+    background: currentColor;
+    border-radius: @tam * 10px;
+}
+
+.icono-mas() {
+    /*&:before {
+        font-size: @tam;
+        content: "\002B"; //icono de +
+    }*/
+
+    &, &::after {
+        display: block;
+        box-sizing: border-box;
+        background: currentColor;
+        border-radius: 10px;
+    }
+
+    margin-top: -2px;
+    position: relative;
+    //transform: scale(var(--ggs,1));
+    width: 16px;
+    height: 2px;
+    bottom: -6px;
+    left: 6px;
+
+    &::after {
+        content: "";
+        position: absolute;
+        width: 2px;
+        height: 16px;
+        top: -7px;
+        left: 7px;
+    }
+}
+
+.icono-grafico() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 10px;
+    height: 10px;
+    border-bottom: 2px solid;
+    border-left: 2px solid;
+    margin-left: 8px;
+    margin-right: 2px;
+    bottom: 4px;
+
+    &::after, &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        border: 2px solid;
+        box-sizing: border-box;
+    }
+
+    &::before {
+        border-top-right-radius: 100px;
+        right: -2px;
+        top: -2px;
+        width: 8px;
+        height: 8px;
+    }
+
+    &::after {
+        width: 18px;
+        height: 18px;
+        border-radius: 100px;
+        border-right-color: transparent;
+        left: -10px;
+        transform: rotate(-45deg);
+    }
+}
+
+.icono-calendario(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: @tam * 18px;
+    height: @tam * 18px;
+    border: @tam * 2px solid;
+    border-top: @tam * 4px solid;
+    border-radius: @tam * 3px;
+    bottom: @tam * 4px;
+
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        background: currentColor;
+        height: @tam * 4px;
+        width: @tam * 4px;
+        border-radius: @tam * 2px;
+        right: @tam * 2px;
+        bottom: @tam * 2px;
+    }
+}
+
+.icono-nube() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 8px;
+    height: 2px;
+    background: currentColor;
+    margin-left: 6px;
+    margin-right: 8px;
+    bottom: -12px;
+
+    &::after, &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        border: 2px solid;
+        box-sizing: border-box;
+        bottom: 0;
+    }
+
+    &::before {
+        border-top-left-radius: 100px;
+        border-bottom-left-radius: 100px;
+        border-right: 0;
+        left: -6px;
+        width: 7px;
+        height: 12px;
+    }
+
+    &::after {
+        width: 16px;
+        height: 16px;
+        border-radius: 100px;
+        border-left-color: transparent;
+        right: -8px;
+        transform: rotate(-45deg);
+    }
+}
+
+.icono-script() {
+    display: block;
+    position: relative;
+    box-sizing: border-box;
+    transform: rotate(15deg); // scale(var(--ggs,1));
+    width: 2px;
+    height: 16px;
+    background: currentColor;
+    margin-left: 10px;
+    margin-right: 10px;
+    bottom: 2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        transform: rotate(-60deg);
+    }
+
+    &::before {
+        border-left: 2px solid;
+        border-top: 2px solid;
+        left: -8px;
+        top: 5px;
+    }
+
+    &::after {
+        border-right: 2px solid;
+        border-bottom: 2px solid;
+        right: -8px;
+        top: 3px;
+    }
+}
+
+.icono-archivo() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 14px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-right: 0;
+    border-top: 0;
+    box-shadow: 0 0 0 2px;
+    border-radius: 1px;
+    border-top-right-radius: 4px;
+    overflow: hidden;
+    margin-left: 3px;
+    margin-right: 2px;
+    bottom: 4px;
+
+    &::after, &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::before {
+        background: currentColor;
+        box-shadow: 0 4px 0, -6px -4px 0;
+        left: 0;
+        width: 10px;
+        height: 2px;
+        top: 8px;
+    }
+
+    &::after {
+        width: 6px;
+        height: 6px;
+        border-left: 2px solid;
+        border-bottom: 2px solid;
+        right: -1px;
+        top: -1px;
+    }
+}
+
+.icono-cara() {
+    &,
+    &::after,
+    &::before {
+        display: block;
+        box-sizing: border-box;
+        border-radius: 42px;
+    }
+
+    position: relative;
+    width: 20px;
+    height: 20px;
+    //transform: scale(var(--ggs,1));
+    overflow: hidden;
+    box-shadow: inset 0 0 0 2px;
+    bottom: 6px;
+
+    &::after,
+    &::before {
+        content: "";
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: currentColor;
+        box-shadow: 6px 0 0;
+        left: 6px;
+        top: 10px;
+    }
+
+    &::after {
+        width: 20px;
+        height: 20px;
+        top: -13px;
+        right: -12px;
+    }
+}
+
+.icono-lapiz() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 22px;
+    height: 22px;
+    border: 2px solid;
+    border-radius: 22px;
+    overflow: hidden;
+    perspective: 20px;
+    bottom: 5px;
+    margin-left: 1px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+    }
+
+    &::before {
+        width: 0;
+        height: 6px;
+        border-bottom: 6px solid;
+        border-left: 3px solid transparent;
+        border-right: 3px solid transparent;
+        bottom: 9px;
+        left: 6px;
+    }
+
+    &::after {
+        width: 10px;
+        height: 12px;
+        border: 2px solid;
+        border-top: 4px solid;
+        border-bottom: 0;
+        bottom: 0;
+        left: 4px;
+        transform: rotateX(60deg);
+    }
+}
+
+.icono-ecualizador() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    height: 12px;
+    width: 12px;
+    border-bottom: 2px solid;
+    //transform: scale(var(--ggs,1));
+    margin-top: 4px;
+    bottom: 2px;
+    margin-left: 6px;
+
+    &::after, &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 4px;
+        background: currentColor;
+        bottom: 2px;
+    }
+
+    &::before {
+        left: 1px;
+        height: 12px;
+    }
+
+    &::after {
+        height: 6px;
+        right: 1px;
+        opacity: 0.5;
+    }
+}
+
+.icono-buscar() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 16px;
+    height: 16px;
+    border: 2px solid;
+    border-radius: 100%;
+    margin-left: -4px;
+    margin-top: -4px;
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: 3px;
+        width: 2px;
+        height: 8px;
+        background: currentColor;
+        transform: rotate(-45deg);
+        top: 10px;
+        left: 12px;
+    }
+}
+
+.icono-llave() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 6px;
+    height: 8px;
+    border: 2px solid;
+    border-radius: 100px;
+    margin-left: -12px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        right: -12px;
+    }
+
+    &::before {
+        background: currentColor;
+        width: 12px;
+        height: 2px;
+        top: 1px;
+    }
+
+    &::after {
+        width: 5px;
+        height: 3px;
+        top: 2px;
+        border-left: 2px solid;
+        border-right: 2px solid;
+    }
+}
+
+.icono-flechas-bidireccionales() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 16px;
+    height: 14px;
+    bottom: 1px;
+    margin-left: 3px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        height: 2px;
+        background: currentColor;
+        border-radius: 4px;
+    }
+
+    &::before {
+        width: 6px;
+        transform: rotate(45deg);
+        box-shadow: 2px -13px 0;
+        top: 10px;
+    }
+
+    &::after {
+        width: 12px;
+        box-shadow: -4px 4px 0;
+        left: 4px;
+        top: 4px;
+    }
+}
+
+.icono-rayo() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 6px;
+    height: 21px;
+    margin-left: 8px;
+    margin-right: 4px;
+    bottom: 5px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-left: 3px solid transparent;
+        border-right: 3px solid transparent;
+        transform: rotate(30deg);
+    }
+
+    &::before {
+        border-bottom: 12px solid;
+        left: 0;
+        top: 0;
+    }
+
+    &::after {
+        border-top: 12px solid;
+        right: 0;
+        bottom: 0;
+    }
+}
+
+.icono-casa() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 18px;
+    height: 14px;
+    border: 2px solid;
+    border-top: 0;
+    border-radius: 2px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    margin-bottom: -2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::before {
+        border-top: 2px solid;
+        border-left: 2px solid;
+        border-top-left-radius: 4px;
+        transform: rotate(45deg);
+        top: -5px;
+        border-radius: 3px;
+        width: 14px;
+        height: 14px;
+        left: 0;
+    }
+
+    &::after {
+        width: 6px;
+        height: 10px;
+        background: currentColor;
+        border-top-left-radius: 100px;
+        border-top-right-radius: 100px;
+        left: 4px;
+        bottom: -2px;
+    }
+}
+
+.icono-add-extension() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    background: linear-gradient( to left,currentColor 10px,transparent 0) no-repeat 10px (2px/6px) 2px, linear-gradient( to left,currentColor 10px,transparent 0) no-repeat 12px (0/2px) 6px;
+    width: 16px;
+    height: 16px;
+    bottom: 2px;
+    margin-left: 3px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+        width: 8px;
+        height: 14px;
+        border: 2px solid;
+        bottom: 0;
+    }
+
+    &::after {
+        width: 14px;
+        height: 8px;
+    }
+}
+
+.icono-sobre(@tam: 1) {
+    &,
+    &::after {
+        display: block;
+        box-sizing: border-box;
+        height: @tam * 14px;
+        border: @tam * 2px solid;
+    }
+
+    overflow: hidden;
+    position: relative;
+    width: @tam * 18px;
+    border-radius: @tam * 2px;
+
+    &::after {
+        content: "";
+        position: absolute;
+        border-radius: @tam * 3px;
+        width: @tam * 14px;
+        transform: rotate(-45deg);
+        bottom: @tam * 3px;
+        left: 0;
+    }
+}
+
+.icono-lista() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    border: 2px solid;
+    border-radius: 3px;
+    width: 20px;
+    height: 14px;
+    margin-left: 3px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 2px;
+        height: 14px;
+        top: -2px;
+        left: 3px;
+        background: currentColor;
+    }
+
+    &::before {
+        width: 20px;
+        height: 2px;
+        left: -2px;
+        top: 2px;
+        box-shadow: 0 4px 0;
+    }
+}
+
+.icono-ereader() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 24px;
+    height: 18px;
+    border: 2px solid;
+    border-radius: 3px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: 3px;
+        width: 2px;
+        height: 18px;
+        right: 9px;
+        top: -2px;
+        background: currentColor;
+    }
+
+    &::after {
+        width: 5px;
+        height: 2px;
+        box-shadow: 0 4px 0,0 8px 0;
+        top: 2px;
+        right: 2px;
+    }
+}
+
+.icono-feed() {
+    &,
+    &::after,
+    &::before {
+        display: block;
+        box-sizing: border-box;
+        background: currentColor;
+        box-shadow: 0 10px 0 0;
+    }
+
+    margin-left: -8px;
+    margin-top: -8px;
+    position: relative;
+    //transform: scale(var(--ggs,1));
+    width: 7px;
+    height: 7px;
+    border-radius: 1px;
+
+    &::after,
+    &::before {
+        content: "";
+        position: absolute;
+        border-radius: 3px;
+        width: 12px;
+        height: 2px;
+        top: 1px;
+        left: 9px;
+        opacity: .8;
+    }
+
+    &::after {
+        width: 8px;
+        top: 4px;
+        opacity: .5;
+    }
+}
+
+.icono-compartir() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 100px;
+    box-shadow: 10px -6px 0, 10px 6px 0;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: 3px;
+        width: 10px;
+        height: 2px;
+        background: currentColor;
+        left: 2px;
+    }
+
+    &::before {
+        top: 0;
+        transform: rotate(-35deg);
+    }
+
+    &::after {
+        bottom: 0;
+        transform: rotate(35deg);
+    }
+}
+
+.icono-hora() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 18px;
+    height: 18px;
+    border-radius: 100%;
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 2px currentColor;
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        border-left: 2px solid;
+        border-bottom: 2px solid;
+        top: 1px;
+        left: 5px;
+    }
+}
+
+.icono-papelera(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+    //transform: scale(var(--ggs,1));
+    width: calc(@tam * 10px);
+    height: calc(@tam * 12px);
+    border: calc(@tam * 2px) solid transparent;
+    box-shadow: 0 0 0 calc(@tam * 2px), inset calc(@tam * -2px) 0 0, inset calc(@tam * 2px) 0 0;
+    border-bottom-left-radius: calc(@tam * 1px);
+    border-bottom-right-radius: calc(@tam * 1px);
+    margin-top: calc(@tam * 2px);
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::after {
+        background: currentColor;
+        border-radius: calc(@tam * 3px);
+        width: calc(@tam * 17px);
+        height: calc(@tam * 2px);
+        top: calc(@tam * -4px);
+        left: calc(@tam * -5px);
+    }
+
+    &::before {
+        width: calc(@tam * 11px);
+        height: calc(@tam * 4px);
+        border: calc(@tam * 2px) solid;
+        border-bottom: transparent;
+        border-top-left-radius: calc(@tam * 2px);
+        border-top-right-radius: calc(@tam * 2px);
+        top: calc(@tam * -7px);
+        left: calc(@tam * -2px);
+    }
+}
+
+.icono-descargar() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 16px;
+    height: 6px;
+    border: 2px solid;
+    border-top: 0;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    margin-top: 9px;
+    margin-left: 4px;
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-left: 2px solid;
+        border-bottom: 2px solid;
+        transform: rotate(-45deg);
+        left: 2px;
+        bottom: 4px;
+    }
+
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: 3px;
+        width: 2px;
+        height: 10px;
+        background: currentColor;
+        left: 5px;
+        bottom: 5px;
+    }
+}
+
+.icono-adjunto() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid;
+    border-top: 0;
+    border-bottom-left-radius: 100px;
+    border-bottom-right-radius: 100px;
+    //transform: scale(var(--ggs,1));
+    margin-top: 11px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: 3px;
+        border: 2px solid;
+    }
+
+    &::after {
+        border-bottom: 0;
+        border-top-left-radius: 100px;
+        border-top-right-radius: 100px;
+        right: -2px;
+        width: 10px;
+        height: 14px;
+        bottom: 8px;
+    }
+
+    &::before {
+        width: 6px;
+        height: 12px;
+        border-top: 0;
+        border-bottom-left-radius: 100px;
+        border-bottom-right-radius: 100px;
+        left: 2px;
+        bottom: 4px;
+    }
+}
+
+.icono-campana() {
+    &,
+    &::before {
+        border-top-left-radius: 100px;
+        border-top-right-radius: 100px;
+    }
+
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    border: 2px solid;
+    border-bottom: 0;
+    width: 14px;
+    height: 14px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::before {
+        background: currentColor;
+        width: 4px;
+        height: 4px;
+        top: -4px;
+        left: 3px;
+    }
+
+    &::after {
+        border-radius: 3px;
+        width: 16px;
+        height: 10px;
+        border: 6px solid transparent;
+        border-top: 1px solid transparent;
+        box-shadow: inset 0 0 0 4px, 0 -2px 0 0;
+        top: 14px;
+        left: -3px;
+        border-bottom-left-radius: 100px;
+        border-bottom-right-radius: 100px;
+    }
+}
+
+.icono-bombilla() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 16px;
+    height: 16px;
+    border: 2px solid;
+    border-bottom-color: transparent;
+    border-radius: 100px;
+    bottom: 8px;
+    margin-left: 2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::before {
+        border-top: 0;
+        border-bottom-left-radius: 18px;
+        border-bottom-right-radius: 18px;
+        top: 10px;
+        border-bottom: 2px solid transparent;
+        box-shadow: 0 5px 0 -2px, inset 2px 0 0 0, inset -2px 0 0 0, inset 0 -4px 0 -2px;
+        width: 8px;
+        height: 8px;
+        left: 2px;
+    }
+
+    &::after {
+        width: 12px;
+        height: 2px;
+        border-left: 3px solid;
+        border-right: 3px solid;
+        border-radius: 2px;
+        bottom: 0;
+        left: 0;
+    }
+}
+
+.icono-copiar() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 14px;
+    height: 18px;
+    border: 2px solid;
+    margin-left: -5px;
+    margin-top: -4px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::before {
+        background: linear-gradient( to left, currentColor 5px, transparent 0) no-repeat right top/5px 2px, linear-gradient( to left, currentColor 5px, transparent 0) no-repeat left bottom/ 2px 5px;
+        box-shadow: inset -4px -4px 0 -2px;
+        bottom: -6px;
+        right: -6px;
+        width: 14px;
+        height: 18px;
+    }
+
+    &::after {
+        width: 6px;
+        height: 2px;
+        background: currentColor;
+        left: 2px;
+        top: 2px;
+        box-shadow: 0 4px 0,0 8px 0;
+    }
+}
+
+.icono-imagen(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: @tam * 20px;
+    height: @tam * 16px;
+    overflow: hidden;
+    box-shadow: 0 0 0 2px;
+    border-radius: 2px;
+    margin-left: 0;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border: 2px solid;
+    }
+
+    &::after {
+        transform: rotate(45deg);
+        border-radius: 3px;
+        width: @tam * 16px;
+        height: @tam * 16px;
+        top: @tam * 9px;
+        left: @tam * 6px;
+    }
+
+    &::before {
+        width: @tam * 6px;
+        height: @tam * 6px;
+        border-radius: 100%;
+        top: @tam * 2px;
+        left: @tam * 2px;
+    }
+}
+
+.icono-teclado() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 18px;
+    height: 18px;
+    border: 2px solid;
+    border-radius: 3px;
+    bottom: 4px;
+    margin-left: 2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        height: 2px;
+        border-radius: 4px;
+        background: currentColor;
+    }
+
+    &::before {
+        top: 2px;
+        box-shadow: 4px 0 0, 8px 0 0, 0 4px 0, 4px 4px 0, 8px 4px 0;
+        width: 2px;
+        left: 2px;
+    }
+
+    &::after {
+        width: 8px;
+        bottom: 2px;
+        left: 3px;
+    }
+}
+
+.icono-candado-cerrado() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 12px;
+    height: 11px;
+    border: 2px solid;
+    border-top-right-radius: 50%;
+    border-top-left-radius: 50%;
+    border-bottom: transparent;
+    margin-top: -12px;
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 16px;
+        height: 10px;
+        border-radius: 2px;
+        border: 2px solid transparent;
+        box-shadow: 0 0 0 2px;
+        left: -4px;
+        top: 9px;
+    }
+}
+
+.icono-candado-abierto() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    //transform: scale(var(--ggs,1));
+    width: 12px;
+    height: 6px;
+    border: 2px solid;
+    border-top-right-radius: 100px;
+    border-top-left-radius: 100px;
+    border-bottom: transparent;
+    margin-top: -18px;
+    margin-left: -2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::after {
+        border: 2px solid transparent;
+        box-shadow: 0 0 0 2px;
+        width: 16px;
+        height: 10px;
+        border-radius: 2px;
+        left: -4px;
+        top: 10px;
+    }
+
+    &::before {
+        width: 2px;
+        height: 6px;
+        background: currentColor;
+        left: -2px;
+        top: 4px;
+    }
+}
+
+.icono-enchufe() {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    //transform: scale(var(--ggs,1));
+    width: 12px;
+    height: 20px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::before {
+        width: 12px;
+        height: 10px;
+        border: 2px solid;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        top: 5px;
+    }
+
+    &::after {
+        width: 2px;
+        height: 4px;
+        background: currentColor;
+        left: 2px;
+        border-radius: 22px;
+        box-shadow: 6px 0 0, 3px 14px 0, 3px 16px 0;
+    }
+}
+
+.icono-ep(@tam: 12px) {
+    font-size: @tam;
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    bottom: 5px;
+
+    &::before {
+        content: 'E';
+        color: black;
+        font-size: 20px;
+        font-family: arial;
+        font-style: normal;
+    }
+
+    &::after {
+        content: 'P';
+        color: #cd0000;
+        font-size: 20px;
+        font-family: arial;
+        font-style: normal;
+    }
+}
+
+.icono-europa-press(@tam: 16px) {
+    font-size: @tam;
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    bottom: 0;
+
+    &::before {
+        content: 'Europa';
+        color: black;
+        font-size: @tam;
+        font-family: arial;
+        font-style: normal;
+    }
+
+    &::after {
+        content: 'Press';
+        color: #cd0000;
+        font-size: @tam;
+        font-family: arial;
+        font-style: normal;
+        margin-left: calc(@tam / 3);
+    }
+}
+
+.icono-menu(@color: black) {
+    background: @color;
+    display: block;
+    height: 2px;
+    position: relative;
+    transition: background .2s ease-out;
+    width: 18px;
+
+    &:before, &:after {
+        background: @color;
+        content: '';
+        display: block;
+        height: 100%;
+        position: absolute;
+        transition: all .2s ease-out;
+        width: 100%;
+    }
+
+    &:before {
+        top: 5px;
+    }
+
+    &:after {
+        top: -5px;
+    }
+
+    &, &:focus-visible {
+        outline: none;
+    }
+}
+
+.icono-buscar-en-documento(@color: black, @tam: 1) {
+    display: block;
+    position: relative;
+    transform: scale(@tam);
+    box-sizing: border-box;
+    width: 16px;
+    height: 22px;
+    border: 1px solid @color;
+    border-radius: 3px;
+    background: linear-gradient(to left, @color 10px, transparent 0) no-repeat center (2px/8px) 2px, linear-gradient(to left, @color 10px, transparent 0) no-repeat center (6px/8px) 2px;
+
+    span {
+        position: absolute;
+        width: 70%;
+        height: 1px;
+        left: 15%;
+        top: 4.5px;
+        background-color: @color;
+    }
+
+    span::before, span::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 100%;
+        border-top: 1.5px solid @color;
+    }
+
+    span::before {
+        top: -3px;
+    }
+
+    span::after {
+        bottom: -2.7px;
+        top: 3px;
+    }
+
+    &::after, &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: 22px;
+    }
+
+    &::before {
+        width: 6px;
+        height: 6px;
+        border: 1px solid @color;
+        left: 3px;
+        top: 11px;
+    }
+
+    &::after {
+        width: 2px;
+        height: 4px;
+        background: @color;
+        bottom: 0.8px;
+        right: 4.5px;
+        transform: rotate(-45deg);
+    }
+}
+
+.icono-t-de-twitter(@color: #61BFE8) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 20px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+        left: 4px;
+    }
+
+    &::before {
+        width: 9px;
+        height: 14px;
+        border-left: 4px solid;
+        border-bottom: 4px solid;
+        border-bottom-left-radius: 6px;
+        background: linear-gradient(to left, @color 12px, transparent 0) no-repeat center (2px/10px) 4px;
+        top: 4px;
+    }
+
+    &::after {
+        width: 4px;
+        height: 4px;
+        background: @color;
+        border-radius: 20px;
+        top: 2px;
+        box-shadow: 7px 4px 0, 7px 12px 0;
+    }
+}
+
+.icono-twitter(@tam: 1, @ColorFondo: #FFF, @Color: #61BFE8) {
+    position: absolute;
+    top: 97%;
+    left: 2px;
+    transform: translate(0%, -100%);
+    height: calc(@tam * 89.89px);
+    width: calc(@tam * 89.89px);
+    border: none;
+    font-size: calc(1em * @tam);
+    overflow: hidden;
+    background-color: @ColorFondo;
+    cursor: pointer;
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        height: calc(5.125em * @tam);
+        width: calc(5.125em * @tam);
+        margin-top: calc(-5.125em * @tam);
+        border-radius: 100%;
+        background-color: @Color;
+        box-shadow: calc(1.1em * @tam) calc(-6.05em * @tam) 0 calc(1.85em * @tam) @ColorFondo, calc(1.2em * @tam) calc(-3.12em * @tam) 0 calc(-0.15em * @tam) @Color, calc(1.975em * @tam) calc(-5.35em * @tam) 0 calc(1.84em * @tam) @ColorFondo, calc(1.5em * @tam) calc(-2.2em * @tam) 0 calc(-0.125em * @tam) @Color, calc(-2.1em * @tam) calc(-6.7em * @tam) 0 calc(4.75em * @tam) @ColorFondo, calc(-5.5em * @tam) calc(-0.8em * @tam) 0 calc(0.07em * @tam) @Color, calc(-7.2em * @tam) calc(-1.35em * @tam) 0 calc(0.07em * @tam) @ColorFondo, calc(-5.5em * @tam) calc(1em * @tam) 0 calc(0.07em * @tam) @Color, calc(-6.8em * @tam) calc(1.1em * @tam) 0 calc(0.07em * @tam) @ColorFondo, calc(-4.7em * @tam) calc(2.8em * @tam) 0 calc(0.07em * @tam) @Color, calc(-8.3em * @tam) calc(1.175em * @tam) 0 calc(2.775em * @tam) @ColorFondo, calc(-8.275em * @tam) calc(-6.575em * @tam) 0 calc(2.775em * @tam) @ColorFondo, calc(-4.75em * @tam) calc(0.35em * @tam) 0 calc(4.75em * @tam) @Color;
+    }
+
+    &::after {
+        content: '';
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+    }
+
+    &:focus {
+        outline: none;
+        border: 5px solid darken(@Color, 10%);
+    }
+}
+
+.icono-f-de-facebook(@tam: 1, @color: #3b5998) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: calc(20px * @tam);
+    height: calc(20px * @tam);
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+    }
+
+    &::before {
+        width: calc(8px * @tam);
+        height: calc(20px * @tam);
+        border-left: calc(4px * @tam) solid;
+        border-top: calc(4px * @tam) solid;
+        border-top-left-radius: calc(5px * @tam);
+        left: calc(6px * @tam);
+        border-color: @color;
+    }
+
+    &::after {
+        width: calc(10px * @tam);
+        height: calc(4px * @tam);
+        background: @color;
+        top: calc(7px * @tam);
+        left: calc(4px * @tam);
+        transform: skew(-5deg);
+    }
+}
+
+.icono-facebook(@tam: 1) {
+    @blue-color: #3b5998;
+    @gray-color: #eee;
+
+    background: @blue-color;
+    text-indent: -999em;
+    width: calc(100px * @tam);
+    height: calc(110px * @tam);
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+    border: calc(15px * @tam) solid @blue-color;
+    border-bottom: 0;
+    display: inline-block;
+
+    &::before {
+        background: @blue-color;
+        content: "/20";
+        position: absolute;
+        bottom: calc(-30px * @tam);
+        right: calc(-37px * @tam);
+        width: calc(40px * @tam);
+        height: calc(90px * @tam);
+        border: calc(20px * @tam) solid @gray-color;
+        border-radius: calc(25px * @tam);
+    }
+
+    &::after {
+        background: @gray-color;
+        content: "/20";
+        position: absolute;
+        top: calc(50px * @tam);
+        right: calc(5px * @tam);
+        width: calc(55px * @tam);
+        height: calc(20px * @tam);
+    }
+}
+
+.icono-documento() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 14px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-right: 0;
+    border-top: 0;
+    box-shadow: 0 0 0 2px;
+    border-radius: 1px;
+    border-top-right-radius: 4px;
+    overflow: hidden;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+    }
+
+    &::before {
+        background: currentColor;
+        box-shadow: 0 4px 0, -6px -4px 0;
+        left: 0;
+        width: 10px;
+        height: 2px;
+        top: 8px;
+    }
+
+    &::after {
+        width: 6px;
+        height: 6px;
+        border-left: 2px solid;
+        border-bottom: 2px solid;
+        right: -1px;
+        top: -1px;
+    }
+}
+
+.icono-calculadora() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid;
+    border-radius: 3px;
+    margin-right: -2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        height: 2px;
+        border-radius: 4px;
+        background: currentColor;
+    }
+
+    &::before {
+        top: 2px;
+        box-shadow: 4px 0 0, 8px 0 0, 0 4px 0, 4px 4px 0, 8px 4px 0;
+        width: 2px;
+        left: 2px;
+    }
+
+    &::after {
+        width: 8px;
+        bottom: 2px;
+        left: 3px;
+    }
+}
+
+.icono-flecha-derecha(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 22px;
+    height: @tam * 22px;
+    left: @tam * 11px;
+    top: @tam * 2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        right: @tam * 13px;
+    }
+
+    &::after {
+        width: @tam * 8px;
+        height: @tam * 8px;
+        border-top: 2px solid;
+        border-right: 2px solid;
+        transform: rotate(45deg);
+        bottom: @tam * 10px;
+    }
+
+    &::before {
+        width: @tam * 16px;
+        height: @tam * 2px;
+        bottom: @tam * 13px;
+        background: currentColor;
+    }
+}
+
+.icono-flecha-izquierda(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 22px;
+    height: @tam * 22px;
+    right: @tam * 11px;
+    top: @tam * 2px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        left: @tam * 13px;
+    }
+
+    &::after {
+        width: @tam * 8px;
+        height: @tam * 8px;
+        border-top: 2px solid;
+        border-left: 2px solid;
+        transform: rotate(-45deg);
+        bottom: @tam * 10px;
+    }
+
+    &::before {
+        width: @tam * 16px;
+        height: @tam * 2px;
+        bottom: @tam * 13px;
+        background: currentColor;
+    }
+}
+
+.icono-flecha-siguiente(@tam: 1) {
+    &, &::after, &::before {
+        box-sizing: border-box;
+        position: relative;
+        display: block;
+        width: @tam * 15px;
+        height: @tam * 20px;
+    }
+
+    &::after,
+    &::before {
+        content: "";
+        position: absolute;
+        height: @tam * 15px;
+        border-left: 2px solid;
+        border-bottom: 2px solid;
+        transform: rotate(-135deg) scaleY(1);
+        left: @tam * -4px;
+        top: @tam * 3px;
+    }
+
+    &::after {
+        left: @tam * 4px;
+    }
+}
+
+.icono-flecha-anterior(@tam: 1) {
+    &, &::after, &::before {
+        box-sizing: border-box;
+        position: relative;
+        display: block;
+        width: @tam * 15px;
+        height: @tam * 20px;
+    }
+
+    &::after,
+    &::before {
+        content: "";
+        position: absolute;
+        height: @tam * 15px;
+        border-left: 2px solid;
+        border-bottom: 2px solid;
+        transform: rotate(45deg) scaleY(1);
+        left: @tam * -4px;
+        top: @tam * 3px;
+    }
+
+    &::after {
+        left: @tam * 4px;
+    }
+}
+
+.icono-angulo-abajo() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 22px;
+    height: 22px;
+    border: 2px solid transparent;
+    border-radius: 100px;
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-bottom: 2px solid;
+        border-right: 2px solid;
+        transform: rotate(45deg);
+        left: 1px;
+        top: -1px;
+    }
+}
+
+.icono-angulo-arriba() {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: 22px;
+    height: 22px;
+    border: 2px solid transparent;
+    border-radius: 100px;
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-top: 2px solid;
+        border-right: 2px solid;
+        transform: rotate(-45deg);
+        left: 1px;
+        top: 3px;
+    }
+}
+
+.icono-corona(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: calc(@tam * 19px);
+    height: calc(@tam * 12px);
+    border: calc(@tam * 2px) solid;
+    border-top-color: transparent;
+    border-bottom-right-radius: calc(@tam * 3px);
+    border-bottom-left-radius: calc(@tam * 3px);
+    padding-top: calc(@tam * 10px);
+    margin-top: calc(@tam * 5px);
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+        width: calc(@tam * 8px);
+        height: calc(@tam * 8px);
+        border-bottom: calc(@tam * 2px) solid;
+        border-left: calc(@tam * 2px) solid;
+        transform: rotate(-45deg);
+        top: calc(@tam * -4px);
+    }
+
+    &::before {
+        border-top-left-radius: calc(@tam * 2px);
+        left: calc(@tam * -1px);
+    }
+
+    &::after {
+        border-bottom-right-radius: calc(@tam * 2px);
+        right: calc(@tam * -1px);
+    }
+}
+
+.icono-link(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    transform: rotate(-45deg);
+    width: @tam * 8px;
+    height: @tam * 2px;
+    background: currentColor;
+    border-radius: @tam * 4px;
+    margin: @tam * 12px @tam * 7px @tam * 12px @tam * 8px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: @tam * 3px;
+        width: @tam * 8px;
+        height: @tam * 10px;
+        border: @tam * 2px solid;
+        top: @tam * -4px;
+    }
+
+    &::before {
+        border-right: 0;
+        border-top-left-radius: @tam * 40px;
+        border-bottom-left-radius: @tam * 40px;
+        left: @tam * -6px;
+    }
+
+    &::after {
+        border-left: 0;
+        border-top-right-radius: @tam * 40px;
+        border-bottom-right-radius: @tam * 40px;
+        right: @tam * -6px;
+    }
+}
+
+.icono-flecha-volver(@tam: 1) {
+    &, &::before {
+        display: block;
+        box-sizing: border-box;
+        height: @tam * 6px;
+        border-top: @tam * 2px solid;
+    }
+
+    border-right: @tam * 2px solid;
+    border-top-right-radius: @tam * 4px;
+    position: relative;
+    width: @tam * 14px;
+
+    &::before {
+        content: "";
+        position: absolute;
+        width: @tam * 6px;
+        border-left: @tam * 2px solid;
+        top: @tam * -4px;
+        left: @tam * -1px;
+        transform: rotate(-45deg);
+    }
+}
+
+.icono-flecha-deshacer(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 14px;
+    height: @tam * 14px;
+    border: @tam * 2px solid;
+    border-left-color: transparent;
+    border-radius: 100px;
+
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: @tam * 6px;
+        height: @tam * 6px;
+        border-top: @tam * 2px solid;
+        border-left: @tam * 2px solid;
+        top: @tam * -3px;
+        left: @tam * -1px;
+        transform: rotate(-68deg);
+    }
+}
+
+.icono-flecha-rehacer(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 14px;
+    height: @tam * 14px;
+    border: @tam * 2px solid;
+    border-right-color: transparent;
+    border-radius: 100px;
+
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: @tam * 6px;
+        height: @tam * 6px;
+        border-top: @tam * 2px solid;
+        border-right: @tam * 2px solid;
+        top: @tam * -3px;
+        right: @tam * -1px;
+        transform: rotate(68deg);
+    }
+}
+
+.icono-flecha-cargar(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 16px;
+    height: @tam * 6px;
+    border: @tam * 2px solid;
+    border-top: 0;
+    border-bottom-left-radius: @tam * 2px;
+    border-bottom-right-radius: @tam * 2px;
+    margin-top: @tam * 8px;
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: @tam * 8px;
+        height: @tam * 8px;
+        border-left: @tam * 2px solid;
+        border-top: @tam * 2px solid;
+        transform: rotate(45deg);
+        left: @tam * 2px;
+        bottom: @tam * 4px;
+    }
+
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: @tam * 3px;
+        width: @tam * 2px;
+        height: @tam * 10px;
+        background: currentColor;
+        left: @tam * 5px;
+        bottom: @tam * 3px;
+    }
+}
+
+.icono-archivo-extension(@textoExtension, @tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 14px;
+    height: @tam * 16px;
+    border: 2px solid transparent;
+    border-right: 0;
+    border-top: 0;
+    box-shadow: 0 0 0 2px;
+    border-radius: 1px;
+    border-top-right-radius: @tam * 4px;
+    overflow: hidden;
+
+    &::before {
+        content: @textoExtension;
+        font-size: @tam * 5px;
+        position: absolute;
+        bottom: @tam * -1px;
+        left: 0px;
+    }
+
+    &::after {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        width: @tam * 6px;
+        height: @tam * 6px;
+        border-left: 2px solid;
+        border-bottom: 2px solid;
+        right: @tam * -1px;
+        top: @tam * -1px;
+    }
+}
+
+.icono-ojo(@tam: 1) {
+    position: relative;
+    display: block;
+    width: @tam * 24px;
+    height: @tam * 18px;
+    border-bottom-right-radius: 100px;
+    border-bottom-left-radius: 100px;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        border-radius: 100px;
+        position: absolute;
+        box-sizing: border-box;
+    }
+
+    &::after {
+        top: @tam * 2px;
+        box-shadow: inset 0 -8px 0 2px, inset 0 0 0 2px;
+        width: @tam * 24px;
+        height: @tam * 24px;
+    }
+
+    &::before {
+        width: @tam * 8px;
+        height: @tam * 8px;
+        border: 2px solid;
+        bottom: @tam * 4px;
+        left: @tam * 8px;
+    }
+}
+
+.icono-informacion(@tam: 1) {
+    box-sizing: border-box;
+    position: relative;
+    display: block;
+    width: @tam * 20px;
+    height: @tam * 20px;
+    border: 2px solid;
+    border-radius: @tam * 40px;
+
+    &::after,
+    &::before {
+        content: "";
+        display: block;
+        box-sizing: border-box;
+        position: absolute;
+        border-radius: @tam * 3px;
+        width: @tam * 2px;
+        background: currentColor;
+        left: @tam * 7px;
+    }
+
+    &::after {
+        bottom: @tam * 2px;
+        height: @tam * 8px;
+    }
+
+    &::before {
+        height: @tam * 2px;
+        top: @tam * 2px;
+    }
+}
+
+.icono-telefono(@tam: 1, @color: #333, @fondo: #fff, @boton: #bbb) {
+    display: inline-block;
+    width: @tam * 24px;
+    height: @tam * 40px;
+    background: @color;
+    border-radius: @tam * 5px;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.17);
+
+    &:before {
+        content: '';
+        display: block;
+        position: absolute;
+        left: @tam * 5px;
+        right: @tam * 5px;
+        top: @tam * 6px;
+        height: @tam * 26px;
+        background: @fondo;
+        border-radius: @tam * 3px;
+    }
+
+    &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        left: @tam * 10px;
+        right: @tam * 10px;
+        bottom: @tam * 4px;
+        height: @tam * 3px;
+        background: @boton;
+        border-radius: @tam * 2px;
+    }
+}
+//&&&&&&&&&&&&&&&&&&&&& iconos en pure css.fin &&&&&&&&&&&&&&&&&&&&&//
