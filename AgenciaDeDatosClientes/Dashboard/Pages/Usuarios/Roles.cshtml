@@ -61,20 +61,20 @@
 
             @if (Model.Usuario.RolesAsignados.Any())
             {
-                <div class="grid-roles">
+                <div class="lista-roles">
                     @foreach (var rol in Model.Usuario.RolesAsignados)
                     {
-                        <div class="rol-card asignado">
-                            <div class="rol-header">
-                                <span class="rol-nombre">@rol.Nombre</span>
-                                <span class="badge badge-exito">Asignado</span>
-                            </div>
-                            @if (!string.IsNullOrEmpty(rol.Descripcion))
-                            {
-                                <div class="rol-descripcion">
-                                    @rol.Descripcion
+                        <div class="rol-item asignado">
+                            <div class="rol-contenido">
+                                <div class="rol-header">
+                                    <h3 class="rol-nombre">@rol.Nombre</h3>
+                                    <span class="badge badge-exito">Asignado</span>
                                 </div>
-                            }
+                                @if (!string.IsNullOrEmpty(rol.Descripcion))
+                                {
+                                    <p class="rol-descripcion">@rol.Descripcion</p>
+                                }
+                            </div>
                         </div>
                     }
                 </div>
@@ -99,20 +99,20 @@
         <section class="seccion-roles-disponibles">
             <div class="card">
                 <h2 class="titulo-seccion">Roles Disponibles (@Model.Usuario.RolesDisponibles.Count)</h2>
-                <div class="grid-roles">
+                <div class="lista-roles">
                     @foreach (var rol in Model.Usuario.RolesDisponibles)
                     {
-                        <div class="rol-card disponible">
-                            <div class="rol-header">
-                                <span class="rol-nombre">@rol.Nombre</span>
-                                <span class="badge badge-neutro">Disponible</span>
-                            </div>
-                            @if (!string.IsNullOrEmpty(rol.Descripcion))
-                            {
-                                <div class="rol-descripcion">
-                                    @rol.Descripcion
+                        <div class="rol-item disponible">
+                            <div class="rol-contenido">
+                                <div class="rol-header">
+                                    <h3 class="rol-nombre">@rol.Nombre</h3>
+                                    <span class="badge badge-neutro">Disponible</span>
                                 </div>
-                            }
+                                @if (!string.IsNullOrEmpty(rol.Descripcion))
+                                {
+                                    <p class="rol-descripcion">@rol.Descripcion</p>
+                                }
+                            </div>
                         </div>
                     }
                 </div>

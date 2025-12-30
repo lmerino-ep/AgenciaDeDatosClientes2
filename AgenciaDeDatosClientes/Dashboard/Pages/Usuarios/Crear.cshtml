@@ -24,16 +24,27 @@
     </div>
 </div>
 
-@if (!string.IsNullOrEmpty(Model.MensajeError))
+@{
+    bool tieneErrores = !string.IsNullOrEmpty(Model.MensajeError) || 
+                        (ViewData.ModelState != null && !ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0);
+}
+
+@if (tieneErrores)
 {
     <div class="alerta alerta-error">
-        @Model.MensajeError
+        @if (!string.IsNullOrEmpty(Model.MensajeError))
+        {
+            <p>@Model.MensajeError</p>
+        }
+        @if (ViewData.ModelState != null && !ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+        {
+            <div asp-validation-summary="All"></div>
+        }
     </div>
 }
 
 <form method="post" class="form-usuario">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="All" class="alerta alerta-error"></div>
 
     <section class="seccion-formulario">
         <div class="card">
@@ -86,13 +97,6 @@
                 <label asp-for="Modelo.ConfirmarPassword">Confirmar Contraseña *</label>
                 <input asp-for="Modelo.ConfirmarPassword" class="form-control" type="password" required />
                 <span asp-validation-for="Modelo.ConfirmarPassword" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label>
-                    <input asp-for="Modelo.Activo" type="checkbox" checked />
-                    Usuario Activo
-                </label>
             </div>
         </div>
     </section>

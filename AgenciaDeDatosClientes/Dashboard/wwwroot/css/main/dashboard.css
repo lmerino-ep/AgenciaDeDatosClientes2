@@ -31,7 +31,7 @@
   transition: all 0.3s ease;
   overflow: hidden;
   padding: 20px;
-  width: calc(25% - 20px);
+  flex: 1 1 auto;
   min-width: 250px;
 }
 .layout-body .seccion-estadisticas .tarjeta-estadistica:hover {
@@ -144,7 +144,7 @@
   border-radius: 4px;
   background-color: #05576B;
   color: white;
-  width: calc(25% - 20px);
+  flex: 1 1 auto;
   min-width: 200px;
   padding: 20px;
   display: flex;
@@ -307,10 +307,12 @@
 }
 @media (max-width: 1199px) {
   .layout-body .seccion-estadisticas .tarjeta-estadistica {
-    width: calc(50% - 20px);
+    flex: 1 1 auto;
+    min-width: calc(50% - 20px);
   }
   .layout-body .seccion-acciones .grid-acciones .boton-accion {
-    width: calc(50% - 20px);
+    flex: 1 1 auto;
+    min-width: calc(50% - 15px);
   }
 }
 @media (max-width: 767px) {

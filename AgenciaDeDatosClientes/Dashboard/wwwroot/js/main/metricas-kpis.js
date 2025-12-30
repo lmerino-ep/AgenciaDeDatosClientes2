@@ -92,17 +92,76 @@ function inicializarGrafico(resultadoDatos, nombreKpi) {
     const columnas = Object.keys(resultadoDatos[0]);
     let tipoGrafico = 'bar'; // Por defecto
 
-    // Si hay columna "Fecha" o "fecha", usar gráfico de líneas
-    if (columnas.some(c => c.toLowerCase().includes('fecha'))) {
+    // Función para determinar si una columna es numérica
+    function esColumnaNumerica(nombreColumna, datos) {
+        const nombreLower = nombreColumna.toLowerCase();
+        // Columnas que siempre son numéricas
+        if (nombreLower.includes('total') || 
+            nombreLower.includes('cantidad') || 
+            nombreLower.includes('count') ||
+            nombreLower.includes('suma') ||
+            nombreLower.includes('promedio') ||
+            nombreLower.includes('media')) {
+            return true;
+        }
+        // Verificar si los valores son numéricos
+        const valores = datos.map(r => r[nombreColumna]).filter(v => v != null);
+        if (valores.length === 0) return false;
+        // Si al menos el 80% de los valores son numéricos, considerarla numérica
+        const valoresNumericos = valores.filter(v => !isNaN(parseFloat(v)) && isFinite(v));
+        return valoresNumericos.length / valores.length >= 0.8;
+    }
+
+    // Función para determinar si una columna es descriptiva/metadatos (debe ignorarse para el gráfico)
+    function esColumnaDescriptiva(nombreColumna) {
+        const nombreLower = nombreColumna.toLowerCase();
+        // Patrones de columnas descriptivas que no deben usarse en gráficos
+        const patronesDescriptivos = [
+            'nombre', 'email', 'usuario', 'descripcion', 'descripción',
+            'ultima', 'última', 'fecha', 'fechaalta', 'fechacreacion',
+            'id', 'codigo', 'código', 'tipo', 'categoria', 'categoría',
+            'empresa', 'apellidos', 'foto', 'gmailid', 'token',
+            'password', 'restablecer', 'solicitud', 'nacimiento'
+        ];
+        return patronesDescriptivos.some(patron => nombreLower.includes(patron));
+    }
+
+    // Identificar columnas clave de forma más precisa
+    const columnaFecha = columnas.find(c => {
+        const cLower = c.toLowerCase();
+        return (cLower === 'fecha' || cLower.includes('fecha')) && !esColumnaDescriptiva(c);
+    });
+    
+    // Filtrar columnas numéricas (excluyendo descriptivas)
+    const columnasNumericas = columnas.filter(c => 
+        !esColumnaDescriptiva(c) && esColumnaNumerica(c, resultadoDatos)
+    );
+    
+    // Columna de valor: busca columnas numéricas, priorizando "Total", "Cantidad", etc.
+    const columnaValor = columnasNumericas.find(c => {
+        const cLower = c.toLowerCase();
+        return cLower === 'total' || 
+               cLower.includes('total') || 
+               cLower === 'cantidad' ||
+               cLower.includes('cantidad');
+    }) || (columnasNumericas.length > 0 ? columnasNumericas[0] : null);
+    
+    // Columna de categoría: primera columna que no sea fecha, valor numérico, ni descriptiva
+    const columnaCategoria = columnas.find(c => {
+        if (c === columnaFecha || c === columnaValor) return false;
+        if (esColumnaDescriptiva(c)) return false;
+        if (esColumnaNumerica(c, resultadoDatos)) return false;
+        return true;
+    });
+
+    // Si hay columna "Fecha", usar gráfico de líneas
+    if (columnaFecha) {
         tipoGrafico = 'line';
     }
 
     // Si solo hay 2 columnas y una contiene "Total" o "Cantidad", puede ser pastel
-    if (columnas.length === 2 && resultadoDatos.length <= 10) {
-        const tieneTotal = columnas.some(c => c.toLowerCase().includes('total') || c.toLowerCase().includes('cantidad'));
-        if (tieneTotal) {
-            tipoGrafico = 'pie';
-        }
+    if (columnas.length === 2 && resultadoDatos.length <= 10 && columnaValor) {
+        tipoGrafico = 'pie';
     }
 
     // Preparar datos para Chart.js
@@ -128,23 +187,195 @@ function inicializarGrafico(resultadoDatos, nombreKpi) {
                 'rgba(99, 255, 132, 0.8)'
             ]
         }];
-    } else {
-        // Para barras/líneas: labels son la primera columna, datasets son las demás
-        labels = resultadoDatos.map(r => r[columnas[0]]);
-        for (let i = 1; i < columnas.length; i++) {
-            datasets.push({
-                label: columnas[i],
-                data: resultadoDatos.map(r => r[columnas[i]]),
-                backgroundColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.5)`,
-                borderColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 1)`,
-                borderWidth: 2
+    } else if (columnaFecha && columnaCategoria && columnaValor) {
+        // Caso especial: hay fecha, categoría y valor (ej: Actividad por mes y tipo)
+        // Agrupar por fecha y crear una serie por cada categoría
+        const fechasUnicas = [...new Set(resultadoDatos.map(r => String(r[columnaFecha])))].sort();
+        const categoriasUnicas = [...new Set(resultadoDatos.map(r => String(r[columnaCategoria])))].sort();
+        
+        labels = fechasUnicas;
+        
+        // Colores predefinidos para las series (más colores para más series)
+        const colores = [
+            { bg: 'rgba(255, 99, 132, 0.6)', border: 'rgba(255, 99, 132, 1)' },
+            { bg: 'rgba(54, 162, 235, 0.6)', border: 'rgba(54, 162, 235, 1)' },
+            { bg: 'rgba(255, 206, 86, 0.6)', border: 'rgba(255, 206, 86, 1)' },
+            { bg: 'rgba(75, 192, 192, 0.6)', border: 'rgba(75, 192, 192, 1)' },
+            { bg: 'rgba(153, 102, 255, 0.6)', border: 'rgba(153, 102, 255, 1)' },
+            { bg: 'rgba(255, 159, 64, 0.6)', border: 'rgba(255, 159, 64, 1)' },
+            { bg: 'rgba(199, 199, 199, 0.6)', border: 'rgba(199, 199, 199, 1)' },
+            { bg: 'rgba(83, 102, 255, 0.6)', border: 'rgba(83, 102, 255, 1)' },
+            { bg: 'rgba(255, 99, 255, 0.6)', border: 'rgba(255, 99, 255, 1)' },
+            { bg: 'rgba(99, 255, 132, 0.6)', border: 'rgba(99, 255, 132, 1)' },
+            { bg: 'rgba(255, 159, 192, 0.6)', border: 'rgba(255, 159, 192, 1)' },
+            { bg: 'rgba(159, 255, 192, 0.6)', border: 'rgba(159, 255, 192, 1)' },
+            { bg: 'rgba(192, 159, 255, 0.6)', border: 'rgba(192, 159, 255, 1)' },
+            { bg: 'rgba(255, 192, 99, 0.6)', border: 'rgba(255, 192, 99, 1)' },
+            { bg: 'rgba(99, 192, 255, 0.6)', border: 'rgba(99, 192, 255, 1)' }
+        ];
+        
+        categoriasUnicas.forEach((categoria, index) => {
+            const data = fechasUnicas.map(fecha => {
+                const registro = resultadoDatos.find(r => 
+                    String(r[columnaFecha]) === fecha && String(r[columnaCategoria]) === categoria
+                );
+                if (registro) {
+                    const valor = registro[columnaValor];
+                    return valor != null ? (parseFloat(valor) || 0) : 0;
+                }
+                return 0;
             });
-        }
+            
+            const color = colores[index % colores.length];
+            datasets.push({
+                label: categoria,
+                data: data,
+                backgroundColor: color.bg,
+                borderColor: color.border,
+                borderWidth: 2,
+                tension: tipoGrafico === 'line' ? 0.4 : 0,
+                // Guardar el índice del dataset para usar en datalabels
+                _datasetIndex: index
+            });
+        });
+    } else {
+        // Caso estándar: labels son la primera columna no descriptiva, datasets son las columnas numéricas
+        // Encontrar la primera columna que no sea descriptiva ni numérica para los labels
+        const columnaLabel = columnas.find(c => 
+            !esColumnaDescriptiva(c) && !esColumnaNumerica(c, resultadoDatos)
+        ) || columnas[0]; // Si no hay, usar la primera
+        
+        labels = [...new Set(resultadoDatos.map(r => String(r[columnaLabel] || '')))];
+        
+        // Crear datasets solo para columnas numéricas (excluyendo descriptivas)
+        columnasNumericas.forEach((columna, index) => {
+            const data = labels.map(label => {
+                const registro = resultadoDatos.find(r => String(r[columnaLabel] || '') === label);
+                if (registro) {
+                    const valor = registro[columna];
+                    return valor != null ? (parseFloat(valor) || 0) : 0;
+                }
+                return 0;
+            });
+            
+            datasets.push({
+                label: columna,
+                data: data,
+                backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.5)`,
+                borderColor: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`,
+                borderWidth: 2,
+                // Guardar el índice del dataset para usar en datalabels
+                _datasetIndex: index
+            });
+        });
     }
 
     // Crear gráfico
     const ctx = document.getElementById('chartKpi');
     if (ctx) {
+        // Contar número de datasets para evitar solapamientos
+        const numDatasets = datasets.length;
+        
+        // Configuración de datalabels según el tipo de gráfico
+        let datalabelsConfig = {};
+        
+        if (tipoGrafico === 'pie') {
+            // Para gráficos de pastel: mostrar dentro del quesito
+            datalabelsConfig = {
+                color: '#fff',
+                font: {
+                    weight: 'bold',
+                    size: 12
+                },
+                formatter: (value, context) => {
+                    // Para gráficos de pastel, value es el valor del dato
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    return value.toLocaleString('es-ES') + '\n(' + percentage + '%)';
+                }
+            };
+        } else if (tipoGrafico === 'line') {
+            // Para gráficos de líneas: alternar posición arriba/abajo según el dataset para evitar solapamientos
+            datalabelsConfig = {
+                color: '#333',
+                font: {
+                    weight: 'bold',
+                    size: 10
+                },
+                formatter: (value) => {
+                    return value != null ? value.toLocaleString('es-ES') : '';
+                },
+                display: (context) => {
+                    // Mostrar solo si el valor es significativo
+                    return context.dataset.data[context.dataIndex] != null;
+                },
+                // Alternar posición según el índice del dataset
+                anchor: (context) => {
+                    const datasetIndex = context.dataset._datasetIndex !== undefined 
+                        ? context.dataset._datasetIndex 
+                        : context.datasetIndex;
+                    // Si hay múltiples datasets, alternar arriba/abajo
+                    return datasetIndex % 2 === 0 ? 'end' : 'start';
+                },
+                align: (context) => {
+                    const datasetIndex = context.dataset._datasetIndex !== undefined 
+                        ? context.dataset._datasetIndex 
+                        : context.datasetIndex;
+                    // Si hay múltiples datasets, alternar arriba/abajo
+                    return datasetIndex % 2 === 0 ? 'top' : 'bottom';
+                },
+                offset: (context) => {
+                    const datasetIndex = context.dataset._datasetIndex !== undefined 
+                        ? context.dataset._datasetIndex 
+                        : context.datasetIndex;
+                    // Aumentar el offset cuando hay múltiples datasets
+                    const baseOffset = numDatasets > 1 ? 8 : 4;
+                    return datasetIndex % 2 === 0 ? baseOffset : -baseOffset;
+                },
+                clamp: true, // Evitar que las etiquetas se salgan del área del gráfico
+                padding: {
+                    top: 2,
+                    bottom: 2,
+                    left: 2,
+                    right: 2
+                }
+            };
+        } else {
+            // Para gráficos de barras: usar offset vertical para separar cuando hay múltiples datasets
+            datalabelsConfig = {
+                anchor: 'end',
+                align: 'top',
+                color: '#333',
+                font: {
+                    weight: 'bold',
+                    size: 10
+                },
+                formatter: (value) => {
+                    return value != null ? value.toLocaleString('es-ES') : '';
+                },
+                display: (context) => {
+                    // Mostrar solo si el valor es significativo
+                    return context.dataset.data[context.dataIndex] != null;
+                },
+                // Aplicar offset vertical cuando hay múltiples datasets
+                offset: (context) => {
+                    if (numDatasets <= 1) return 4;
+                    const datasetIndex = context.dataset._datasetIndex !== undefined 
+                        ? context.dataset._datasetIndex 
+                        : context.datasetIndex;
+                    // Separar verticalmente según el índice del dataset
+                    return 4 + (datasetIndex * 15);
+                },
+                clamp: true, // Evitar que las etiquetas se salgan del área del gráfico
+                padding: {
+                    top: 2,
+                    bottom: 2,
+                    left: 2,
+                    right: 2
+                }
+            };
+        }
+        
         new Chart(ctx.getContext('2d'), {
             type: tipoGrafico,
             data: {
@@ -153,7 +384,7 @@ function inicializarGrafico(resultadoDatos, nombreKpi) {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: true,
@@ -161,12 +392,31 @@ function inicializarGrafico(resultadoDatos, nombreKpi) {
                     },
                     title: {
                         display: true,
-                        text: nombreKpi
-                    }
+                        text: nombreKpi,
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false
+                    },
+                    datalabels: datalabelsConfig
                 },
                 scales: tipoGrafico !== 'pie' ? {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
                     }
                 } : {}
             }
@@ -191,6 +441,18 @@ document.addEventListener('DOMContentLoaded', function() {
         btnLimpiar.addEventListener('click', limpiarFormulario);
     }
 
+    // Toggle de tabla
+    const btnToggleTabla = document.getElementById('btnToggleTabla');
+    const contenidoTabla = document.getElementById('contenidoTabla');
+    const textoToggleTabla = document.getElementById('textoToggleTabla');
+    if (btnToggleTabla && contenidoTabla && textoToggleTabla) {
+        btnToggleTabla.addEventListener('click', function() {
+            const estaVisible = contenidoTabla.style.display !== 'none';
+            contenidoTabla.style.display = estaVisible ? 'none' : 'block';
+            textoToggleTabla.textContent = estaVisible ? 'Mostrar tabla' : 'Ocultar tabla';
+        });
+    }
+
     // Inicializar gráfico si hay datos
     const resultadoDataElement = document.getElementById('resultado-datos');
     const nombreKpiElement = document.getElementById('nombre-kpi');
@@ -198,17 +460,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const resultadoDatos = JSON.parse(resultadoDataElement.textContent);
         const nombreKpi = nombreKpiElement.textContent;
         if (resultadoDatos && resultadoDatos.length > 0) {
-            // Esperar a que Chart.js esté cargado
-            if (typeof Chart !== 'undefined') {
-                inicializarGrafico(resultadoDatos, nombreKpi);
-            } else {
-                // Si Chart.js se carga de forma asíncrona, esperar un poco
-                setTimeout(() => {
-                    if (typeof Chart !== 'undefined') {
-                        inicializarGrafico(resultadoDatos, nombreKpi);
+            // Función para intentar inicializar el gráfico
+            function intentarInicializarGrafico() {
+                if (typeof Chart !== 'undefined') {
+                    // Registrar el plugin de datalabels si está disponible
+                    // El plugin puede estar disponible como ChartDataLabels o como parte de Chart
+                    if (typeof ChartDataLabels !== 'undefined') {
+                        Chart.register(ChartDataLabels);
+                    } else if (typeof window.ChartDataLabels !== 'undefined') {
+                        Chart.register(window.ChartDataLabels);
                     }
-                }, 100);
+                    inicializarGrafico(resultadoDatos, nombreKpi);
+                } else {
+                    // Si Chart.js aún no está cargado, esperar un poco más
+                    setTimeout(intentarInicializarGrafico, 100);
+                }
             }
+            
+            // Esperar a que Chart.js esté cargado (puede tener defer)
+            intentarInicializarGrafico();
         }
     }
 });

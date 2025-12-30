@@ -106,22 +106,15 @@
                  User.IsInRole("Dashboard - Exportación de Métricas") ||
                  User.IsInRole("Dashboard - Acceso total"))
             {
-                <a asp-page="/metricas/listado" class="boton-accion">
+                <a asp-page="/metricas/kpis" class="boton-accion">
                     <span class="texto">Ver Métricas</span>
                 </a>
             }
 
             @if (User.IsInRole("Dashboard - Auditoría") || User.IsInRole("Dashboard - Acceso total"))
             {
-                <a asp-page="/auditoria/listado" class="boton-accion">
+                <a asp-page="/auditoria/dashboard" class="boton-accion">
                     <span class="texto">Ver Auditoría</span>
-                </a>
-            }
-
-            @if (User.IsInRole("Dashboard - Gestión de Documentación") || User.IsInRole("Dashboard - Acceso total"))
-            {
-                <a asp-page="/documentacion/listado" class="boton-accion">
-                    <span class="texto">Ver Documentos</span>
                 </a>
             }
         </div>
@@ -187,11 +180,6 @@
             <li class="item">
                 <a href="mailto:soporte@epdata.es" class="enlace">
                     <span>Contactar Soporte</span>
-                </a>
-            </li>
-            <li class="item">
-                <a asp-page="/documentacion/listado" class="enlace">
-                    <span>Ver Documentación</span>
                 </a>
             </li>
         </ul>

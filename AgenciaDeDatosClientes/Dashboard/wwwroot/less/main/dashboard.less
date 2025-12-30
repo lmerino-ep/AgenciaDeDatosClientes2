@@ -43,7 +43,7 @@
 
         .tarjeta-estadistica {
             .card(20px);
-            width: @anchoTarjeta;
+            flex: 1 1 auto;
             min-width: 250px;
 
             .contenido {
@@ -144,7 +144,7 @@
 
             .boton-accion {
                 .boton(@ColorEpDataComplementario, white);
-                width: @anchoTarjeta;
+                flex: 1 1 auto;
                 min-width: 200px;
                 padding: 20px;
                 display: flex;
@@ -300,11 +300,13 @@
     // Responsive
     @media (max-width: 1199px) {
         .seccion-estadisticas .tarjeta-estadistica {
-            width: @anchoTarjetaTablet;
+            flex: 1 1 auto;
+            min-width: calc(50% - 20px);
         }
 
         .seccion-acciones .grid-acciones .boton-accion {
-            width: @anchoTarjetaTablet;
+            flex: 1 1 auto;
+            min-width: calc(50% - 15px);
         }
     }
 

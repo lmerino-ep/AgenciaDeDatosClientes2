@@ -43,6 +43,11 @@
         <form method="get" class="form-filtros">
             <div class="grid-filtros">
                 <div class="form-group">
+                    <label for="Busqueda">Búsqueda (Email, Nombre, Apellidos):</label>
+                    <input type="text" name="Busqueda" id="Busqueda" class="form-control" value="@Model.Busqueda" placeholder="Buscar...">
+                </div>
+
+                <div class="form-group">
                     <label for="FK_UsuarioTipo">Tipo de Usuario:</label>
                     <select name="FK_UsuarioTipo" id="FK_UsuarioTipo" class="form-control">
                         <option value="">Todos</option>
@@ -63,11 +68,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="Busqueda">Búsqueda (Email, Nombre, Apellidos):</label>
-                    <input type="text" name="Busqueda" id="Busqueda" class="form-control" value="@Model.Busqueda" placeholder="Buscar...">
-                </div>
-
-                <div class="form-group">
                     <label for="TamanoPagina">Registros por página:</label>
                     <select name="TamanoPagina" id="TamanoPagina" class="form-control">
                         <option value="25" selected="@(Model.TamanoPagina == 25)">25</option>
@@ -80,10 +80,6 @@
             <div class="form-actions">
                 <button type="submit" class="boton boton-primario">Filtrar</button>
                 <a href="/usuarios/listado" class="boton boton-secundario">Limpiar</a>
-                @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionUsuarios) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
-                {
-                    <a href="/usuarios/crear" class="boton boton-primario">Crear Usuario</a>
-                }
             </div>
         </form>
     </div>
@@ -94,6 +90,10 @@
     <div class="card">
         <div class="header-con-accion">
             <h2 class="titulo-seccion">Usuarios (@Model.TotalUsuarios)</h2>
+            @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionUsuarios) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+            {
+                <a href="/usuarios/crear" class="boton boton-primario">Crear Usuario</a>
+            }
         </div>
 
         @if (Model.Usuarios.Any())

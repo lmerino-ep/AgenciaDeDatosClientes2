@@ -54,6 +54,8 @@ namespace Pages.Usuarios
                 }
 
                 TodosLosRoles = await _servicioRoles.ObtenerTodosLosRolesAsync();
+                // Ordenar roles por nombre
+                TodosLosRoles = TodosLosRoles.OrderBy(r => r.Nombre).ToList();
                 RolesAsignadosIds = Usuario.RolesAsignados.Select(r => r.Id).ToList();
 
                 return Page();

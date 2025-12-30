@@ -111,47 +111,58 @@
                 </a>
             </div>
 
-            <!-- Gráfico (si hay datos) -->
+            <!-- Gráfico (visualización principal) -->
             @if (Model.Resultado.Datos.Count > 0)
             {
-                <div class="contenedor-grafico">
-                    <canvas id="chartKpi" width="400" height="200"></canvas>
+                <div class="contenedor-grafico" style="margin: 30px 0; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <div style="position: relative; height: 500px;">
+                        <canvas id="chartKpi"></canvas>
+                    </div>
                 </div>
             }
 
-            <!-- Tabla de resultados -->
+            <!-- Tabla de resultados (colapsable) -->
             @if (Model.Resultado.Datos.Count > 0)
             {
-                <div class="tabla-resultados">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                @foreach (var columna in Model.Resultado.Datos[0].Keys)
-                                {
-                                    <th>@columna</th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var fila in Model.Resultado.Datos.Take(100)) // Mostrar máximo 100 filas
-                            {
-                                <tr>
-                                    @foreach (var valor in fila.Values)
+                <div class="tabla-resultados" style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="margin: 0;">Datos en tabla</h3>
+                        <button type="button" id="btnToggleTabla" class="btn btn-secondary" style="font-size: 0.9em;">
+                            <span id="textoToggleTabla">Mostrar tabla</span>
+                        </button>
+                    </div>
+                    <div id="contenidoTabla" style="display: none;">
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        @foreach (var columna in Model.Resultado.Datos[0].Keys)
+                                        {
+                                            <th>@columna</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var fila in Model.Resultado.Datos.Take(100))
                                     {
-                                        <td>@(valor?.ToString() ?? "-")</td>
+                                        <tr>
+                                            @foreach (var valor in fila.Values)
+                                            {
+                                                <td>@(valor?.ToString() ?? "-")</td>
+                                            }
+                                        </tr>
                                     }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-
-                    @if (Model.Resultado.Datos.Count > 100)
-                    {
-                        <p class="nota-paginacion">
-                            Mostrando los primeros 100 de @Model.Resultado.TotalRegistros registros.
-                            Use la exportación para obtener el conjunto completo de datos.
-                        </p>
-                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.Resultado.Datos.Count > 100)
+                        {
+                            <p class="nota-paginacion" style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                                Mostrando los primeros 100 de @Model.Resultado.TotalRegistros registros.
+                                Use la exportación para obtener el conjunto completo de datos.
+                            </p>
+                        }
+                    </div>
                 </div>
             }
             else
@@ -192,9 +203,9 @@
         </script>
         <script type="text/plain" id="nombre-kpi" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">@Model.Resultado.Nombre</script>
         
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
-                integrity="sha256-VN8LOX18pTDGPH8/CT6jM+TQ+wVAq5WLhLUYF+N+1M4="
-                crossorigin="anonymous"></script>
+        <!-- Chart.js y plugin de datalabels siempre se cargan cuando hay resultados -->
+        <script src="~/js/chart.umd.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script src="~/js/chartjs-plugin-datalabels.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
     }
 
     <environment include="Development">

@@ -16,7 +16,7 @@
     "inputFile": "wwwroot/less/main/footer.less"
   },
   {
-    "outputFile": "wwwroot/js/main/metricas-kpis.es5.js",
-    "inputFile": "wwwroot/js/main/metricas-kpis.js"
+    "outputFile": "wwwroot/css/main/usuarios.css",
+    "inputFile": "wwwroot/less/main/usuarios.less"
   }
 ]

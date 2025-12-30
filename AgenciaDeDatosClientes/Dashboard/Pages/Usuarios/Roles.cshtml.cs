@@ -37,6 +37,16 @@ namespace Pages.Usuarios
                     return NotFound();
                 }
 
+                // Ordenar roles por nombre
+                if (Usuario.RolesAsignados != null)
+                {
+                    Usuario.RolesAsignados = Usuario.RolesAsignados.OrderBy(r => r.Nombre).ToList();
+                }
+                if (Usuario.RolesDisponibles != null)
+                {
+                    Usuario.RolesDisponibles = Usuario.RolesDisponibles.OrderBy(r => r.Nombre).ToList();
+                }
+
                 return Page();
             }
             catch (Exception ex)

@@ -363,3 +363,4 @@ FodyWeavers.xsd
 /AgenciaDeDatosClientes/Dashboard/Properties/epdata.es+1.p12
 *.md
 /scripts
+*.sql

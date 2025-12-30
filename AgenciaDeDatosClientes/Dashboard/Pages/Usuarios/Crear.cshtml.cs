@@ -74,6 +74,9 @@ namespace Pages.Usuarios
                     return Page();
                 }
 
+                // El usuario siempre se crea activo
+                Modelo.Activo = true;
+
                 // Hashear contraseña antes de enviarla al servicio (separación de capas)
                 Modelo.Password = Hash.HashText(Modelo.Password);
 

@@ -85,22 +85,23 @@
                     </label>
                 </div>
 
-                <div class="grid-roles-editar">
+                <div class="lista-roles-editar">
                     @foreach (var rol in Model.TodosLosRoles)
                     {
                         bool estaAsignado = Model.RolesAsignadosIds.Contains(rol.Id);
-                        string claseTarjeta = estaAsignado ? "rol-card-editable asignado" : "rol-card-editable";
+                        string claseItem = estaAsignado ? "rol-item-editable asignado" : "rol-item-editable";
 
-                        <div class="@claseTarjeta">
-                            <label class="rol-checkbox">
+                        <div class="@claseItem">
+                            <label class="rol-checkbox-label">
                                 <input
                                     type="checkbox"
                                     name="RolesSeleccionados"
                                     value="@rol.Id"
+                                    class="rol-checkbox-input"
                                     @(estaAsignado ? "checked" : "") />
-                                <div class="rol-info">
+                                <div class="rol-contenido">
                                     <div class="rol-header">
-                                        <span class="rol-nombre">@rol.Nombre</span>
+                                        <h3 class="rol-nombre">@rol.Nombre</h3>
                                         @if (estaAsignado)
                                         {
                                             <span class="badge badge-exito">Asignado</span>
@@ -108,9 +109,7 @@
                                     </div>
                                     @if (!string.IsNullOrEmpty(rol.Descripcion))
                                     {
-                                        <div class="rol-descripcion">
-                                            @rol.Descripcion
-                                        </div>
+                                        <p class="rol-descripcion">@rol.Descripcion</p>
                                     }
                                 </div>
                             </label>
