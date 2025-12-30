@@ -29,5 +29,9 @@ namespace Modelos.Autenticacion
         [JsonProperty("id_token")]
         [JsonPropertyName("id_token")]
         public string IdToken { get; set; }
+
+        [JsonProperty("refresh_token")]
+        [JsonPropertyName("refresh_token")]
+        public string RefreshToken { get; set; }
     }
 }

@@ -541,16 +541,27 @@ namespace Utils.Servicios
                         var reCaptchaClaveSecreta = secretos.GetSecretValue(secretString, _googleConfig.SecretoClaveReCaptchaClaveSecreta);
                         if (!string.IsNullOrEmpty(reCaptchaClaveSecreta))
                         {
-                            _googleConfig.ReCaptchaClaveSecreta = reCaptchaClaveSecreta;
-                            _logger.LogInformation("ReCAPTCHA Clave Secreta de Google resuelto correctamente desde Secrets Manager");
-                        }
+                        _googleConfig.ReCaptchaClaveSecreta = reCaptchaClaveSecreta;
+                        _logger.LogInformation("ReCAPTCHA Clave Secreta de Google resuelto correctamente desde Secrets Manager");
                     }
                 }
-                else
+
+                // Configuración de Google Drive
+                if (!string.IsNullOrEmpty(_googleConfig.SecretoClaveDriveFolder))
                 {
-                    _logger.LogInformation("Usando configuración de Google por defecto: Instance={Instance}, ClientId={ClientId}",
-                        _googleConfig.Instance, _googleConfig.ClientId);
+                    var driveFolder = secretos.GetSecretValue(secretString, _googleConfig.SecretoClaveDriveFolder);
+                    if (!string.IsNullOrEmpty(driveFolder))
+                    {
+                        _googleConfig.DriveFolder = driveFolder;
+                        _logger.LogInformation("DriveFolder de Google resuelto correctamente desde Secrets Manager");
+                    }
                 }
+            }
+            else
+            {
+                _logger.LogInformation("Usando configuración de Google por defecto: Instance={Instance}, ClientId={ClientId}",
+                    _googleConfig.Instance, _googleConfig.ClientId);
+            }
             }
             catch (Exception ex)
             {

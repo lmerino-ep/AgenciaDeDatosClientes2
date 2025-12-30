@@ -82,18 +82,6 @@ namespace Datos
                 },
                 new Kpi
                 {
-                    Id = "usuarios-nuevos-periodo",
-                    Nombre = "Usuarios nuevos por período",
-                    Descripcion = "Usuarios registrados en un período determinado",
-                    Categoria = "Usuarios",
-                    Parametros = new List<ParametroKpi>
-                    {
-                        new ParametroKpi { Nombre = "fecha_inicio", Tipo = "fecha", Requerido = true, Descripcion = "Fecha de inicio" },
-                        new ParametroKpi { Nombre = "fecha_fin", Tipo = "fecha", Requerido = true, Descripcion = "Fecha de fin" }
-                    }
-                },
-                new Kpi
-                {
                     Id = "usuarios-activos-mes",
                     Nombre = "Usuarios activos último mes",
                     Descripcion = "Usuarios con actividad en los últimos 30 días",
@@ -259,7 +247,6 @@ namespace Datos
 
                     // Usuarios
                     "usuarios-por-tipo" => await UsuariosPorTipo(),
-                    "usuarios-nuevos-periodo" => await UsuariosNuevosPeriodo(parametros),
                     "usuarios-activos-mes" => await UsuariosActivosMes(),
                     "tokens-activos" => await TokensActivos(),
                     "roles-por-usuario-tipo" => await RolesPorUsuarioTipo(),
@@ -320,14 +307,14 @@ namespace Datos
 
             string sql = @"
                 SELECT
-                    DATE_FORMAT(UA.FechaHora, '%Y-%m') as Fecha,
+                    DATE_FORMAT(UA.LastUpdate, '%Y-%m') as Fecha,
                     A.Nombre as Actividad,
                     COUNT(*) as Total
                 FROM UsuarioActividad UA
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
-                WHERE (@FechaInicio IS NULL OR UA.FechaHora >= @FechaInicio)
-                  AND (@FechaFin IS NULL OR UA.FechaHora <= @FechaFin)
-                GROUP BY DATE_FORMAT(UA.FechaHora, '%Y-%m'), A.Nombre
+                WHERE (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
+                  AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
+                GROUP BY DATE_FORMAT(UA.LastUpdate, '%Y-%m'), A.Nombre
                 ORDER BY Fecha DESC, Total DESC";
 
             using (IDbConnection db = ObtenerConexionLectura())
@@ -363,12 +350,11 @@ namespace Datos
             string sql = $@"
                 SELECT
                     U.Email as Usuario,
-                    U.Nombre as NombreUsuario,
-                    COUNT(*) as TotalActividades
+                    COUNT(*) as Total
                 FROM UsuarioActividad UA
                 INNER JOIN Usuario U ON UA.FK_Usuario = U.Id
-                GROUP BY U.Id, U.Email, U.Nombre
-                ORDER BY TotalActividades {(orden.ToLower() == "asc" ? "ASC" : "DESC")}
+                GROUP BY U.Id, U.Email
+                ORDER BY Total {(orden.ToLower() == "asc" ? "ASC" : "DESC")}
                 LIMIT @Limite";
 
             using (IDbConnection db = ObtenerConexionLectura())
@@ -391,15 +377,15 @@ namespace Datos
 
             string sql = @"
                 SELECT
-                    DATE_FORMAT(UA.FechaHora, '%Y-%m') as Fecha,
+                    DATE_FORMAT(UA.LastUpdate, '%Y-%m') as Fecha,
                     A.Nombre as Actividad,
                     COUNT(*) as Total
                 FROM UsuarioActividad UA
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
                 WHERE UA.FK_Usuario = @UsuarioId
-                  AND (@FechaInicio IS NULL OR UA.FechaHora >= @FechaInicio)
-                  AND (@FechaFin IS NULL OR UA.FechaHora <= @FechaFin)
-                GROUP BY DATE_FORMAT(UA.FechaHora, '%Y-%m'), A.Nombre
+                  AND (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
+                  AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
+                GROUP BY DATE_FORMAT(UA.LastUpdate, '%Y-%m'), A.Nombre
                 ORDER BY Fecha DESC, Total DESC";
 
             using (IDbConnection db = ObtenerConexionLectura())
@@ -432,47 +418,19 @@ namespace Datos
             }
         }
 
-        private async Task<List<Dictionary<string, object>>> UsuariosNuevosPeriodo(Dictionary<string, object> parametros)
-        {
-            if (!parametros.ContainsKey("fecha_inicio") || !parametros.ContainsKey("fecha_fin"))
-            {
-                throw new ArgumentException("Los parámetros 'fecha_inicio' y 'fecha_fin' son requeridos");
-            }
-
-            DateTime fechaInicio = Convert.ToDateTime(parametros["fecha_inicio"]);
-            DateTime fechaFin = Convert.ToDateTime(parametros["fecha_fin"]);
-
-            string sql = @"
-                SELECT
-                    DATE(U.FechaAlta) as Fecha,
-                    UT.Nombre as TipoUsuario,
-                    COUNT(*) as Total
-                FROM Usuario U
-                INNER JOIN UsuarioTipo UT ON U.FK_UsuarioTipo = UT.Id
-                WHERE U.FechaAlta BETWEEN @FechaInicio AND @FechaFin
-                GROUP BY DATE(U.FechaAlta), UT.Nombre
-                ORDER BY Fecha DESC";
-
-            using (IDbConnection db = ObtenerConexionLectura())
-            {
-                var resultado = await db.QueryAsync(sql, new { FechaInicio = fechaInicio, FechaFin = fechaFin });
-                return resultado.Select(r => ((IDictionary<string, object>)r).ToDictionary(k => k.Key, v => v.Value ?? (object)DBNull.Value)).ToList();
-            }
-        }
-
         private async Task<List<Dictionary<string, object>>> UsuariosActivosMes()
         {
             string sql = @"
                 SELECT
                     U.Email as Usuario,
                     U.Nombre as NombreUsuario,
-                    MAX(UA.FechaHora) as UltimaActividad,
-                    COUNT(*) as TotalActividades
+                    MAX(UA.LastUpdate) as UltimaActividad,
+                    COUNT(*) as Total
                 FROM UsuarioActividad UA
                 INNER JOIN Usuario U ON UA.FK_Usuario = U.Id
-                WHERE UA.FechaHora >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                WHERE UA.LastUpdate >= DATE_SUB(NOW(), INTERVAL 30 DAY)
                 GROUP BY U.Id, U.Email, U.Nombre
-                ORDER BY TotalActividades DESC";
+                ORDER BY Total DESC";
 
             using (IDbConnection db = ObtenerConexionLectura())
             {
@@ -705,8 +663,8 @@ namespace Datos
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
                 WHERE A.Nombre = 'Visitado'
-                  AND (@FechaInicio IS NULL OR UA.FechaHora >= @FechaInicio)
-                  AND (@FechaFin IS NULL OR UA.FechaHora <= @FechaFin)
+                  AND (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
+                  AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
                 GROUP BY R.Id, R.Titulo
                 ORDER BY TotalVistas DESC
                 LIMIT @Limite";
@@ -732,13 +690,13 @@ namespace Datos
                     U.Email as Usuario,
                     U.Nombre as NombreUsuario,
                     COUNT(*) as TotalAccesos,
-                    MAX(UA.FechaHora) as UltimoAcceso
+                    MAX(UA.LastUpdate) as UltimoAcceso
                 FROM UsuarioActividad UA
                 INNER JOIN Usuario U ON UA.FK_Usuario = U.Id
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
                 WHERE A.Nombre LIKE '%API%'
-                  AND (@FechaInicio IS NULL OR UA.FechaHora >= @FechaInicio)
-                  AND (@FechaFin IS NULL OR UA.FechaHora <= @FechaFin)
+                  AND (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
+                  AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
                 GROUP BY U.Id, U.Email, U.Nombre
                 ORDER BY TotalAccesos DESC";
 

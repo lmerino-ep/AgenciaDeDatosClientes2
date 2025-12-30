@@ -1,0 +1,85 @@
+@page "/documentacion/sobrescribir/{id}"
+@model Pages.Documentacion.SobrescribirModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Sobrescribir Documento";
+    ViewBag.Description = "Sobrescribir un documento existente en Google Drive";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Sobrescribir Documento</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/documentacion/listado">Documentación</a>
+        <span class="separador">/</span>
+        <span>Sobrescribir</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeExito))
+{
+    <div class="alerta alerta-exito">
+        @Model.MensajeExito
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        @Model.MensajeError
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.NombreArchivoActual))
+{
+    <section class="seccion-datos-usuario">
+        <div class="card">
+            <h2 class="titulo-seccion">Archivo Actual</h2>
+            <div class="info-usuario">
+                <div class="campo">
+                    <span class="etiqueta">Nombre:</span>
+                    <span class="valor">@Model.NombreArchivoActual</span>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<form method="post" enctype="multipart/form-data" class="form-usuario">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="All" class="alerta alerta-error"></div>
+
+    <section class="seccion-formulario">
+        <div class="card">
+            <h2 class="titulo-seccion">Nuevo Archivo</h2>
+
+            <div class="alerta alerta-advertencia">
+                <strong>ADVERTENCIA:</strong> Esta acción reemplazará el archivo actual. El archivo mantendrá el mismo ID en Google Drive.
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Archivo">Seleccionar nuevo archivo *</label>
+                <input asp-for="Archivo" type="file" class="form-control" required />
+                <small class="form-text text-muted">
+                    Tipos permitidos: PDF, Word (DOCX), Excel (XLSX), PowerPoint (PPTX), Imágenes (PNG, JPG), Texto (TXT, MD).<br />
+                    Tamaño máximo: 50 MB
+                </small>
+                <span asp-validation-for="Archivo" class="text-danger"></span>
+            </div>
+        </div>
+    </section>
+
+    <div class="form-actions">
+        <button type="submit" class="boton boton-primario">Sobrescribir Archivo</button>
+        <a href="/documentacion/listado" class="boton boton-secundario">Cancelar</a>
+    </div>
+</form>
+

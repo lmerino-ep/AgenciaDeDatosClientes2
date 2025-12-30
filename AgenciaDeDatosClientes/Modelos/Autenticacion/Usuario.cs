@@ -27,6 +27,11 @@ namespace Modelos.Autenticacion
         public string AccessTokenActivoEpDataApi { get; set; }
         public DateTime? CaducidadAccessTokenActivoEpDataApi { get; set; }
         //////////////////////////////////////
+        // Tokens de Google Drive
+        public string GoogleDriveRefreshToken { get; set; }
+        public string GoogleDriveAccessToken { get; set; }
+        public DateTime? GoogleDriveAccessTokenExpiresAt { get; set; }
+        //////////////////////////////////////
         public bool Activo { get; set; }
         //////////////////////////////////////
         public virtual List<AgenciaDeDatosBD.Rol> Roles { get; set; } = new List<AgenciaDeDatosBD.Rol>();

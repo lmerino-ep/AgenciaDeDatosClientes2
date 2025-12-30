@@ -25,6 +25,9 @@ namespace Utils.Servicios
             // Repositorios - Fase 3 (Métricas)
             services.AddScoped<IRepositorioMetricas, RepositorioMetricas>();
 
+            // Repositorios - Fase 4 (Documentación)
+            services.AddScoped<RepositorioGoogleDrive>();
+
             return services;
         }
 
@@ -43,6 +46,9 @@ namespace Utils.Servicios
 
             // Servicios - Fase 3 (Métricas)
             services.AddScoped<IServicioMetricas, ServicioMetricas>();
+
+            // Servicios - Fase 4 (Documentación)
+            services.AddScoped<IServicioGoogleDrive, ServicioGoogleDrive>();
 
             // HttpContextAccessor para acceder al contexto HTTP en servicios
             services.AddHttpContextAccessor();

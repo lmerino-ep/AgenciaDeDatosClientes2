@@ -1,0 +1,160 @@
+@page "/documentacion/listado"
+@model Pages.Documentacion.ListadoModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Documentación";
+    ViewBag.Description = "Gestión de documentación en Google Drive";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Documentación</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <span>Documentación</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        @Model.MensajeError
+    </div>
+}
+
+@if (Model.Permisos != null && !Model.Permisos.TieneAcceso)
+{
+    <div class="alerta alerta-advertencia">
+        <p><strong>Acceso a Google Drive requerido</strong></p>
+        <p>@Model.Permisos.Mensaje</p>
+        <p>
+            <a href="/documentacion/autorizar" class="boton boton-primario">Autorizar acceso a Google Drive</a>
+        </p>
+    </div>
+}
+
+<!-- Filtros -->
+<section class="seccion-filtros">
+    <div class="card">
+        <h2 class="titulo-seccion">Filtros</h2>
+        <form method="get" class="form-filtros">
+            <div class="grid-filtros">
+                <div class="form-group">
+                    <label for="Busqueda">Búsqueda por nombre:</label>
+                    <input type="text" name="Busqueda" id="Busqueda" class="form-control" value="@Model.Busqueda" placeholder="Buscar...">
+                </div>
+
+                <div class="form-group">
+                    <label for="FiltroTipo">Tipo de archivo:</label>
+                    <select name="FiltroTipo" id="FiltroTipo" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="pdf" selected="@(Model.FiltroTipo == "pdf")">PDF</option>
+                        <option value="word" selected="@(Model.FiltroTipo == "word")">Word</option>
+                        <option value="excel" selected="@(Model.FiltroTipo == "excel")">Excel</option>
+                        <option value="powerpoint" selected="@(Model.FiltroTipo == "powerpoint")">PowerPoint</option>
+                        <option value="imagenes" selected="@(Model.FiltroTipo == "imagenes")">Imágenes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="FiltroFecha">Fecha de modificación:</label>
+                    <select name="FiltroFecha" id="FiltroFecha" class="form-control">
+                        <option value="">Todo</option>
+                        <option value="semana" selected="@(Model.FiltroFecha == "semana")">Última semana</option>
+                        <option value="mes" selected="@(Model.FiltroFecha == "mes")">Último mes</option>
+                        <option value="año" selected="@(Model.FiltroFecha == "año")">Último año</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="boton boton-primario">Filtrar</button>
+                <a href="/documentacion/listado" class="boton boton-secundario">Limpiar</a>
+                @if (Model.Permisos?.PuedeEscribir == true)
+                {
+                    <a href="/documentacion/subir" class="boton boton-primario">Subir Documento</a>
+                }
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Tabla de documentos -->
+<section class="seccion-tabla">
+    <div class="card">
+        <div class="header-con-accion">
+            <h2 class="titulo-seccion">Documentos (@Model.Archivos.Count)</h2>
+        </div>
+
+        @if (Model.Archivos.Any())
+        {
+            <div class="tabla-responsive">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Icono</th>
+                            <th>Nombre</th>
+                            <th>Tamaño</th>
+                            <th>Última Modificación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var archivo in Model.Archivos)
+                        {
+                            <tr>
+                                <td style="text-align: center; font-size: 1.5rem;">@archivo.IconoTipo</td>
+                                <td>
+                                    <a href="@archivo.UrlWeb" target="_blank" title="Abrir en Google Drive">
+                                        @archivo.Nombre
+                                    </a>
+                                </td>
+                                <td>@archivo.TamanoFormateado</td>
+                                <td>@archivo.FechaModificacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <div class="acciones-tabla">
+                                        @if (Model.Permisos?.PuedeLeer == true)
+                                        {
+                                            <a href="/documentacion/descargar/@archivo.Id" class="boton boton-pequeno boton-secundario" title="Descargar">
+                                                Descargar
+                                            </a>
+                                        }
+                                        @if (Model.Permisos?.PuedeEscribir == true)
+                                        {
+                                            <a href="/documentacion/sobrescribir/@archivo.Id" class="boton boton-pequeno boton-secundario" title="Sobrescribir">
+                                                Sobrescribir
+                                            </a>
+                                        }
+                                        @if (Model.Permisos?.PuedeEliminar == true)
+                                        {
+                                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@archivo.Id" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este archivo? Esta acción no se puede deshacer.');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="boton boton-pequeno boton-peligro" title="Eliminar">
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="mensaje-vacio">
+                <p>No se encontraron documentos con los filtros especificados.</p>
+            </div>
+        }
+    </div>
+</section>
+
