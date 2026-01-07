@@ -1,0 +1,80 @@
+@Velocidad: 0.5s;
+
+.modulo-cargando {
+    @DuracionTransicion: 0.6s;
+
+    position: absolute; /*para cuando somos cargando dentro de un contenedor*/
+    &.pagina-completa { //para cuando somos cargando de toda la página.ini
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    z-index: 2001;
+    opacity: 0;
+    -moz-transition: opacity @DuracionTransicion ease;
+    -o-transition: opacity @DuracionTransicion ease;
+    -webkit-transition: opacity @DuracionTransicion ease;
+    transition: opacity @DuracionTransicion ease;
+
+    &.cargando-mostrar {
+        pointer-events: all;
+        cursor: wait;
+        opacity: 1;
+    }
+
+    .cargando {
+        background: rgba(255,255,255,0.8);
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .cssload-contain {
+            height: 9px;
+            width: 75px;
+            margin: auto;
+
+            .cssload-dot {
+                float: left;
+                height: 9px;
+                width: 9px;
+                border-radius: 50%;
+                background-color: rgba(0,0,0,0.89);
+                background-image: -webkit-linear-gradient(rgba(192,198,204,0.28), transparent), radial-gradient(rgb(57,123,176), rgba(73,80,88,0.07));
+                background-position: top center;
+                margin: 0 2.5px;
+                animation: cssload-bounce @Velocidad infinite ease alternate;
+                -o-animation: cssload-bounce @Velocidad infinite ease alternate;
+                -ms-animation: cssload-bounce @Velocidad infinite ease alternate;
+                -webkit-animation: cssload-bounce @Velocidad infinite ease alternate;
+                -moz-animation: cssload-bounce @Velocidad infinite ease alternate;
+            }
+
+            .cssload-dot:nth-child(1) { animation-delay: -(@Velocidad * 0.18); }
+            .cssload-dot:nth-child(2) { animation-delay: -(@Velocidad * 0.34); }
+            .cssload-dot:nth-child(3) { animation-delay: -(@Velocidad * 0.52); }
+            .cssload-dot:nth-child(4) { animation-delay: -(@Velocidad * 0.7); }
+            .cssload-dot:nth-child(5) { animation-delay: -(@Velocidad * 0.86); }
+            .cssload-dot:nth-child(6) { animation-delay: -@Velocidad; }
+        }
+    }
+}
+
+@keyframes cssload-bounce {
+    0% {
+        transform: translateY(0);
+        box-shadow: 0 2.5px 1px rgba(160,172,186,0.67);
+    }
+    100% {
+        transform: translateY(-36px);
+        box-shadow: 0 81px 11px rgba(255,255,255,0.19);
+    }
+}
+

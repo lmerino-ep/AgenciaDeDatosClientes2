@@ -29,7 +29,7 @@ namespace Pages.Usuarios
         [BindProperty]
         public CrearUsuario Modelo { get; set; }
 
-        public List<Modelos.Entidades.UsuarioTipo> TiposUsuario { get; set; } = new List<Modelos.Entidades.UsuarioTipo>();
+        public List<Modelos.DTO.Usuarios.UsuarioTipo> TiposUsuario { get; set; } = new List<Modelos.DTO.Usuarios.UsuarioTipo>();
 
         public string MensajeError { get; set; }
 

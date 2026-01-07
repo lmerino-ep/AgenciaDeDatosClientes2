@@ -1,0 +1,213 @@
+@page "/auditoria"
+@model Pages.Auditoria.AuditoriaModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Auditoría";
+    ViewBag.Description = "Consulta de logs de auditoría del sistema";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Auditoría</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <span>Auditoría</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        @Model.MensajeError
+    </div>
+}
+
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alerta alerta-error">
+        @TempData["MensajeError"]
+    </div>
+}
+
+<!-- Filtros -->
+<section class="seccion-filtros">
+    <div class="card">
+        <h2 class="titulo-seccion">Filtros</h2>
+        <form method="get" class="form-filtros">
+            <div class="grid-filtros">
+                <div class="form-group">
+                    <label for="UsuarioId">Usuario:</label>
+                    <select name="UsuarioId" id="UsuarioId" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var usuario in Model.Usuarios)
+                        {
+                            <option value="@usuario.Id" selected="@(Model.UsuarioId == usuario.Id)">@usuario.Email - @usuario.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Accion">Acción:</label>
+                    <select name="Accion" id="Accion" class="form-control">
+                        <option value="">Todas</option>
+                        @foreach (var accion in Model.Acciones)
+                        {
+                            <option value="@accion" selected="@(Model.Accion == accion)">@accion</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Modulo">Módulo:</label>
+                    <select name="Modulo" id="Modulo" class="form-control">
+                        <option value="">Todos</option>
+                        @foreach (var modulo in Model.Modulos)
+                        {
+                            <option value="@modulo" selected="@(Model.Modulo == modulo)">@modulo</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Resultado">Resultado:</label>
+                    <select name="Resultado" id="Resultado" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="Exito" selected="@(Model.Resultado == "Exito")">Éxito</option>
+                        <option value="Error" selected="@(Model.Resultado == "Error")">Error</option>
+                        <option value="NoAutorizado" selected="@(Model.Resultado == "NoAutorizado")">No Autorizado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="FechaInicio">Fecha Inicio:</label>
+                    <input type="date" name="FechaInicio" id="FechaInicio" class="form-control" 
+                           value="@(Model.FechaInicio?.ToString("yyyy-MM-dd"))" />
+                </div>
+
+                <div class="form-group">
+                    <label for="FechaFin">Fecha Fin:</label>
+                    <input type="date" name="FechaFin" id="FechaFin" class="form-control" 
+                           value="@(Model.FechaFin?.ToString("yyyy-MM-dd"))" />
+                </div>
+
+                <div class="form-group">
+                    <label for="TamanoPagina">Registros por página:</label>
+                    <select name="TamanoPagina" id="TamanoPagina" class="form-control">
+                        <option value="50" selected="@(Model.TamanoPagina == 50)">50</option>
+                        <option value="100" selected="@(Model.TamanoPagina == 100)">100</option>
+                        <option value="200" selected="@(Model.TamanoPagina == 200)">200</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="boton boton-primario">Filtrar</button>
+                <a href="/auditoria" class="boton boton-secundario">Limpiar</a>
+                <a href="?handler=ExportarJson&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))" 
+                   class="boton boton-secundario">Exportar JSON</a>
+                <a href="?handler=ExportarCsv&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))" 
+                   class="boton boton-secundario">Exportar CSV</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Tabla de auditoría -->
+<section class="seccion-tabla">
+    <div class="card">
+        <div class="header-con-accion">
+            <h2 class="titulo-seccion">Registros de Auditoría (@Model.TotalRegistros)</h2>
+        </div>
+
+        @if (Model.Auditorias.Any())
+        {
+            <div class="tabla-responsive">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Fecha/Hora</th>
+                            <th>Usuario</th>
+                            <th>Acción</th>
+                            <th>Módulo</th>
+                            <th>Descripción</th>
+                            <th>Resultado</th>
+                            <th>IP</th>
+                            <th>Detalles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var auditoria in Model.Auditorias)
+                        {
+                            <tr>
+                                <td>@auditoria.FechaHora.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <td>
+                                    <div>
+                                        <strong>@auditoria.UsuarioEmail</strong><br />
+                                        <small>@auditoria.UsuarioNombre</small>
+                                    </div>
+                                </td>
+                                <td><span class="badge badge-info">@auditoria.Accion</span></td>
+                                <td><span class="badge badge-tipo">@auditoria.Modulo</span></td>
+                                <td>@(auditoria.Descripcion?.Length > 100 ? auditoria.Descripcion.Substring(0, 100) + "..." : auditoria.Descripcion)</td>
+                                <td>
+                                    @if (auditoria.Resultado == "Exito")
+                                    {
+                                        <span class="badge badge-exito">Éxito</span>
+                                    }
+                                    else if (auditoria.Resultado == "Error")
+                                    {
+                                        <span class="badge badge-error">Error</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-advertencia">@auditoria.Resultado</span>
+                                    }
+                                </td>
+                                <td><small>@(auditoria.DireccionIP ?? "-")</small></td>
+                                <td>
+                                    <a href="/auditoria/detalle/@auditoria.Id" class="boton boton-pequeno boton-secundario">Ver detalles</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <div class="paginacion">
+                    @if (Model.Pagina > 0)
+                    {
+                        <a href="?Pagina=@(Model.Pagina - 1)&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))&TamanoPagina=@Model.TamanoPagina" 
+                           class="boton boton-secundario">Anterior</a>
+                    }
+
+                    <span class="info-paginacion">
+                        Página @(Model.Pagina + 1) de @Model.TotalPaginas (@Model.TotalRegistros registros)
+                    </span>
+
+                    @if (Model.Pagina < Model.TotalPaginas - 1)
+                    {
+                        <a href="?Pagina=@(Model.Pagina + 1)&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))&TamanoPagina=@Model.TamanoPagina" 
+                           class="boton boton-secundario">Siguiente</a>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="mensaje-vacio">
+                <p>No se encontraron registros de auditoría con los filtros especificados.</p>
+            </div>
+        }
+    </div>
+</section>
+

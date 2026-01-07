@@ -85,8 +85,24 @@ function limpiarFormulario() {
     }
 }
 
-function inicializarGrafico(resultadoDatos, nombreKpi) {
+function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
     if (!resultadoDatos || resultadoDatos.length === 0) return;
+
+    // KPIs que no deben generar gráfico, solo tabla
+    const kpisSinGrafico = [
+        'tokens-activos',
+        'total-datos',
+        'fuentes-totales'
+    ];
+
+    if (kpiId && kpisSinGrafico.includes(kpiId)) {
+        // Ocultar contenedor del gráfico si existe
+        const contenedorGrafico = document.querySelector('.contenedor-grafico');
+        if (contenedorGrafico) {
+            contenedorGrafico.classList.add('oculto');
+        }
+        return;
+    }
 
     // Detectar tipo de gráfico según las columnas
     const columnas = Object.keys(resultadoDatos[0]);
@@ -95,13 +111,14 @@ function inicializarGrafico(resultadoDatos, nombreKpi) {
     // Función para determinar si una columna es numérica
     function esColumnaNumerica(nombreColumna, datos) {
         const nombreLower = nombreColumna.toLowerCase();
-        // Columnas que siempre son numéricas
+        // Columnas que siempre son numéricas (incluyendo TotalUsuarios)
         if (nombreLower.includes('total') || 
             nombreLower.includes('cantidad') || 
             nombreLower.includes('count') ||
             nombreLower.includes('suma') ||
             nombreLower.includes('promedio') ||
-            nombreLower.includes('media')) {
+            nombreLower.includes('media') ||
+            nombreLower.includes('usuarios')) {
             return true;
         }
         // Verificar si los valores son numéricos
@@ -115,6 +132,10 @@ function inicializarGrafico(resultadoDatos, nombreKpi) {
     // Función para determinar si una columna es descriptiva/metadatos (debe ignorarse para el gráfico)
     function esColumnaDescriptiva(nombreColumna) {
         const nombreLower = nombreColumna.toLowerCase();
+        // Excluir columnas que contienen "total" o "cantidad" aunque tengan otras palabras
+        if (nombreLower.includes('total') || nombreLower.includes('cantidad')) {
+            return false;
+        }
         // Patrones de columnas descriptivas que no deben usarse en gráficos
         const patronesDescriptivos = [
             'nombre', 'email', 'usuario', 'descripcion', 'descripción',
@@ -446,19 +467,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const contenidoTabla = document.getElementById('contenidoTabla');
     const textoToggleTabla = document.getElementById('textoToggleTabla');
     if (btnToggleTabla && contenidoTabla && textoToggleTabla) {
-        btnToggleTabla.addEventListener('click', function() {
-            const estaVisible = contenidoTabla.style.display !== 'none';
-            contenidoTabla.style.display = estaVisible ? 'none' : 'block';
-            textoToggleTabla.textContent = estaVisible ? 'Mostrar tabla' : 'Ocultar tabla';
+        btnToggleTabla.addEventListener('click', function () {
+            const estaVisible = !contenidoTabla.classList.contains('tabla-contenido-oculto');
+            if (estaVisible) {
+                contenidoTabla.classList.add('tabla-contenido-oculto');
+                textoToggleTabla.textContent = 'Mostrar tabla';
+            } else {
+                contenidoTabla.classList.remove('tabla-contenido-oculto');
+                textoToggleTabla.textContent = 'Ocultar tabla';
+            }
         });
+    }
+
+    // Función para decodificar entidades HTML
+    function decodificarEntidadesHTML(texto) {
+        if (!texto) return texto;
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = texto;
+        return textarea.value;
     }
 
     // Inicializar gráfico si hay datos
     const resultadoDataElement = document.getElementById('resultado-datos');
     const nombreKpiElement = document.getElementById('nombre-kpi');
+    const kpiIdElement = document.getElementById('kpi-id');
     if (resultadoDataElement && nombreKpiElement) {
         const resultadoDatos = JSON.parse(resultadoDataElement.textContent);
-        const nombreKpi = nombreKpiElement.textContent;
+        const nombreKpi = decodificarEntidadesHTML(nombreKpiElement.textContent);
+        const kpiId = kpiIdElement ? kpiIdElement.textContent : null;
         if (resultadoDatos && resultadoDatos.length > 0) {
             // Función para intentar inicializar el gráfico
             function intentarInicializarGrafico() {
@@ -470,7 +506,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (typeof window.ChartDataLabels !== 'undefined') {
                         Chart.register(window.ChartDataLabels);
                     }
-                    inicializarGrafico(resultadoDatos, nombreKpi);
+                    inicializarGrafico(resultadoDatos, nombreKpi, kpiId);
                 } else {
                     // Si Chart.js aún no está cargado, esperar un poco más
                     setTimeout(intentarInicializarGrafico, 100);

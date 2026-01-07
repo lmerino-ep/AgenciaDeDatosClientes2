@@ -1,0 +1,96 @@
+@page "/roles/listado"
+@model Pages.Roles.ListadoModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Listado de Roles";
+    ViewBag.Description = "Gestión de roles del sistema";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Listado de Roles</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <span>Roles</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        @Model.MensajeError
+    </div>
+}
+
+<!-- Acciones -->
+<section class="seccion-acciones-header">
+    <div class="card">
+        <div class="acciones-header">
+            <h2 class="titulo-seccion">Roles del Sistema</h2>
+            @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionRoles) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+            {
+                <a href="/roles/crear" class="boton boton-primario">Crear Nuevo Rol</a>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Listado de Roles -->
+<section class="seccion-tabla">
+    <div class="card">
+        @if (Model.Roles.Any())
+        {
+            <div class="tabla-responsive">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Usuarios Asignados</th>
+                            @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionRoles) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+                            {
+                                <th>Acciones</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var rol in Model.Roles)
+                        {
+                            <tr>
+                                <td>@rol.Id</td>
+                                <td><strong>@rol.Nombre</strong></td>
+                                <td>@(string.IsNullOrEmpty(rol.Descripcion) ? "-" : rol.Descripcion)</td>
+                                <td>
+                                    <span class="badge badge-info">@rol.TotalUsuarios</span>
+                                </td>
+                                @if (User.IsInRole(PoliticasAutorizacion.Roles.GestionRoles) || User.IsInRole(PoliticasAutorizacion.Roles.AccesoTotal))
+                                {
+                                    <td>
+                                        <div class="acciones-tabla">
+                                            <a href="/roles/editar/@rol.Id" class="boton boton-pequeno boton-secundario" title="Editar Rol">Editar</a>
+                                        </div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="mensaje-vacio">
+                <p>No se encontraron roles en el sistema.</p>
+            </div>
+        }
+    </div>
+</section>
+

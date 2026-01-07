@@ -4,6 +4,41 @@
     ViewData["Title"] = "Dashboard de Gestión";
 }
 
+@section scripts {
+    <environment include="Development">
+        <script src="~/js/libs/chart.umd.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script src="~/js/main/dashboard.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script src="~/js/libs/chart.umd.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script src="~/js/main/dashboard.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+
+    <script nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
+        // Datos para los gráficos
+        const datosGraficos = {
+            actividadMensual: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ActividadMensualUltimos6Meses)),
+            accionesPorModulo: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccionesPorModuloHoy)),
+            actividadDiaria: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ActividadDiariaUltimos7Dias))
+        };
+
+        // Inicializar gráficos cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inicializarGraficos);
+        } else {
+            inicializarGraficos();
+        }
+
+        function inicializarGraficos() {
+            if (typeof Chart !== 'undefined') {
+                inicializarGraficoActividadMensual();
+                inicializarGraficoActividadDiaria();
+                inicializarGraficoAccionesPorModulo();
+            }
+        }
+    </script>
+}
+
 <!-- Page Header -->
 <div class="page-header">
     <h1 class="page-title">Bienvenido al Dashboard de Gestión</h1>
@@ -12,6 +47,20 @@
     </p>
 </div>
 
+@if (!(User?.Identity?.IsAuthenticated ?? false))
+
+{
+
+    <!-- Mensaje para usuarios no autenticados -->
+    <section class="seccion-mensaje-no-autenticado">
+        <div class="card-mensaje">
+            <p class="mensaje-texto">
+                Este es un dashboard interno de gestión de EpData. Debes iniciar sesión para acceder a sus funciones.
+            </p>
+            <a asp-page="/login" class="btn-iniciar-sesion">Iniciar sesión</a>
+        </div>
+    </section>
+}
 <!-- Estadísticas Rápidas -->
 @if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
      User.IsInRole("Dashboard - Gestión de Usuarios") ||
@@ -21,43 +70,45 @@
 {
     <section class="seccion-estadisticas">
         @if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
-             User.IsInRole("Dashboard - Gestión de Usuarios") ||
-             User.IsInRole("Dashboard - Acceso total"))
+            User.IsInRole("Dashboard - Gestión de Usuarios") ||
+            User.IsInRole("Dashboard - Acceso total"))
         {
             <div class="tarjeta-estadistica">
                 <div class="contenido">
                     <div class="info">
-                        <div class="titulo">Usuarios Activos</div>
-                        <div class="valor">-</div>
-                        <div class="cambio neutro">Próximamente</div>
+                        <div class="titulo">Usuarios con Actividad</div>
+                        <div class="valor">@Model.UsuariosActivos.ToString("N0")</div>
+                        <div class="cambio neutro">Únicos en últimos 30 días</div>
                     </div>
                 </div>
             </div>
         }
 
         @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
-             User.IsInRole("Dashboard - Exportación de Métricas") ||
-             User.IsInRole("Dashboard - Acceso total"))
+            User.IsInRole("Dashboard - Exportación de Métricas") ||
+            User.IsInRole("Dashboard - Acceso total"))
         {
             <div class="tarjeta-estadistica">
                 <div class="contenido">
                     <div class="info">
                         <div class="titulo">Actividad Mensual</div>
-                        <div class="valor">-</div>
-                        <div class="cambio neutro">Próximamente</div>
+                        <div class="valor">@Model.ActividadMensual.ToString("N0")</div>
+                        <div class="cambio neutro">Mes actual</div>
                     </div>
                 </div>
             </div>
         }
 
-        @if (User.IsInRole("Dashboard - Gestión de Documentación") || User.IsInRole("Dashboard - Acceso total"))
+        @if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
+            User.IsInRole("Dashboard - Gestión de Usuarios") ||
+            User.IsInRole("Dashboard - Acceso total"))
         {
             <div class="tarjeta-estadistica">
                 <div class="contenido">
                     <div class="info">
-                        <div class="titulo">Documentos</div>
-                        <div class="valor">-</div>
-                        <div class="cambio neutro">Próximamente</div>
+                        <div class="titulo">Total de Usuarios</div>
+                        <div class="valor">@Model.TotalUsuarios.ToString("N0")</div>
+                        <div class="cambio neutro">Usuarios activos</div>
                     </div>
                 </div>
             </div>
@@ -68,9 +119,9 @@
             <div class="tarjeta-estadistica">
                 <div class="contenido">
                     <div class="info">
-                        <div class="titulo">Acciones Hoy</div>
-                        <div class="valor">-</div>
-                        <div class="cambio neutro">Próximamente</div>
+                        <div class="titulo">Total de Acciones</div>
+                        <div class="valor">@Model.AccionesHoy.ToString("N0")</div>
+                        <div class="cambio neutro">Realizadas hoy</div>
                     </div>
                 </div>
             </div>
@@ -78,55 +129,67 @@
     </section>
 }
 
-<!-- Acciones Rápidas -->
-<section class="seccion-acciones">
-    <h2 class="titulo-seccion">
-        Acciones Rápidas
-    </h2>
+<!-- Gráficos de Resumen -->
+@if (User.IsInRole("Dashboard - Consulta de Métricas") ||
+     User.IsInRole("Dashboard - Auditoría") ||
+     User.IsInRole("Dashboard - Acceso total"))
+{
+    <section class="seccion-graficos">
+        <h2 class="titulo-seccion">Gráficos de Resumen</h2>
 
-    @if (User.IsInRole("Dashboard - Gestión de Usuarios") ||
-         User.IsInRole("Dashboard - Consulta de Usuarios") ||
-         User.IsInRole("Dashboard - Consulta de Métricas") ||
-         User.IsInRole("Dashboard - Auditoría") ||
-         User.IsInRole("Dashboard - Gestión de Documentación") ||
-         User.IsInRole("Dashboard - Acceso total"))
-    {
-        <div class="grid-acciones">
-            @if (User.IsInRole("Dashboard - Gestión de Usuarios") || User.IsInRole("Dashboard - Acceso total"))
+        <div class="grid-graficos">
+            @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
+                    User.IsInRole("Dashboard - Acceso total"))
             {
-                <a asp-page="/usuarios/crear" class="boton-accion">
-                    <span class="texto">Crear Usuario</span>
-                </a>
-                <a asp-page="/usuarios/listado" class="boton-accion">
-                    <span class="texto">Ver Usuarios</span>
-                </a>
+                <div class="card-grafico">
+                    <h3 class="titulo-grafico">Actividad Mensual (Últimos 6 Meses)</h3>
+                    <canvas id="graficoActividadMensual"></canvas>
+                </div>
             }
 
             @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
-                 User.IsInRole("Dashboard - Exportación de Métricas") ||
-                 User.IsInRole("Dashboard - Acceso total"))
+                    User.IsInRole("Dashboard - Acceso total"))
             {
-                <a asp-page="/metricas/kpis" class="boton-accion">
-                    <span class="texto">Ver Métricas</span>
-                </a>
+                <div class="card-grafico">
+                    <h3 class="titulo-grafico">Actividad Diaria (Últimos 7 Días)</h3>
+                    <canvas id="graficoActividadDiaria"></canvas>
+                </div>
             }
 
-            @if (User.IsInRole("Dashboard - Auditoría") || User.IsInRole("Dashboard - Acceso total"))
+            @if (User.IsInRole("Dashboard - Auditoría") ||
+                    User.IsInRole("Dashboard - Acceso total"))
             {
-                <a asp-page="/auditoria/dashboard" class="boton-accion">
-                    <span class="texto">Ver Auditoría</span>
-                </a>
+                <div class="card-grafico">
+                    <h3 class="titulo-grafico">Acciones por Módulo (Hoy)</h3>
+                    <canvas id="graficoAccionesPorModulo"></canvas>
+                </div>
             }
         </div>
-    }
-    else
-    {
-        <div class="sin-permisos">
-            No tienes permisos asignados para acceder a las funcionalidades del dashboard.
-            Contacta con un administrador para solicitar acceso.
+    </section>
+}
+
+<!-- Acciones Rápidas -->
+@if (Model.OpcionesAccionesRapidas != null && Model.OpcionesAccionesRapidas.Any())
+{
+    <section class="seccion-acciones-rapidas">
+        <h2 class="titulo-seccion">Funcionalidades disponibles</h2>
+        <div class="matriz-opciones">
+            @foreach (var opcion in Model.OpcionesAccionesRapidas)
+            {
+                <div class="cuadro-opcion">
+                    <div class="cuadro-opcion-contenido">
+                        <div class="icono">
+                            <i class="@opcion.Icono"></i>
+                        </div>
+                        <h2 class="titulo-opcion">@opcion.Texto</h2>
+                        <p class="descripcion-opcion">@opcion.Descripcion</p>
+                        <a asp-page="@opcion.Pagina" class="btn-ir">Ir a @opcion.Texto</a>
+                    </div>
+                </div>
+            }
         </div>
-    }
-</section>
+    </section>
+}
 
 <!-- Información del Sistema -->
 <section class="seccion-info">

@@ -18,5 +18,17 @@
   {
     "outputFile": "wwwroot/css/main/usuarios.css",
     "inputFile": "wwwroot/less/main/usuarios.less"
+  },
+  {
+    "outputFile": "wwwroot/css/plugins/modalcargando.css",
+    "inputFile": "wwwroot/less/plugins/modalcargando.less"
+  },
+  {
+    "outputFile": "wwwroot/css/main/metricas.css",
+    "inputFile": "wwwroot/less/main/metricas.less"
+  },
+  {
+    "outputFile": "wwwroot/css/main/auditoria.css",
+    "inputFile": "wwwroot/less/main/auditoria.less"
   }
 ]

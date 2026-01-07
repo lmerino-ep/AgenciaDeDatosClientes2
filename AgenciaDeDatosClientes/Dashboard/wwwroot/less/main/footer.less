@@ -149,6 +149,10 @@
 }
 
 //Iconos de men� mi-cuenta cargados as�ncronamente.ini
+// Solo aplicar estos estilos dentro del contexto del menú de opciones
+// Usar mayor especificidad para evitar conflictos con .desplegable .desplegador > .icono
+// Estilos globales para iconos del menú
+// El .desplegador > .icono en cabecera.less sobrescribe el height solo para el desplegador
 .icono {
     width: 16px;
     height: 16px;
@@ -243,6 +247,89 @@
 
     .spa-series-y-datos {
         .icono-ecualizador();
+    }
+
+    .documentacion {
+        .icono-documento();
+    }
+}
+//Iconos de men mi-cuenta cargados asncronamente.fin
+
+// Iconos para tipos de archivos de Google Drive (solo en el contexto de la tabla de documentación)
+.seccion-tabla .icono {
+    .carpeta {
+        // Usar texto en lugar de icono para carpetas
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        color: @ColorEpDataComplementario;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .shortcut {
+        // Usar texto en lugar de icono para accesos directos
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 500;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .imagen {
+        .icono-imagen(0.8);
+        color: #e74c3c; // Rojo para imágenes
+    }
+
+    .pdf {
+        .icono-documento();
+        color: #e53e3e; // Rojo para PDF
+    }
+
+    .word {
+        .icono-documento();
+        color: #2b579a; // Azul para Word
+    }
+
+    .excel {
+        .icono-calculadora();
+        color: #217346; // Verde para Excel
+    }
+
+    .powerpoint {
+        .icono-documento();
+        color: #d04423; // Naranja para PowerPoint
+    }
+
+    .texto {
+        .icono-documento();
+        color: #34495e; // Gris oscuro para texto
+    }
+
+    .json {
+        .icono-documento();
+        color: #34495e; // Gris oscuro para JSON
+    }
+
+    .sql {
+        .icono-script();
+        color: #34495e; // Gris oscuro para SQL
+    }
+
+    .xml {
+        .icono-documento();
+        color: #34495e; // Gris oscuro para XML
+    }
+
+    .csv {
+        .icono-documento();
+        color: #34495e; // Gris oscuro para CSV
+    }
+
+    .archivo-generico {
+        .icono-archivo();
+        color: #95a5a6; // Gris por defecto para archivos genéricos
     }
 }
 //Iconos de men� mi-cuenta cargados as�ncronamente.fin

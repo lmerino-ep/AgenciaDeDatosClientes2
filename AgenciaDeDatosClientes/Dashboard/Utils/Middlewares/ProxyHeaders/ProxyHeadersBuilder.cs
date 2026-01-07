@@ -148,15 +148,15 @@ namespace Utils.Middlewares.ProxyHeaders
                 3. ALB añade X-Forwarded-For, X-Forwarded-Proto
                    ↓
                 4. ProxyHeadersMiddleware procesa TODO:
-                   - ✅ Detecta que viene de CDN + ALB
-                   - ✅ Valida IPs confiables
-                   - ✅ Extrae geolocalización
-                   - ✅ Añade flags en HttpContext.Items
+                   - Detecta que viene de CDN + ALB
+                   - Valida IPs confiables
+                   - Extrae geolocalización
+                   - Añade flags en HttpContext.Items
                    ↓
                 5. CdnHeadersMiddleware usa esa información:
-                   - ✅ Añade cabeceras optimizadas para CDN
-                   - ✅ Incluye datos de geolocalización en respuesta
-                   - ✅ Configura caché inteligente
+                   - Añade cabeceras optimizadas para CDN
+                   - Incluye datos de geolocalización en respuesta
+                   - Configura caché inteligente
             */
             return this;
         }

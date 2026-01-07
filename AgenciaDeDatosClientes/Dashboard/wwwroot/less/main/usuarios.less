@@ -2,7 +2,6 @@
 
 // ============================================
 // Módulo de Usuarios - Listado
-// Estilos similares a EditEpData Series y Datos
 // ============================================
 
 /* Page Header */
@@ -20,16 +19,16 @@
 .breadcrumb {
     font-size: 14px;
     color: @ColorGrisClaro;
-    
+
     a {
         color: @ColorEpDataComplementario;
         text-decoration: none;
-        
+
         &:hover {
             text-decoration: underline;
         }
     }
-    
+
     .separador {
         margin: 0 8px;
         color: #bdc3c7;
@@ -50,6 +49,23 @@
     margin: 0 0 20px 0;
 }
 
+/* Sección de acciones en header */
+.seccion-acciones-header {
+    margin-bottom: 30px;
+
+    .acciones-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+
+        .titulo-seccion {
+            margin: 0;
+        }
+    }
+}
+
 .header-con-accion {
     display: flex;
     justify-content: space-between;
@@ -57,7 +73,7 @@
     margin-bottom: 20px;
 }
 
-/* Filtros - Estilos similares a EditEpData */
+/* Filtros */
 .seccion-filtros {
     .card {
         .form-filtros {
@@ -66,11 +82,11 @@
                 flex-wrap: wrap;
                 gap: 20px;
                 margin-bottom: 25px;
-                
+
                 .form-group {
                     flex: 1;
                     min-width: 200px;
-                    
+
                     label {
                         display: block;
                         margin-bottom: 10px;
@@ -78,7 +94,7 @@
                         color: @ColorEpDataComplementario;
                         font-size: 1.1rem;
                     }
-                    
+
                     .form-control {
                         width: 100%;
                         padding: 10px 15px;
@@ -89,7 +105,7 @@
                         min-height: 40px;
                         box-sizing: border-box;
                         line-height: 1.4;
-                        
+
                         &:focus {
                             border-color: #448b9b;
                             box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px #006370a1;
@@ -98,7 +114,7 @@
                     }
                 }
             }
-            
+
             .form-actions {
                 display: flex;
                 gap: 10px;
@@ -108,7 +124,7 @@
     }
 }
 
-/* Botones - Estilos similares a EditEpData */
+/* Botones */
 .boton {
     .boton(@ColorEpDataComplementario, white);
     display: inline-flex;
@@ -118,47 +134,47 @@
     white-space: nowrap;
     font-weight: bold;
     transition: all 0.3s ease;
-    
+
     &:hover {
         background-color: lighten(@ColorEpDataComplementario, 10%);
     }
-    
+
     &.boton-primario {
         background-color: @ColorEpDataComplementario;
         color: white;
-        
+
         &:hover {
             background-color: lighten(@ColorEpDataComplementario, 10%);
         }
     }
-    
+
     &.boton-secundario {
         background-color: #95a5a6;
         color: white;
-        
+
         &:hover {
             background-color: lighten(#95a5a6, 10%);
         }
     }
-    
+
     &.boton-pequeno {
         padding: 6px 12px;
         font-size: 13px;
     }
 }
 
-/* Tabla - Estilos similares a EditEpData */
+/* Tabla */
 .seccion-tabla {
     .card {
         .tabla-responsive {
             overflow-x: auto;
             width: 100%;
-            
+
             .tabla {
                 .tabla(@ColorEpDataComplementario);
                 width: 100%;
                 table-layout: auto;
-                
+
                 thead {
                     th {
                         background-color: @ColorEpDataComplementario;
@@ -168,29 +184,29 @@
                         padding: 12px;
                     }
                 }
-                
+
                 tbody {
                     tr {
                         &:nth-child(even) {
                             background-color: #f8f8f8;
                         }
-                        
+
                         &:nth-child(odd) {
                             background-color: white;
                         }
-                        
+
                         &:hover {
                             background-color: #e8f4f8;
                         }
-                        
+
                         td {
                             padding: 12px;
                             text-align: left;
-                            
+
                             a {
                                 color: @ColorEpDataComplementario;
                                 text-decoration: none;
-                                
+
                                 &:hover {
                                     text-decoration: underline;
                                 }
@@ -200,7 +216,7 @@
                 }
             }
         }
-        
+
         .acciones-tabla {
             display: flex;
             gap: 8px;
@@ -254,7 +270,7 @@
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid #ddd;
-    
+
     .info-paginacion {
         color: @ColorGrisClaro;
         font-size: 14px;
@@ -292,10 +308,31 @@
     text-align: center;
     padding: 40px 20px;
     color: @ColorGrisClaro;
-    
+
     p {
         margin: 0;
         font-size: 16px;
+    }
+}
+
+// Forms inline para tokens
+.form-inline {
+    display: inline;
+}
+
+// Modal de token
+.modal {
+    display: none;
+
+    &.modal-visible {
+        display: block;
+    }
+}
+
+// Contenedor de gráfico oculto
+.contenedor-grafico {
+    .oculto {
+        display: none;
     }
 }
 
@@ -309,7 +346,7 @@
                         min-width: 100%;
                     }
                 }
-                
+
                 .form-actions {
                     .boton {
                         flex: 1;
@@ -319,13 +356,13 @@
             }
         }
     }
-    
+
     .seccion-tabla {
         .card {
             .tabla-responsive {
                 .tabla {
                     font-size: 14px;
-                    
+
                     th, td {
                         padding: 8px;
                     }
@@ -333,7 +370,7 @@
             }
         }
     }
-    
+
     .paginacion {
         flex-direction: column;
         gap: 10px;
@@ -350,18 +387,18 @@
         display: flex;
         flex-direction: column;
         gap: 15px;
-        
+
         .campo {
             display: flex;
             align-items: center;
             gap: 10px;
-            
+
             .etiqueta {
                 font-weight: 600;
                 color: @ColorEpDataComplementario;
                 min-width: 150px;
             }
-            
+
             .valor {
                 color: #333;
             }
@@ -382,16 +419,16 @@
     padding: 16px 20px;
     background-color: #f9f9f9;
     transition: all 0.2s ease;
-    
+
     &.asignado {
         border-left: 4px solid #28a745;
         background-color: #f0f9f4;
     }
-    
+
     &.disponible {
         border-left: 4px solid #6c757d;
     }
-    
+
     &:hover {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
@@ -404,7 +441,7 @@
         justify-content: space-between;
         margin-bottom: 8px;
         gap: 12px;
-        
+
         .rol-nombre {
             font-size: 1.2rem;
             font-weight: 600;
@@ -413,7 +450,7 @@
             flex: 1;
         }
     }
-    
+
     .rol-descripcion {
         font-size: 0.95rem;
         color: #666;
@@ -436,12 +473,12 @@
     padding: 0;
     background-color: #f9f9f9;
     transition: all 0.2s ease;
-    
+
     &.asignado {
         border-left: 4px solid #28a745;
         background-color: #f0f9f4;
     }
-    
+
     &:hover {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
@@ -455,7 +492,7 @@
     cursor: pointer;
     margin: 0;
     width: 100%;
-    
+
     &:hover {
         background-color: rgba(0, 0, 0, 0.02);
     }
@@ -468,7 +505,7 @@
     height: 20px;
     cursor: pointer;
     flex-shrink: 0;
-    
+
     &:checked {
         accent-color: @ColorEpDataComplementario;
     }
@@ -476,14 +513,14 @@
 
 .rol-item-editable .rol-contenido {
     flex: 1;
-    
+
     .rol-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin-bottom: 8px;
         gap: 12px;
-        
+
         .rol-nombre {
             font-size: 1.2rem;
             font-weight: 600;
@@ -492,7 +529,7 @@
             flex: 1;
         }
     }
-    
+
     .rol-descripcion {
         font-size: 0.95rem;
         color: #666;
@@ -510,12 +547,12 @@
     cursor: pointer;
     font-weight: 500;
     color: @ColorEpDataComplementario;
-    
+
     input[type="checkbox"] {
         width: 18px;
         height: 18px;
         cursor: pointer;
-        
+
         &:checked {
             accent-color: @ColorEpDataComplementario;
         }
@@ -540,7 +577,7 @@
     background-color: #f8d7da;
     border: 1px solid #f5c6cb;
     border-radius: 6px;
-    
+
     p {
         margin: 0 0 20px 0;
         font-size: 16px;
@@ -555,7 +592,7 @@
     .card {
         .form-group {
             margin-bottom: 20px;
-            
+
             label {
                 display: block;
                 margin-bottom: 10px;
@@ -563,7 +600,7 @@
                 color: @ColorEpDataComplementario;
                 font-size: 0.95rem;
             }
-            
+
             .form-control {
                 width: 100%;
                 padding: 10px 15px;
@@ -574,26 +611,26 @@
                 min-height: 40px;
                 box-sizing: border-box;
                 line-height: 1.4;
-                
+
                 &:focus {
                     border-color: #448b9b;
                     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px #006370a1;
                     outline: 0 none;
                 }
-                
+
                 &[readonly] {
                     background-color: #f5f5f5;
                     cursor: not-allowed;
                 }
             }
-            
+
             .form-text {
                 display: block;
                 margin-top: 5px;
                 font-size: 0.9rem;
                 color: #6c757d;
             }
-            
+
             .text-danger {
                 display: block;
                 margin-top: 5px;
@@ -618,15 +655,15 @@
     ul {
         margin: 0;
         padding-left: 20px;
-        
+
         li {
             margin-bottom: 5px;
         }
     }
-    
+
     p {
         margin: 0 0 10px 0;
-        
+
         &:last-child {
             margin-bottom: 0;
         }
@@ -642,30 +679,29 @@
             gap: 8px;
         }
     }
-    
+
     .rol-checkbox-label {
         flex-direction: column;
         gap: 12px;
-        
+
         .rol-checkbox-input {
             margin-top: 0;
         }
     }
-    
+
     .acciones-pie {
         flex-direction: column;
-        
+
         .boton {
             width: 100%;
         }
     }
-    
+
     .form-actions {
         flex-direction: column;
-        
+
         .boton {
             width: 100%;
         }
     }
 }
-

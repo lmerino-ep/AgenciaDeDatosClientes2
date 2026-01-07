@@ -86,7 +86,10 @@ namespace Datos
                     Nombre = "Usuarios activos último mes",
                     Descripcion = "Usuarios con actividad en los últimos 30 días",
                     Categoria = "Usuarios",
-                    Parametros = new List<ParametroKpi>()
+                    Parametros = new List<ParametroKpi>
+                    {
+                        new ParametroKpi { Nombre = "limite", Tipo = "numero", Requerido = false, ValorPorDefecto = "10", Descripcion = "Número máximo de resultados" }
+                    }
                 },
                 new Kpi
                 {
@@ -247,7 +250,7 @@ namespace Datos
 
                     // Usuarios
                     "usuarios-por-tipo" => await UsuariosPorTipo(),
-                    "usuarios-activos-mes" => await UsuariosActivosMes(),
+                    "usuarios-activos-mes" => await UsuariosActivosMes(parametros),
                     "tokens-activos" => await TokensActivos(),
                     "roles-por-usuario-tipo" => await RolesPorUsuarioTipo(),
 
@@ -418,8 +421,10 @@ namespace Datos
             }
         }
 
-        private async Task<List<Dictionary<string, object>>> UsuariosActivosMes()
+        private async Task<List<Dictionary<string, object>>> UsuariosActivosMes(Dictionary<string, object> parametros)
         {
+            int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 10;
+
             string sql = @"
                 SELECT
                     U.Email as Usuario,
@@ -430,11 +435,12 @@ namespace Datos
                 INNER JOIN Usuario U ON UA.FK_Usuario = U.Id
                 WHERE UA.LastUpdate >= DATE_SUB(NOW(), INTERVAL 30 DAY)
                 GROUP BY U.Id, U.Email, U.Nombre
-                ORDER BY Total DESC";
+                ORDER BY Total DESC
+                LIMIT @Limite";
 
             using (IDbConnection db = ObtenerConexionLectura())
             {
-                var resultado = await db.QueryAsync(sql);
+                var resultado = await db.QueryAsync(sql, new { Limite = limite });
                 return resultado.Select(r => ((IDictionary<string, object>)r).ToDictionary(k => k.Key, v => v.Value ?? (object)DBNull.Value)).ToList();
             }
         }
@@ -496,14 +502,15 @@ namespace Datos
 
             string sql = @"
                 SELECT
-                    R.Titulo as Representacion,
+                    COALESCE(RD.Titulo, CONCAT('Representación ', R.Id)) as Representacion,
                     R.Id as RepresentacionId,
                     COUNT(*) as TotalDescargas
                 FROM UsuarioActividad UA
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
+                LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
                 WHERE A.Nombre = 'Descargado CSV'
-                GROUP BY R.Id, R.Titulo
+                GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalDescargas DESC
                 LIMIT @Limite";
 
@@ -520,14 +527,15 @@ namespace Datos
 
             string sql = @"
                 SELECT
-                    R.Titulo as Representacion,
+                    COALESCE(RD.Titulo, CONCAT('Representación ', R.Id)) as Representacion,
                     R.Id as RepresentacionId,
                     COUNT(*) as TotalDescargas
                 FROM UsuarioActividad UA
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
+                LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
                 WHERE A.Nombre = 'Descargado JSON'
-                GROUP BY R.Id, R.Titulo
+                GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalDescargas DESC
                 LIMIT @Limite";
 
@@ -544,14 +552,15 @@ namespace Datos
 
             string sql = @"
                 SELECT
-                    R.Titulo as Representacion,
+                    COALESCE(RD.Titulo, CONCAT('Representación ', R.Id)) as Representacion,
                     R.Id as RepresentacionId,
                     COUNT(*) as TotalDescargas
                 FROM UsuarioActividad UA
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
+                LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
                 WHERE A.Nombre = 'Descargado imagen'
-                GROUP BY R.Id, R.Titulo
+                GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalDescargas DESC
                 LIMIT @Limite";
 
@@ -615,12 +624,12 @@ namespace Datos
             string sql = @"
                 SELECT
                     CASE
-                        WHEN FK_RepresentacionOriginal IS NULL THEN 'Originales'
+                        WHEN FK_RepresentacionDeLaCualSoyClon IS NULL THEN 'Originales'
                         ELSE 'Clones'
                     END as Tipo,
                     COUNT(*) as Total
                 FROM Representacion
-                GROUP BY CASE WHEN FK_RepresentacionOriginal IS NULL THEN 'Originales' ELSE 'Clones' END";
+                GROUP BY CASE WHEN FK_RepresentacionDeLaCualSoyClon IS NULL THEN 'Originales' ELSE 'Clones' END";
 
             using (IDbConnection db = ObtenerConexionLectura())
             {
@@ -634,12 +643,12 @@ namespace Datos
             string sql = @"
                 SELECT
                     CASE
-                        WHEN Dinamica = 1 THEN 'Dinámicas'
+                        WHEN FK_PlantillaWebPadre IS NOT NULL THEN 'Dinámicas'
                         ELSE 'Estáticas'
                     END as Tipo,
                     COUNT(*) as Total
                 FROM PlantillaWeb
-                GROUP BY Dinamica";
+                GROUP BY CASE WHEN FK_PlantillaWebPadre IS NOT NULL THEN 'Dinámicas' ELSE 'Estáticas' END";
 
             using (IDbConnection db = ObtenerConexionLectura())
             {
@@ -656,16 +665,17 @@ namespace Datos
 
             string sql = @"
                 SELECT
-                    R.Titulo as Representacion,
+                    COALESCE(RD.Titulo, CONCAT('Representación ', R.Id)) as Representacion,
                     R.Id as RepresentacionId,
                     COUNT(*) as TotalVistas
                 FROM UsuarioActividad UA
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
+                LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
                 WHERE A.Nombre = 'Visitado'
                   AND (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
                   AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
-                GROUP BY R.Id, R.Titulo
+                GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalVistas DESC
                 LIMIT @Limite";
 
@@ -729,6 +739,125 @@ namespace Datos
             {
                 var resultado = await db.QueryAsync(sql, new { Limite = limite });
                 return resultado.Select(r => ((IDictionary<string, object>)r).ToDictionary(k => k.Key, v => v.Value ?? (object)DBNull.Value)).ToList();
+            }
+        }
+
+        #endregion
+
+        #region Estadísticas del Dashboard
+
+        /// <summary>
+        /// Obtiene el número de usuarios activos en los últimos 30 días
+        /// </summary>
+        public async Task<int> ObtenerUsuariosActivosAsync()
+        {
+            string sql = @"
+                SELECT COUNT(DISTINCT U.Id) as Total
+                FROM UsuarioActividad UA
+                INNER JOIN Usuario U ON UA.FK_Usuario = U.Id
+                WHERE UA.LastUpdate >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                  AND U.Activo = 1";
+
+            using (IDbConnection db = ObtenerConexionLectura())
+            {
+                var resultado = await db.QueryFirstOrDefaultAsync<int?>(sql);
+                return resultado ?? 0;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el número de actividades del mes actual
+        /// </summary>
+        public async Task<int> ObtenerActividadMensualAsync()
+        {
+            string sql = @"
+                SELECT COUNT(*) as Total
+                FROM UsuarioActividad UA
+                WHERE DATE_FORMAT(UA.LastUpdate, '%Y-%m') = DATE_FORMAT(NOW(), '%Y-%m')";
+
+            using (IDbConnection db = ObtenerConexionLectura())
+            {
+                var resultado = await db.QueryFirstOrDefaultAsync<int?>(sql);
+                return resultado ?? 0;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el número de acciones realizadas hoy
+        /// </summary>
+        public async Task<int> ObtenerAccionesHoyAsync()
+        {
+            string sql = @"
+                SELECT COUNT(*) as Total
+                FROM UsuarioActividad UA
+                WHERE DATE(UA.LastUpdate) = CURDATE()";
+
+            using (IDbConnection db = ObtenerConexionLectura())
+            {
+                var resultado = await db.QueryFirstOrDefaultAsync<int?>(sql);
+                return resultado ?? 0;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el total de usuarios activos en el sistema
+        /// </summary>
+        public async Task<int> ObtenerTotalUsuariosAsync()
+        {
+            string sql = @"
+                SELECT COUNT(*) as Total
+                FROM Usuario
+                WHERE Activo = 1";
+
+            using (IDbConnection db = ObtenerConexionLectura())
+            {
+                var resultado = await db.QueryFirstOrDefaultAsync<int?>(sql);
+                return resultado ?? 0;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene actividad mensual de los últimos 6 meses (agregada por mes)
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerActividadMensualUltimos6MesesAsync()
+        {
+            string sql = @"
+                SELECT
+                    DATE_FORMAT(UA.LastUpdate, '%Y-%m') as Fecha,
+                    COUNT(*) as Total
+                FROM UsuarioActividad UA
+                WHERE UA.LastUpdate >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+                GROUP BY DATE_FORMAT(UA.LastUpdate, '%Y-%m')
+                ORDER BY Fecha ASC";
+
+            using (IDbConnection db = ObtenerConexionLectura())
+            {
+                var resultado = await db.QueryAsync<(string Fecha, int Total)>(sql);
+                return resultado.ToDictionary(r => r.Fecha, r => r.Total);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene actividad diaria de los últimos 7 días (actividad real del sistema)
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerActividadDiariaUltimos7DiasAsync()
+        {
+            string sql = @"
+                SELECT
+                    DATE(UA.LastUpdate) as Fecha,
+                    COUNT(*) as Total
+                FROM UsuarioActividad UA
+                WHERE UA.LastUpdate >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                GROUP BY DATE(UA.LastUpdate)
+                ORDER BY Fecha ASC";
+
+            using (IDbConnection db = ObtenerConexionLectura())
+            {
+                var resultado = await db.QueryAsync<(DateTime Fecha, int Total)>(sql);
+                return resultado.ToDictionary(
+                    r => r.Fecha.ToString("yyyy-MM-dd"),
+                    r => r.Total
+                );
             }
         }
 

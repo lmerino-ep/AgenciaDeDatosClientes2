@@ -38,13 +38,27 @@
   color: #05576B;
   margin: 0 0 20px 0;
 }
+/* Sección de acciones en header */
+.seccion-acciones-header {
+  margin-bottom: 30px;
+}
+.seccion-acciones-header .acciones-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.seccion-acciones-header .acciones-header .titulo-seccion {
+  margin: 0;
+}
 .header-con-accion {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
-/* Filtros - Estilos similares a EditEpData */
+/* Filtros */
 .seccion-filtros .card .form-filtros .grid-filtros {
   display: flex;
   flex-wrap: wrap;
@@ -83,7 +97,7 @@
   gap: 10px;
   flex-wrap: wrap;
 }
-/* Botones - Estilos similares a EditEpData */
+/* Botones */
 .boton {
   display: inline-block;
   padding: 8px 16px;
@@ -135,7 +149,7 @@
   padding: 6px 12px;
   font-size: 13px;
 }
-/* Tabla - Estilos similares a EditEpData */
+/* Tabla */
 .seccion-tabla .card .tabla-responsive {
   overflow-x: auto;
   width: 100%;
@@ -311,6 +325,18 @@
 .mensaje-vacio p {
   margin: 0;
   font-size: 16px;
+}
+.form-inline {
+  display: inline;
+}
+.modal {
+  display: none;
+}
+.modal.modal-visible {
+  display: block;
+}
+.contenedor-grafico .oculto {
+  display: none;
 }
 /* Responsive */
 @media (max-width: 768px) {

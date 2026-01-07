@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Modelos.DTO.Roles;
-using Modelos.Entidades;
 using Negocio;
 using System.Text.Json;
 
@@ -17,7 +16,7 @@ namespace Pages.Usuarios
         public int Id { get; set; }
 
         public UsuarioRoles Usuario { get; set; }
-        public List<Modelos.Entidades.Rol> TodosLosRoles { get; set; }
+        public List<Modelos.DTO.Roles.Rol> TodosLosRoles { get; set; }
         public List<int> RolesAsignadosIds { get; set; }
 
         [BindProperty]

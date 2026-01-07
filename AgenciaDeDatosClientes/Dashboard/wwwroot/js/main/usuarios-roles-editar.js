@@ -1,10 +1,12 @@
 function toggleTodosRoles(checkbox) {
-    const checkboxes = document.querySelectorAll('.rol-checkbox-input[type="checkbox"]');
+    // Usar atributo data-js-rol para separar la lógica JS de los estilos CSS
+    const checkboxes = document.querySelectorAll('[data-js-rol][type="checkbox"]');
     checkboxes.forEach(cb => cb.checked = checkbox.checked);
 }
 
 function confirmarCambios(event) {
-    const checkboxes = document.querySelectorAll('.rol-checkbox-input[type="checkbox"]:checked');
+    // Usar atributo data-js-rol para separar la lógica JS de los estilos CSS
+    const checkboxes = document.querySelectorAll('[data-js-rol][type="checkbox"]:checked');
     const cantidad = checkboxes.length;
 
     if (!confirm(`¿Estás seguro de asignar ${cantidad} rol(es) a este usuario?\n\nEsta acción quedará registrada en la auditoría.`)) {

@@ -90,6 +90,8 @@ namespace Modelos
         public const string UsuarioCambiarTipo = "Usuario.CambiarTipo";
 
         // Roles
+        public const string RolesCrear = "Roles.Crear";
+        public const string RolesEditar = "Roles.Editar";
         public const string RolesAsignar = "Roles.Asignar";
         public const string RolesRemover = "Roles.Remover";
 

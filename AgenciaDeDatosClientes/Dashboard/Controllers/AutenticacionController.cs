@@ -82,6 +82,18 @@ namespace Controllers
                         Pagina = "/usuarios/listado"
                     });
 
+                    // === GESTIÓN DE ROLES ===
+                    if (User.IsInRole("Dashboard - Gestión de Roles") ||
+                        User.IsInRole("Dashboard - Acceso total"))
+                    {
+                        opciones.Add(new OpcionMiCuenta
+                        {
+                            Texto = "Roles",
+                            Icono = "gestion-listados",
+                            Pagina = "/roles/listado"
+                        });
+                    }
+
                     // === MÉTRICAS Y KPIs (Fase 3) ===
                     // Verificar permisos para consulta de métricas
                     if (User.IsInRole("Dashboard - Consulta de Métricas") ||
@@ -104,7 +116,19 @@ namespace Controllers
                         {
                             Texto = "Auditoría",
                             Icono = "gestion-solicitudes",
-                            Pagina = "/auditoria/dashboard"
+                            Pagina = "/Auditoria/Auditoria"
+                        });
+                    }
+
+                    // === DOCUMENTACIÓN ===
+                    if (User.IsInRole("Dashboard - Gestión de Documentación") ||
+                        User.IsInRole("Dashboard - Acceso total"))
+                    {
+                        opciones.Add(new OpcionMiCuenta
+                        {
+                            Texto = "Documentación",
+                            Icono = "documentacion",
+                            Pagina = "/documentacion/listado"
                         });
                     }
 

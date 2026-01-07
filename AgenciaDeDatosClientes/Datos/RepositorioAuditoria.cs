@@ -173,5 +173,60 @@ namespace Datos
                 });
             }
         }
+
+        /// <summary>
+        /// Obtiene acciones agrupadas por módulo de hoy
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerAccionesPorModuloHoyAsync()
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT
+                        Modulo,
+                        COUNT(*) as Total
+                    FROM AuditoriaAccion
+                    WHERE DATE(FechaHora) = CURDATE()
+                    GROUP BY Modulo
+                    ORDER BY Total DESC;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                var resultado = await conexion.QueryAsync<(string Modulo, int Total)>(consulta);
+                return resultado.ToDictionary(r => r.Modulo, r => r.Total);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene tendencia de acciones de los últimos 7 días
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerTendenciaAccionesUltimos7DiasAsync()
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT
+                        DATE(FechaHora) as Fecha,
+                        COUNT(*) as Total
+                    FROM AuditoriaAccion
+                    WHERE FechaHora >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                    GROUP BY DATE(FechaHora)
+                    ORDER BY Fecha ASC;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                var resultado = await conexion.QueryAsync<(DateTime Fecha, int Total)>(consulta);
+                return resultado.ToDictionary(
+                    r => r.Fecha.ToString("yyyy-MM-dd"),
+                    r => r.Total
+                );
+            }
+        }
     }
 }

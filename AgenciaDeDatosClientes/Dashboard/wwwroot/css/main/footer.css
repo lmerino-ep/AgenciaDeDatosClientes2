@@ -826,3 +826,465 @@
   right: 1px;
   opacity: 0.5;
 }
+.icono .documentacion {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+}
+.icono .documentacion::after,
+.icono .documentacion::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.icono .documentacion::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.icono .documentacion::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .carpeta {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #05576B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.seccion-tabla .icono .shortcut {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.seccion-tabla .icono .imagen {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 12.8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px;
+  border-radius: 2px;
+  margin-left: 0;
+  color: #e74c3c;
+}
+.seccion-tabla .icono .imagen::after,
+.seccion-tabla .icono .imagen::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  border: 2px solid;
+}
+.seccion-tabla .icono .imagen::after {
+  transform: rotate(45deg);
+  border-radius: 3px;
+  width: 12.8px;
+  height: 12.8px;
+  top: 7.2px;
+  left: 4.8px;
+}
+.seccion-tabla .icono .imagen::before {
+  width: 4.8px;
+  height: 4.8px;
+  border-radius: 100%;
+  top: 1.6px;
+  left: 1.6px;
+}
+.seccion-tabla .icono .pdf {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  color: #e53e3e;
+}
+.seccion-tabla .icono .pdf::after,
+.seccion-tabla .icono .pdf::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .pdf::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .pdf::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .word {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  color: #2b579a;
+}
+.seccion-tabla .icono .word::after,
+.seccion-tabla .icono .word::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .word::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .word::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .excel {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid;
+  border-radius: 3px;
+  margin-right: -2px;
+  color: #217346;
+}
+.seccion-tabla .icono .excel::after,
+.seccion-tabla .icono .excel::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  height: 2px;
+  border-radius: 4px;
+  background: currentColor;
+}
+.seccion-tabla .icono .excel::before {
+  top: 2px;
+  box-shadow: 4px 0 0, 8px 0 0, 0 4px 0, 4px 4px 0, 8px 4px 0;
+  width: 2px;
+  left: 2px;
+}
+.seccion-tabla .icono .excel::after {
+  width: 8px;
+  bottom: 2px;
+  left: 3px;
+}
+.seccion-tabla .icono .powerpoint {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  color: #d04423;
+}
+.seccion-tabla .icono .powerpoint::after,
+.seccion-tabla .icono .powerpoint::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .powerpoint::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .powerpoint::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .texto {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  color: #34495e;
+}
+.seccion-tabla .icono .texto::after,
+.seccion-tabla .icono .texto::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .texto::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .texto::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .json {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  color: #34495e;
+}
+.seccion-tabla .icono .json::after,
+.seccion-tabla .icono .json::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .json::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .json::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .sql {
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+  transform: rotate(15deg);
+  width: 2px;
+  height: 16px;
+  background: currentColor;
+  margin-left: 10px;
+  margin-right: 10px;
+  bottom: 2px;
+  color: #34495e;
+}
+.seccion-tabla .icono .sql::after,
+.seccion-tabla .icono .sql::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  transform: rotate(-60deg);
+}
+.seccion-tabla .icono .sql::before {
+  border-left: 2px solid;
+  border-top: 2px solid;
+  left: -8px;
+  top: 5px;
+}
+.seccion-tabla .icono .sql::after {
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+  right: -8px;
+  top: 3px;
+}
+.seccion-tabla .icono .xml {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  color: #34495e;
+}
+.seccion-tabla .icono .xml::after,
+.seccion-tabla .icono .xml::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .xml::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .xml::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .csv {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  color: #34495e;
+}
+.seccion-tabla .icono .csv::after,
+.seccion-tabla .icono .csv::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .csv::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .csv::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}
+.seccion-tabla .icono .archivo-generico {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-right: 0;
+  border-top: 0;
+  box-shadow: 0 0 0 2px;
+  border-radius: 1px;
+  border-top-right-radius: 4px;
+  overflow: hidden;
+  margin-left: 3px;
+  margin-right: 2px;
+  bottom: 4px;
+  color: #95a5a6;
+}
+.seccion-tabla .icono .archivo-generico::after,
+.seccion-tabla .icono .archivo-generico::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+.seccion-tabla .icono .archivo-generico::before {
+  background: currentColor;
+  box-shadow: 0 4px 0, -6px -4px 0;
+  left: 0;
+  width: 10px;
+  height: 2px;
+  top: 8px;
+}
+.seccion-tabla .icono .archivo-generico::after {
+  width: 6px;
+  height: 6px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  right: -1px;
+  top: -1px;
+}

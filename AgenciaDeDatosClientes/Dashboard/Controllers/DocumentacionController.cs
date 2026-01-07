@@ -1,33 +1,37 @@
 using Utils.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Negocio;
 using System.Security.Claims;
 
-namespace Pages.Documentacion
+namespace Controllers
 {
+    /// <summary>
+    /// Controlador para operaciones de documentación (endpoints que no requieren página)
+    /// </summary>
     [Authorize(Policy = PoliticasAutorizacion.Politicas.GestionDocumentacion)]
-    public class DescargarModel : PageModel
+    public class DocumentacionController : Controller
     {
         private readonly IServicioGoogleDrive _servicioGoogleDrive;
         private readonly IServicioAuditoria _servicioAuditoria;
-        private readonly ILogger<DescargarModel> _logger;
+        private readonly ILogger<DocumentacionController> _logger;
 
-        [BindProperty(SupportsGet = true)]
-        public string Id { get; set; }
-
-        public DescargarModel(
+        public DocumentacionController(
             IServicioGoogleDrive servicioGoogleDrive,
             IServicioAuditoria servicioAuditoria,
-            ILogger<DescargarModel> logger)
+            ILogger<DocumentacionController> logger)
         {
             _servicioGoogleDrive = servicioGoogleDrive ?? throw new ArgumentNullException(nameof(servicioGoogleDrive));
             _servicioAuditoria = servicioAuditoria ?? throw new ArgumentNullException(nameof(servicioAuditoria));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        /// <summary>
+        /// Descarga un archivo de Google Drive
+        /// </summary>
+        [HttpGet]
+        [Route("/documentacion/descargar/{id}")]
+        public async Task<IActionResult> Descargar(string id)
         {
             try
             {
@@ -37,40 +41,47 @@ namespace Pages.Documentacion
                 {
                     _logger.LogWarning("No se pudo obtener el ID del usuario autenticado");
                     TempData["MensajeError"] = "Error al obtener información del usuario.";
-                    return RedirectToPage("/Documentacion/Listado");
+                    return Redirect("/documentacion/listado");
                 }
 
-                _logger.LogInformation("Descargando documento: {IdArchivo} por usuario {UsuarioId}", Id, idUsuario);
+                if (string.IsNullOrEmpty(id))
+                {
+                    _logger.LogWarning("ID de archivo no proporcionado para descarga");
+                    TempData["MensajeError"] = "ID de archivo no válido.";
+                    return Redirect("/documentacion/listado");
+                }
 
-                var (archivo, nombreArchivo, tipoMime) = await _servicioGoogleDrive.DescargarArchivoAsync(idUsuario, Id);
+                _logger.LogInformation("Descargando documento: {IdArchivo} por usuario {UsuarioId}", id, idUsuario);
+
+                var (stream, nombreArchivo, tipoMime) = await _servicioGoogleDrive.DescargarArchivoAsync(idUsuario, id);
 
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
                     "Documentacion.Descargar",
                     "Documentacion",
-                    $"Documento descargado: {nombreArchivo} (ID: {Id})",
+                    $"Documento descargado: {nombreArchivo} (ID: {id})",
                     "Exito"
                 );
 
-                return File(archivo, tipoMime, nombreArchivo);
+                return File(stream, tipoMime, nombreArchivo);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al descargar documento {IdArchivo}", Id);
+                _logger.LogError(ex, "Error al descargar documento {IdArchivo}", id);
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
                     "Documentacion.Descargar",
                     "Documentacion",
-                    $"Error al descargar documento: {Id}",
+                    $"Error al descargar documento: {id}",
                     "Error",
                     null,
                     ex.Message
                 );
 
                 TempData["MensajeError"] = $"Error al descargar el documento: {ex.Message}";
-                return RedirectToPage("/Documentacion/Listado");
+                return Redirect("/documentacion/listado");
             }
         }
     }

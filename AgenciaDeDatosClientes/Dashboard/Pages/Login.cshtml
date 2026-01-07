@@ -33,12 +33,10 @@
                 </span>
             </div>
             <div class="contenido">
-                <div id="divError" asp-validation-summary="All" style="display: none; visibility: hidden;"></div>
+                <div id="divError" asp-validation-summary="All" class="div-error-oculto"></div>
                 @if (HttpContext.Request.Query.ContainsKey("expired"))
                 {
-                    <div style="display: block; visibility: visible; padding: 15px; margin-bottom: 20px; background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; border-radius: 4px;">
-                        <strong>Sesión expirada:</strong> Tu sesión ha expirado o las credenciales de seguridad han cambiado. Por favor, inicia sesión nuevamente.
-                    </div>
+                    <div class="alerta-sesion-expirada">    <strong>Sesión expirada:</strong> Tu sesión ha expirado o las credenciales de seguridad han cambiado. Por favor, inicia sesión nuevamente.</div>
                 }
                 <h1 class="titulo">Iniciar sesión</h1>
                 <div class="campos">

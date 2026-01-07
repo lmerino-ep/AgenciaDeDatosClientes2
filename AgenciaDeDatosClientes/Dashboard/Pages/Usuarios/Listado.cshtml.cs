@@ -42,7 +42,7 @@ namespace Pages.Usuarios
         public List<UsuarioListado> Usuarios { get; set; } = new List<UsuarioListado>();
         public int TotalUsuarios { get; set; }
         public int TotalPaginas { get; set; }
-        public List<Modelos.Entidades.UsuarioTipo> TiposUsuario { get; set; } = new List<Modelos.Entidades.UsuarioTipo>();
+        public List<Modelos.DTO.Usuarios.UsuarioTipo> TiposUsuario { get; set; } = new List<Modelos.DTO.Usuarios.UsuarioTipo>();
 
         [TempData]
         public string MensajeExito { get; set; }

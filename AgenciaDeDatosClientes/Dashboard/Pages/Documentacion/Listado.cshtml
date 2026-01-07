@@ -10,7 +10,25 @@
 }
 
 @section estilos {
-    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    <environment include="Development">
+        <link href="~/css/plugins/modalcargando.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
+    <environment include="Staging,Production">
+        <link href="~/css/plugins/modalcargando.min.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
+}
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-listado.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-listado.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
 }
 
 <div class="page-header">
@@ -45,6 +63,10 @@
     <div class="card">
         <h2 class="titulo-seccion">Filtros</h2>
         <form method="get" class="form-filtros">
+            @if (!string.IsNullOrEmpty(Model.CarpetaId))
+            {
+                <input type="hidden" name="CarpetaId" value="@Model.CarpetaId" />
+            }
             <div class="grid-filtros">
                 <div class="form-group">
                     <label for="Busqueda">Búsqueda por nombre:</label>
@@ -55,11 +77,30 @@
                     <label for="FiltroTipo">Tipo de archivo:</label>
                     <select name="FiltroTipo" id="FiltroTipo" class="form-control">
                         <option value="">Todos</option>
-                        <option value="pdf" selected="@(Model.FiltroTipo == "pdf")">PDF</option>
-                        <option value="word" selected="@(Model.FiltroTipo == "word")">Word</option>
-                        <option value="excel" selected="@(Model.FiltroTipo == "excel")">Excel</option>
-                        <option value="powerpoint" selected="@(Model.FiltroTipo == "powerpoint")">PowerPoint</option>
-                        <option value="imagenes" selected="@(Model.FiltroTipo == "imagenes")">Imágenes</option>
+                        @if (Model.TiposDisponibles.Contains("pdf"))
+                        {
+                            <option value="pdf" selected="@(Model.FiltroTipo == "pdf")">PDF</option>
+                        }
+                        @if (Model.TiposDisponibles.Contains("word"))
+                        {
+                            <option value="word" selected="@(Model.FiltroTipo == "word")">Word</option>
+                        }
+                        @if (Model.TiposDisponibles.Contains("excel"))
+                        {
+                            <option value="excel" selected="@(Model.FiltroTipo == "excel")">Excel</option>
+                        }
+                        @if (Model.TiposDisponibles.Contains("powerpoint"))
+                        {
+                            <option value="powerpoint" selected="@(Model.FiltroTipo == "powerpoint")">PowerPoint</option>
+                        }
+                        @if (Model.TiposDisponibles.Contains("texto"))
+                        {
+                            <option value="texto" selected="@(Model.FiltroTipo == "texto")">Texto</option>
+                        }
+                        @if (Model.TiposDisponibles.Contains("imagenes"))
+                        {
+                            <option value="imagenes" selected="@(Model.FiltroTipo == "imagenes")">Imágenes</option>
+                        }
                     </select>
                 </div>
 
@@ -76,7 +117,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="boton boton-primario">Filtrar</button>
-                <a href="/documentacion/listado" class="boton boton-secundario">Limpiar</a>
+                <a href="/documentacion/listado@(!string.IsNullOrEmpty(Model.CarpetaId) ? $"?CarpetaId={Model.CarpetaId}" : "")" class="boton boton-secundario">Limpiar</a>
                 @if (Model.Permisos?.PuedeEscribir == true)
                 {
                     <a href="/documentacion/subir" class="boton boton-primario">Subir Documento</a>
@@ -85,6 +126,31 @@
         </form>
     </div>
 </section>
+
+<!-- Breadcrumbs -->
+@if (Model.Breadcrumbs.Any() || !string.IsNullOrEmpty(Model.CarpetaId))
+{
+    <section class="seccion-breadcrumbs">
+        <div class="card">
+            <div class="breadcrumb">
+                <a href="/documentacion/listado" title="Carpeta raíz">Documentación</a>
+                @if (Model.Breadcrumbs.Any())
+                {
+                    @foreach (var breadcrumb in Model.Breadcrumbs)
+                    {
+                        <span class="separador">/</span>
+                        <a href="/documentacion/listado?CarpetaId=@breadcrumb.Id" title="@breadcrumb.Nombre">@breadcrumb.Nombre</a>
+                    }
+                }
+                else if (!string.IsNullOrEmpty(Model.CarpetaId))
+                {
+                    <span class="separador">/</span>
+                    <span>Carpeta</span>
+                }
+            </div>
+        </div>
+    </section>
+}
 
 <!-- Tabla de documentos -->
 <section class="seccion-tabla">
@@ -110,31 +176,62 @@
                         @foreach (var archivo in Model.Archivos)
                         {
                             <tr>
-                                <td style="text-align: center; font-size: 1.5rem;">@archivo.IconoTipo</td>
+                                <td class="td-icono-centrado">
+                                    @if (archivo.EsCarpeta)
+                                    {
+                                        <span class="icono">
+                                            <span class="@archivo.IconoTipo">Carpeta</span>
+                                        </span>
+                                    }
+                                    else if (archivo.EsShortcut)
+                                    {
+                                        <span class="icono">
+                                            <span class="shortcut">Acceso directo</span>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="icono">
+                                            <i class="@archivo.IconoTipo"></i>
+                                        </span>
+                                    }
+                                </td>
                                 <td>
-                                    <a href="@archivo.UrlWeb" target="_blank" title="Abrir en Google Drive">
-                                        @archivo.Nombre
-                                    </a>
+                                    @if (archivo.EsCarpeta)
+                                    {
+                                        <a href="/documentacion/listado?CarpetaId=@archivo.Id" title="Abrir carpeta: @archivo.Nombre">
+                                            @archivo.Nombre
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="@archivo.UrlWeb" target="_blank" title="Abrir en Google Drive">
+                                            @archivo.Nombre
+                                        </a>
+                                    }
                                 </td>
                                 <td>@archivo.TamanoFormateado</td>
-                                <td>@archivo.FechaModificacion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(archivo.FechaModificacion != DateTime.MinValue ? archivo.FechaModificacion.ToString("dd/MM/yyyy HH:mm") : "-")</td>
                                 <td>
                                     <div class="acciones-tabla">
-                                        @if (Model.Permisos?.PuedeLeer == true)
+                                        @if (!archivo.EsCarpeta && !archivo.EsShortcut)
                                         {
-                                            <a href="/documentacion/descargar/@archivo.Id" class="boton boton-pequeno boton-secundario" title="Descargar">
-                                                Descargar
-                                            </a>
+                                            @if (Model.Permisos?.PuedeLeer == true)
+                                            {
+                                                <a href="/documentacion/descargar/@archivo.Id" class="boton boton-pequeno boton-secundario" data-js-descargar title="Descargar">
+                                                    Descargar
+                                                </a>
+                                            }
+                                            @if (Model.Permisos?.PuedeEscribir == true)
+                                            {
+                                                <a href="/documentacion/sobrescribir/@archivo.Id" class="boton boton-pequeno boton-secundario" title="Sobrescribir">
+                                                    Sobrescribir
+                                                </a>
+                                            }
                                         }
-                                        @if (Model.Permisos?.PuedeEscribir == true)
+                                        @if (Model.Permisos?.PuedeEliminar == true && !archivo.EsShortcut)
                                         {
-                                            <a href="/documentacion/sobrescribir/@archivo.Id" class="boton boton-pequeno boton-secundario" title="Sobrescribir">
-                                                Sobrescribir
-                                            </a>
-                                        }
-                                        @if (Model.Permisos?.PuedeEliminar == true)
-                                        {
-                                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@archivo.Id" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este archivo? Esta acción no se puede deshacer.');">
+                                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@archivo.Id" class="form-inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar @(archivo.EsCarpeta ? "esta carpeta" : "este archivo")? Esta acción no se puede deshacer.');">
                                                 @Html.AntiForgeryToken()
                                                 <button type="submit" class="boton boton-pequeno boton-peligro" title="Eliminar">
                                                     Eliminar

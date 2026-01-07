@@ -1,0 +1,82 @@
+@page "/roles/editar/{id:int}"
+@model Pages.Roles.EditarModel
+@using Microsoft.AspNetCore.Authorization
+@using Utils.Authorization
+
+@{
+    ViewData["Title"] = "Editar Rol";
+    ViewBag.Description = "Editar información de un rol del sistema";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Editar Rol</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <a href="/roles/listado">Roles</a>
+        <span class="separador">/</span>
+        <span>Editar</span>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alerta alerta-error">
+        <p>@Model.MensajeError</p>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.MensajeExito))
+{
+    <div class="alerta alerta-exito">
+        <p>@Model.MensajeExito</p>
+    </div>
+}
+
+@if (Model.Rol != null)
+{
+    <form method="post" class="form-usuario">
+        @Html.AntiForgeryToken()
+
+        <section class="seccion-formulario">
+            <div class="card">
+                <h2 class="titulo-seccion">Información del Rol</h2>
+
+                <div class="form-group">
+                    <label>Nombre del Rol</label>
+                    <input type="text" value="@Model.Rol.Nombre" class="form-control" readonly disabled />
+                    <small class="form-text text-muted">El nombre del rol no se puede modificar.</small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Descripcion">Descripción</label>
+                    <textarea asp-for="Descripcion" class="form-control" rows="3" maxlength="500"></textarea>
+                    <small class="form-text text-muted">Descripción opcional del rol y sus permisos</small>
+                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="boton boton-primario">Guardar Cambios</button>
+                    <a href="/roles/listado" class="boton boton-secundario">Cancelar</a>
+                </div>
+            </div>
+        </section>
+    </form>
+}
+else
+{
+    <div class="alerta alerta-error">
+        <p>No se pudo cargar la información del rol.</p>
+    </div>
+}
+
+@section scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+}
+

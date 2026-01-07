@@ -214,7 +214,7 @@ namespace Datos
         /// <summary>
         /// Obtiene todos los tipos de usuario
         /// </summary>
-        public async Task<List<UsuarioTipo>> ObtenerTiposUsuarioAsync()
+        public async Task<List<Modelos.Entidades.UsuarioTipo>> ObtenerTiposUsuarioAsync()
         {
             using (MySqlConnection conexion = ObtenerConexionLectura())
             {
@@ -228,7 +228,7 @@ namespace Datos
                     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
                 ";
 
-                return (await conexion.QueryAsync<UsuarioTipo>(consulta)).ToList();
+                return (await conexion.QueryAsync<Modelos.Entidades.UsuarioTipo>(consulta)).ToList();
             }
         }
     }

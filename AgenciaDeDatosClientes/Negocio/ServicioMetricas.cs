@@ -178,5 +178,242 @@ namespace Negocio
         }
 
         #endregion
+
+        #region Métricas del Dashboard Principal
+
+        /// <summary>
+        /// Obtiene el número de usuarios activos en los últimos 30 días (con caché)
+        /// </summary>
+        public async Task<int> ObtenerUsuariosActivosAsync()
+        {
+            const string claveCache = "dashboard:usuarios-activos";
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var valorCache = await db.StringGetAsync(claveCache);
+                
+                if (valorCache.HasValue && int.TryParse(valorCache, out int valor))
+                {
+                    return valor;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al obtener usuarios activos de caché");
+            }
+
+            // Si no está en caché, obtener de BD
+            var resultado = await _repositorio.ObtenerUsuariosActivosAsync();
+            
+            // Guardar en caché (5 minutos de TTL para métricas del dashboard)
+            try
+            {
+                var db = _redis.GetDatabase();
+                await db.StringSetAsync(claveCache, resultado.ToString(), TimeSpan.FromMinutes(5));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al guardar usuarios activos en caché");
+            }
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene el número de actividades del mes actual (con caché)
+        /// </summary>
+        public async Task<int> ObtenerActividadMensualAsync()
+        {
+            const string claveCache = "dashboard:actividad-mensual";
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var valorCache = await db.StringGetAsync(claveCache);
+                
+                if (valorCache.HasValue && int.TryParse(valorCache, out int valor))
+                {
+                    return valor;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al obtener actividad mensual de caché");
+            }
+
+            var resultado = await _repositorio.ObtenerActividadMensualAsync();
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                await db.StringSetAsync(claveCache, resultado.ToString(), TimeSpan.FromMinutes(5));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al guardar actividad mensual en caché");
+            }
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene el número de acciones realizadas hoy (con caché corto, 1 minuto)
+        /// </summary>
+        public async Task<int> ObtenerAccionesHoyAsync()
+        {
+            const string claveCache = "dashboard:acciones-hoy";
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var valorCache = await db.StringGetAsync(claveCache);
+                
+                if (valorCache.HasValue && int.TryParse(valorCache, out int valor))
+                {
+                    return valor;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al obtener acciones hoy de caché");
+            }
+
+            var resultado = await _repositorio.ObtenerAccionesHoyAsync();
+            
+            // Caché más corto para "hoy" (1 minuto)
+            try
+            {
+                var db = _redis.GetDatabase();
+                await db.StringSetAsync(claveCache, resultado.ToString(), TimeSpan.FromMinutes(1));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al guardar acciones hoy en caché");
+            }
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene el total de usuarios activos en el sistema (con caché)
+        /// </summary>
+        public async Task<int> ObtenerTotalUsuariosAsync()
+        {
+            const string claveCache = "dashboard:total-usuarios";
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var valorCache = await db.StringGetAsync(claveCache);
+                
+                if (valorCache.HasValue && int.TryParse(valorCache, out int valor))
+                {
+                    return valor;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al obtener total usuarios de caché");
+            }
+
+            var resultado = await _repositorio.ObtenerTotalUsuariosAsync();
+            
+            // Caché más largo para total de usuarios (15 minutos, cambia poco)
+            try
+            {
+                var db = _redis.GetDatabase();
+                await db.StringSetAsync(claveCache, resultado.ToString(), TimeSpan.FromMinutes(15));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al guardar total usuarios en caché");
+            }
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene actividad mensual de los últimos 6 meses (para gráfico)
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerActividadMensualUltimos6MesesAsync()
+        {
+            const string claveCache = "dashboard:actividad-mensual-6meses";
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var valorCache = await db.StringGetAsync(claveCache);
+                
+                if (valorCache.HasValue)
+                {
+                    var datos = JsonSerializer.Deserialize<Dictionary<string, int>>(valorCache);
+                    if (datos != null)
+                        return datos;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al obtener actividad mensual de caché");
+            }
+
+            var resultado = await _repositorio.ObtenerActividadMensualUltimos6MesesAsync();
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var json = JsonSerializer.Serialize(resultado);
+                await db.StringSetAsync(claveCache, json, TimeSpan.FromMinutes(10));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al guardar actividad mensual en caché");
+            }
+
+            return resultado;
+        }
+
+        /// <summary>
+        /// Obtiene actividad diaria de los últimos 7 días (para gráfico)
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerActividadDiariaUltimos7DiasAsync()
+        {
+            const string claveCache = "dashboard:actividad-diaria-7dias";
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var valorCache = await db.StringGetAsync(claveCache);
+                
+                if (valorCache.HasValue)
+                {
+                    var datos = JsonSerializer.Deserialize<Dictionary<string, int>>(valorCache);
+                    if (datos != null)
+                        return datos;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al obtener actividad diaria de caché");
+            }
+
+            var resultado = await _repositorio.ObtenerActividadDiariaUltimos7DiasAsync();
+            
+            try
+            {
+                var db = _redis.GetDatabase();
+                var json = JsonSerializer.Serialize(resultado);
+                // Caché más corto para datos diarios (1 minuto)
+                await db.StringSetAsync(claveCache, json, TimeSpan.FromMinutes(1));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error al guardar actividad diaria en caché");
+            }
+
+            return resultado;
+        }
+
+        #endregion
     }
 }

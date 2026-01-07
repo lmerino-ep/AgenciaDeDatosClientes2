@@ -78,8 +78,8 @@ body {
   display: block;
   width: auto;
   height: auto;
-  max-width: 140px;
-  max-height: 46px;
+  max-width: 220px;
+  max-height: 70px;
 }
 .layout-header .cabecera .logo picture img,
 .layout-header .cabecera .logo .imagen img {
@@ -87,7 +87,7 @@ body {
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: 46px;
+  max-height: 70px;
   object-fit: contain;
 }
 .layout-header .cabecera > .enlaces {
@@ -154,6 +154,37 @@ body {
 .layout-header .cabecera .desplegable .desplegador > .icono {
   width: 16px;
   height: 22px;
+}
+.layout-header .cabecera .desplegable .desplegador > .icono .icono-usuario {
+  overflow: hidden;
+  width: calc(22px * 1);
+  height: calc(22px * 1);
+  position: relative;
+  bottom: 0;
+}
+.layout-header .cabecera .desplegable .desplegador > .icono .icono-usuario,
+.layout-header .cabecera .desplegable .desplegador > .icono .icono-usuario::after,
+.layout-header .cabecera .desplegable .desplegador > .icono .icono-usuario::before {
+  display: block;
+  box-sizing: border-box;
+  border: calc(2px * 1) solid;
+  border-radius: 100px;
+}
+.layout-header .cabecera .desplegable .desplegador > .icono .icono-usuario::after,
+.layout-header .cabecera .desplegable .desplegador > .icono .icono-usuario::before {
+  content: "";
+  position: absolute;
+  top: calc(2px * 1);
+  left: calc(5px * 1);
+  width: calc(8px * 1);
+  height: calc(8px * 1);
+}
+.layout-header .cabecera .desplegable .desplegador > .icono .icono-usuario::after {
+  border-radius: 200px;
+  top: calc(11px * 1);
+  left: 0px;
+  width: calc(18px * 1);
+  height: calc(18px * 1);
 }
 .layout-header .cabecera .desplegable .desplegador::after {
   visibility: hidden;

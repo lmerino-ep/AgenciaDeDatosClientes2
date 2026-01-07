@@ -2,6 +2,17 @@
 @model Pages.Metricas.KPIsModel
 @{
     ViewData["Title"] = "Consulta de KPIs";
+    ViewBag.Description = "Consulta de métricas y KPIs del sistema";
+    ViewBag.PoliticaIndexFollow = "noindex, nofollow";
+}
+
+@section estilos {
+    <environment include="Development">
+        <link href="~/css/main/metricas.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
+    <environment include="Staging,Production">
+        <link href="~/css/main/metricas.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
 }
 
 <div class="container-metricas">
@@ -47,7 +58,7 @@
             </div>
 
             <!-- Contenedor dinámico para parámetros -->
-            <div id="contenedorParametros" style="margin-top: 20px;"></div>
+            <div id="contenedorParametros" class="form-group"></div>
 
             <!-- Opciones adicionales -->
             <div class="form-group">
@@ -114,8 +125,8 @@
             <!-- Gráfico (visualización principal) -->
             @if (Model.Resultado.Datos.Count > 0)
             {
-                <div class="contenedor-grafico" style="margin: 30px 0; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    <div style="position: relative; height: 500px;">
+                <div class="contenedor-grafico">
+                    <div class="contenedor-canvas">
                         <canvas id="chartKpi"></canvas>
                     </div>
                 </div>
@@ -124,15 +135,15 @@
             <!-- Tabla de resultados (colapsable) -->
             @if (Model.Resultado.Datos.Count > 0)
             {
-                <div class="tabla-resultados" style="margin-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="margin: 0;">Datos en tabla</h3>
-                        <button type="button" id="btnToggleTabla" class="btn btn-secondary" style="font-size: 0.9em;">
+                <div class="tabla-resultados">
+                    <div class="tabla-header">
+                        <h3>Datos en tabla</h3>
+                        <button type="button" id="btnToggleTabla" class="btn btn-secondary">
                             <span id="textoToggleTabla">Mostrar tabla</span>
                         </button>
                     </div>
-                    <div id="contenidoTabla" style="display: none;">
-                        <div style="max-height: 400px; overflow-y: auto;">
+                    <div id="contenidoTabla" class="tabla-contenido-oculto">
+                        <div class="tabla-scroll">
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
@@ -157,7 +168,7 @@
                         </div>
                         @if (Model.Resultado.Datos.Count > 100)
                         {
-                            <p class="nota-paginacion" style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                            <p class="nota-paginacion">
                                 Mostrando los primeros 100 de @Model.Resultado.TotalRegistros registros.
                                 Use la exportación para obtener el conjunto completo de datos.
                             </p>
@@ -202,10 +213,11 @@
             @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Datos))
         </script>
         <script type="text/plain" id="nombre-kpi" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">@Model.Resultado.Nombre</script>
+        <script type="text/plain" id="kpi-id" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">@Model.Resultado.KpiId</script>
         
-        <!-- Chart.js y plugin de datalabels siempre se cargan cuando hay resultados -->
-        <script src="~/js/chart.umd.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-        <script src="~/js/chartjs-plugin-datalabels.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <!-- Chart.js y plugin de datalabels solo se cargan si el KPI debe generar gráfico -->
+        <script src="~/js/libs/chart.umd.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script src="~/js/libs/chartjs-plugin-datalabels.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
     }
 
     <environment include="Development">

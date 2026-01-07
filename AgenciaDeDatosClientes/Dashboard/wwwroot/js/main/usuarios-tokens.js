@@ -5,12 +5,12 @@ function mostrarModalToken(tokenId, token) {
 
     if (tokenDisplay) tokenDisplay.textContent = tokenId;
     if (tokenValue) tokenValue.textContent = token;
-    if (modal) modal.style.display = 'flex';
+    if (modal) modal.classList.add('modal-visible');
 }
 
 function cerrarModal() {
     const modal = document.getElementById('modal-token');
-    if (modal) modal.style.display = 'none';
+    if (modal) modal.classList.remove('modal-visible');
 }
 
 function copiarToken() {

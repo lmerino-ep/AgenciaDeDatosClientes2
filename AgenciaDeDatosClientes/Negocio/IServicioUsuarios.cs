@@ -1,5 +1,4 @@
 using Modelos.DTO.Usuarios;
-using Modelos.Entidades;
 
 namespace Negocio
 {

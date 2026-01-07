@@ -130,11 +130,32 @@ namespace Negocio
         /// <summary>
         /// Obtiene el detalle completo de una acción de auditoría
         /// </summary>
-        public async Task<AuditoriaAccion> ObtenerAuditoriaPorIdAsync(long id)
+        public async Task<AuditoriaDetalle> ObtenerAuditoriaPorIdAsync(long id)
         {
             try
             {
-                return await _repositorio.ObtenerAuditoriaPorIdAsync(id);
+                var entidad = await _repositorio.ObtenerAuditoriaPorIdAsync(id);
+                if (entidad == null)
+                    return null;
+
+                // Mapear de entidad a DTO
+                return new AuditoriaDetalle
+                {
+                    Id = entidad.Id,
+                    FK_Usuario = entidad.FK_Usuario,
+                    Accion = entidad.Accion,
+                    Modulo = entidad.Modulo,
+                    Descripcion = entidad.Descripcion,
+                    EntidadAfectada = entidad.EntidadAfectada,
+                    IdEntidadAfectada = entidad.IdEntidadAfectada,
+                    CambiosRealizados = entidad.CambiosRealizados,
+                    DireccionIP = entidad.DireccionIP,
+                    UserAgent = entidad.UserAgent,
+                    FechaHora = entidad.FechaHora,
+                    DuracionMs = entidad.DuracionMs,
+                    Resultado = entidad.Resultado,
+                    MensajeError = entidad.MensajeError
+                };
             }
             catch (Exception ex)
             {
@@ -168,6 +189,38 @@ namespace Negocio
             {
                 _logger.LogError(ex, "Error al obtener total de auditorías");
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene acciones agrupadas por módulo de hoy
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerAccionesPorModuloHoyAsync()
+        {
+            try
+            {
+                return await _repositorio.ObtenerAccionesPorModuloHoyAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener acciones por módulo de hoy");
+                return new Dictionary<string, int>();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene tendencia de acciones de los últimos 7 días
+        /// </summary>
+        public async Task<Dictionary<string, int>> ObtenerTendenciaAccionesUltimos7DiasAsync()
+        {
+            try
+            {
+                return await _repositorio.ObtenerTendenciaAccionesUltimos7DiasAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener tendencia de acciones");
+                return new Dictionary<string, int>();
             }
         }
     }

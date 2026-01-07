@@ -15,7 +15,6 @@
     min-height: calc(100vh - @tamCabecera - @tamPieDePagina);
     background-color: @ColorGrisSuperClaro;
     padding: 40px;
-
     // Page Header
     .page-header {
         margin-bottom: 40px;
@@ -33,7 +32,6 @@
             line-height: 1.6;
         }
     }
-
     // Sección de estadísticas
     .seccion-estadisticas {
         display: flex;
@@ -117,10 +115,8 @@
             }
         }
     }
-
-    // Sección de acciones rápidas
-    .seccion-acciones {
-        .card(20px);
+    // Sección de gráficos
+    .seccion-graficos {
         margin-bottom: 40px;
 
         .titulo-seccion {
@@ -128,46 +124,215 @@
             font-weight: 600;
             color: @ColorNegro;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        }
 
-            .icono {
-                color: @ColorEpDataSecundario;
+        .grid-graficos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+
+            @media (max-width: 767px) {
+                grid-template-columns: 1fr;
             }
         }
 
-        .grid-acciones {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+        .card-grafico {
+            .card(20px);
+            padding: 25px;
 
-            .boton-accion {
+            .titulo-grafico {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: @ColorNegro;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            canvas {
+                max-height: 300px;
+            }
+        }
+    }
+    // Sección de mensaje para usuarios no autenticados
+    .seccion-mensaje-no-autenticado {
+        margin-bottom: 40px;
+
+        .card-mensaje {
+            .card(20px);
+            padding: 30px;
+            text-align: center;
+            //max-width: 600px;
+            margin: 0 auto;
+
+            .mensaje-texto {
+                font-size: 1rem;
+                color: @ColorGrisClaro;
+                line-height: 1.6;
+                margin-bottom: 25px;
+            }
+
+            .btn-iniciar-sesion {
                 .boton(@ColorEpDataComplementario, white);
-                flex: 1 1 auto;
-                min-width: 200px;
-                padding: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
+                font-size: 1rem;
+                padding: 12px 30px;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                border-radius: 4px;
+                display: inline-block;
 
-                .icono {
-                    font-size: 2.5rem;
-                }
-
-                .texto {
-                    font-weight: 600;
-                    font-size: 15px;
+                &:hover {
+                    background-color: lighten(@ColorEpDataComplementario, 10%);
                 }
             }
-        }
-
-        .sin-permisos {
-            .alert(@ColorAdvertencia, lighten(@ColorAdvertencia, 45%));
         }
     }
 
+    // Sección de acciones rápidas
+    .seccion-acciones-rapidas {
+        margin-bottom: 40px;
+
+        .titulo-seccion {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: @ColorNegro;
+            margin-bottom: 20px;
+        }
+
+        .matriz-opciones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            align-items: stretch;
+            width: 100%;
+
+            .cuadro-opcion {
+                .estilos-caja();
+                transition: all 0.3s ease;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                width: calc(20% - 24px);
+                min-width: 300px;
+                max-width: 300px;
+
+                &:hover {
+                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+                    transform: translateY(-4px);
+                }
+
+                .cuadro-opcion-contenido {
+                    padding: 30px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    height: 100%;
+                    box-sizing: border-box;
+
+                    .icono {
+                        width: 100%;
+                        min-height: 100px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        background-color: @ColorEpDataClaro;
+                        margin-left: -30px;
+                        margin-right: -30px;
+                        margin-top: -30px;
+                        padding: 30px;
+                        flex-shrink: 0;
+
+                        i {
+                            font-size: 2.5rem;
+                            color: @ColorEpDataComplementario;
+                        }
+                    }
+
+                    .titulo-opcion {
+                        font-size: 1.5rem;
+                        color: @ColorEpDataComplementario;
+                        margin: 0 0 15px 0;
+                        font-weight: bold;
+                    }
+
+                    .descripcion-opcion {
+                        font-size: 1rem;
+                        color: @ColorGrisClaro;
+                        line-height: 1.6;
+                        margin: 0 0 25px 0;
+                        flex-grow: 1;
+                    }
+
+                    .btn-ir {
+                        .boton(@ColorEpDataComplementario, white);
+                        padding: 12px 30px;
+                        text-decoration: none;
+                        font-size: 1rem;
+                        transition: all 0.3s ease;
+                        border-radius: 4px;
+                        width: calc(100% - 20px);
+                        max-width: calc(100% - 20px);
+                        text-align: center;
+                        box-sizing: border-box;
+                        margin: 0 10px;
+                        white-space: normal;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        line-height: 1.4;
+                        min-height: auto;
+
+                        &:hover {
+                            background-color: lighten(@ColorEpDataComplementario, 10%);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @media (max-width: 767px) {
+        .matriz-opciones {
+            gap: 20px;
+
+            .cuadro-opcion {
+                width: 100%;
+                max-width: 100%;
+
+                .cuadro-opcion-contenido {
+                    padding: 25px 20px;
+
+                    .icono {
+                        min-height: 80px;
+                        margin-left: -20px;
+                        margin-right: -20px;
+                        margin-top: -20px;
+                        padding: 20px;
+
+                        i {
+                            font-size: 2rem;
+                        }
+                    }
+
+                    .titulo-opcion {
+                        font-size: 1.3rem;
+                    }
+
+                    .descripcion-opcion {
+                        font-size: 0.95rem;
+                    }
+
+                    .btn-ir {
+                        width: calc(100% - 16px);
+                        max-width: calc(100% - 16px);
+                        margin: 0 8px;
+                        padding: 12px 20px;
+                    }
+                }
+            }
+        }
+    }
     // Sección de información del sistema
     .seccion-info {
         display: flex;
@@ -296,7 +461,6 @@
             }
         }
     }
-
     // Responsive
     @media (max-width: 1199px) {
         .seccion-estadisticas .tarjeta-estadistica {

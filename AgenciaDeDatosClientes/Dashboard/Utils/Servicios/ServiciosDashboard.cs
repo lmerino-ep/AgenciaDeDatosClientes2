@@ -1,6 +1,7 @@
 using Datos;
 using Negocio;
 using Utils.BackgroundServices;
+using Utils.Repositorios;
 
 namespace Utils.Servicios
 {
@@ -26,7 +27,7 @@ namespace Utils.Servicios
             services.AddScoped<IRepositorioMetricas, RepositorioMetricas>();
 
             // Repositorios - Fase 4 (Documentación)
-            services.AddScoped<RepositorioGoogleDrive>();
+            services.AddScoped<IRepositorioGoogleDrive, RepositorioGoogleDrive>();
 
             return services;
         }

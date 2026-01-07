@@ -1,5 +1,4 @@
 using Datos;
-using Modelos.Entidades;
 using Microsoft.Extensions.Logging;
 using NugetPortable.Helper;
 using Modelos.DTO.Usuarios;
@@ -265,7 +264,13 @@ namespace Negocio
         {
             try
             {
-                return await _repositorio.ObtenerTiposUsuarioAsync();
+                var entidades = await _repositorio.ObtenerTiposUsuarioAsync();
+                // Mapear de entidad a DTO
+                return entidades.Select(e => new UsuarioTipo
+                {
+                    Id = e.Id,
+                    Nombre = e.Nombre
+                }).ToList();
             }
             catch (Exception ex)
             {

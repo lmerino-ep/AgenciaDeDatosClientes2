@@ -11,6 +11,9 @@ using Modelos.InyeccionDeDependencias;
 using Datos;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using Negocio.Utils;
 
 namespace Negocio
 {
@@ -19,19 +22,22 @@ namespace Negocio
     /// </summary>
     public class ServicioGoogleDrive : IServicioGoogleDrive
     {
-        private readonly Google _configuracionGoogle;
-        private readonly RepositorioGoogleDrive _repositorio;
+        private readonly Modelos.InyeccionDeDependencias.Google _configuracionGoogle;
+        private readonly IRepositorioGoogleDrive _repositorio;
         private readonly ILogger<ServicioGoogleDrive> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly string _idCarpeta;
 
         public ServicioGoogleDrive(
-            Google configuracionGoogle,
-            RepositorioGoogleDrive repositorio,
-            ILogger<ServicioGoogleDrive> logger)
+            Modelos.InyeccionDeDependencias.Google configuracionGoogle,
+            IRepositorioGoogleDrive repositorio,
+            ILogger<ServicioGoogleDrive> logger,
+            IHttpContextAccessor httpContextAccessor)
         {
             _configuracionGoogle = configuracionGoogle ?? throw new ArgumentNullException(nameof(configuracionGoogle));
             _repositorio = repositorio ?? throw new ArgumentNullException(nameof(repositorio));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
 
             if (string.IsNullOrEmpty(configuracionGoogle.DriveFolder))
             {
@@ -130,30 +136,39 @@ namespace Negocio
         }
 
         /// <summary>
-        /// Lista archivos en la carpeta configurada de Google Drive
+        /// Lista archivos en la carpeta configurada de Google Drive o en una carpeta específica
         /// </summary>
-        public async Task<List<ArchivoGoogleDrive>> ListarArchivosAsync(int idUsuario, string? filtroTipo = null, string? busqueda = null, DateTime? fechaDesde = null)
+        public async Task<List<ArchivoGoogleDrive>> ListarArchivosAsync(int idUsuario, string? filtroTipo = null, string? busqueda = null, DateTime? fechaDesde = null, string? carpetaId = null)
         {
             try
             {
-                _logger.LogInformation("Listando archivos de Google Drive para usuario {UsuarioId}. FiltroTipo: {FiltroTipo}, Búsqueda: {Busqueda}, FechaDesde: {FechaDesde}",
-                    idUsuario, filtroTipo, busqueda, fechaDesde);
+                // Verificar y limpiar tokens si el usuario cambió
+                await _repositorio.VerificarYLimpiarTokensSiUsuarioCambioAsync(idUsuario);
+
+                _logger.LogInformation("Listando archivos de Google Drive para usuario {UsuarioId}. FiltroTipo: {FiltroTipo}, Búsqueda: {Busqueda}, FechaDesde: {FechaDesde}, CarpetaId: {CarpetaId}",
+                    idUsuario, filtroTipo, busqueda, fechaDesde, carpetaId ?? "raíz");
 
                 DriveService servicioDrive = await ObtenerServicioDriveAsync(idUsuario);
                 FilesResource.ListRequest solicitud = servicioDrive.Files.List();
 
-                // Query base: archivos en la carpeta configurada que no estén en papelera
-                string consulta = $"'{_idCarpeta}' in parents and trashed=false";
+                // Usar carpetaId si se proporciona, sino usar la carpeta base configurada
+                string idCarpetaActual = carpetaId ?? _idCarpeta;
 
-                // Filtro por tipo MIME
+                // Query base: archivos y carpetas en la carpeta actual que no estén en papelera
+                string consulta = $"'{idCarpetaActual}' in parents and trashed=false";
+
+                // Filtro por tipo MIME (solo excluir carpetas si hay un filtro específico de tipo de archivo)
                 if (!string.IsNullOrEmpty(filtroTipo))
                 {
-                    string mimeType = ObtenerMimeType(filtroTipo);
-                    if (!string.IsNullOrEmpty(mimeType))
+                    consulta += " and mimeType != 'application/vnd.google-apps.folder'";
+                    
+                    string? consultaFiltro = GestorTiposArchivo.ConstruirConsultaFiltro(filtroTipo);
+                    if (!string.IsNullOrEmpty(consultaFiltro))
                     {
-                        consulta += $" and mimeType contains '{mimeType}'";
+                        consulta += " and " + consultaFiltro;
                     }
                 }
+                // Si no hay filtro de tipo, incluir tanto archivos como carpetas
 
                 // Filtro por nombre
                 if (!string.IsNullOrEmpty(busqueda))
@@ -161,29 +176,93 @@ namespace Negocio
                     consulta += $" and name contains '{busqueda.Replace("'", "\\'")}'";
                 }
 
-                // Filtro por fecha de modificación
+                // Filtro por fecha de modificación (solo para archivos, no para carpetas)
                 if (fechaDesde.HasValue)
                 {
                     string fechaFormato = fechaDesde.Value.ToUniversalTime().ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                    consulta += $" and modifiedTime >= '{fechaFormato}'";
+                    // Incluir carpetas o archivos modificados después de la fecha
+                    consulta += $" and (mimeType = 'application/vnd.google-apps.folder' or modifiedTime >= '{fechaFormato}')";
                 }
 
+                _logger.LogInformation("Consulta Google Drive: {Consulta}", consulta);
+                _logger.LogInformation("ID Carpeta: {IdCarpeta}", idCarpetaActual);
+
                 solicitud.Q = consulta;
-                solicitud.Fields = "files(id, name, size, modifiedTime, mimeType, webViewLink)";
-                solicitud.OrderBy = "modifiedTime desc";
+                // Incluir shortcuts (accesos directos) y sus propiedades
+                solicitud.Fields = "files(id, name, size, modifiedTime, mimeType, webViewLink, shortcutDetails)";
+                // Soporte para Shared Drives (unidades compartidas)
+                solicitud.SupportsAllDrives = true;
+                solicitud.IncludeItemsFromAllDrives = true;
+                // No usar OrderBy con modifiedTime porque las carpetas pueden no tenerlo
+                // Ordenaremos en memoria después
 
-                FileList resultado = await solicitud.ExecuteAsync();
-
-                List<ArchivoGoogleDrive> archivos = resultado.Files.Select(archivo => new ArchivoGoogleDrive
+                // Manejar paginación si es necesario
+                List<Google.Apis.Drive.v3.Data.File> todosLosArchivos = new List<Google.Apis.Drive.v3.Data.File>();
+                
+                do
                 {
-                    Id = archivo.Id,
-                    Nombre = archivo.Name,
-                    Tamano = long.Parse(archivo.Size ?? "0"),
-                    FechaModificacion = archivo.ModifiedTime?.DateTime ?? DateTime.MinValue,
-                    TipoMime = archivo.MimeType ?? "application/octet-stream",
-                    UrlWeb = archivo.WebViewLink,
-                    IconoTipo = ObtenerIconoTipo(archivo.MimeType)
-                }).ToList();
+                    FileList resultado = await solicitud.ExecuteAsync();
+                    
+                    if (resultado.Files != null && resultado.Files.Count > 0)
+                    {
+                        todosLosArchivos.AddRange(resultado.Files);
+                        _logger.LogInformation("Obtenidos {Cantidad} elementos en esta página. Total acumulado: {Total}", 
+                            resultado.Files.Count, todosLosArchivos.Count);
+                    }
+                    
+                    // Si hay más páginas, continuar
+                    solicitud.PageToken = resultado.NextPageToken;
+                } while (!string.IsNullOrEmpty(solicitud.PageToken));
+                
+                _logger.LogInformation("Resultado total de Google Drive: {Cantidad} elementos encontrados", todosLosArchivos.Count);
+
+                List<ArchivoGoogleDrive> archivos = todosLosArchivos.Select(archivo =>
+                {
+                    DateTime fechaModificacion = DateTime.MinValue;
+                    bool esCarpeta = archivo.MimeType == "application/vnd.google-apps.folder";
+                    bool esShortcut = archivo.MimeType == "application/vnd.google-apps.shortcut";
+                    
+                    // Manejar shortcuts (accesos directos) - obtener el tipo MIME del archivo destino
+                    string? tipoMimeParaIcono = archivo.MimeType;
+                    if (esShortcut && archivo.ShortcutDetails != null)
+                    {
+                        // Si es un shortcut, usar el tipo MIME del archivo destino
+                        tipoMimeParaIcono = archivo.ShortcutDetails.TargetMimeType;
+                        // Si el destino es una carpeta, marcarlo como carpeta
+                        if (tipoMimeParaIcono == "application/vnd.google-apps.folder")
+                        {
+                            esCarpeta = true;
+                        }
+                    }
+                    
+                    // Obtener fecha de modificación desde ModifiedTimeRaw (ModifiedTime está deprecated)
+                    if (!string.IsNullOrEmpty(archivo.ModifiedTimeRaw))
+                    {
+                        // ModifiedTimeRaw viene en formato RFC 3339 (ej: "2024-01-15T10:30:00.000Z")
+                        if (DateTime.TryParse(archivo.ModifiedTimeRaw, null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime parsedDate))
+                        {
+                            fechaModificacion = parsedDate.ToUniversalTime();
+                        }
+                    }
+
+                    return new ArchivoGoogleDrive
+                    {
+                        Id = archivo.Id,
+                        Nombre = archivo.Name,
+                        Tamano = archivo.Size ?? 0,
+                        FechaModificacion = fechaModificacion,
+                        // Usar el tipo MIME del destino si es un shortcut, sino usar el tipo MIME original
+                        TipoMime = tipoMimeParaIcono ?? archivo.MimeType ?? "application/octet-stream",
+                        UrlWeb = archivo.WebViewLink,
+                        IconoTipo = GestorTiposArchivo.ObtenerIconoTipo(tipoMimeParaIcono),
+                        EsCarpeta = esCarpeta,
+                        EsShortcut = esShortcut
+                    };
+                })
+                // Ordenar: primero carpetas, luego archivos, ambos alfabéticamente A-Z
+                .OrderByDescending(a => a.EsCarpeta)
+                .ThenBy(a => a.Nombre, StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
                 _logger.LogInformation("Se encontraron {Cantidad} archivos en Google Drive para usuario {UsuarioId}", archivos.Count, idUsuario);
                 return archivos;
@@ -214,6 +293,7 @@ namespace Negocio
 
                 FilesResource.CreateMediaUpload solicitud = servicioDrive.Files.Create(metadatosArchivo, flujo, tipoMime);
                 solicitud.Fields = "id, name, webViewLink";
+                solicitud.SupportsAllDrives = true;
 
                 IUploadProgress progreso = await solicitud.UploadAsync();
 
@@ -238,31 +318,79 @@ namespace Negocio
 
         /// <summary>
         /// Descarga un archivo de Google Drive
+        /// Los archivos de Google Docs/Sheets/Slides se exportan en lugar de descargarse directamente
         /// </summary>
         public async Task<(Stream Stream, string NombreArchivo, string TipoMime)> DescargarArchivoAsync(int idUsuario, string idArchivo)
         {
             try
             {
+                // Verificar y limpiar tokens si el usuario cambió
+                await _repositorio.VerificarYLimpiarTokensSiUsuarioCambioAsync(idUsuario);
+
                 _logger.LogInformation("Descargando archivo de Google Drive para usuario {UsuarioId}: {IdArchivo}", idUsuario, idArchivo);
 
                 DriveService servicioDrive = await ObtenerServicioDriveAsync(idUsuario);
 
                 // Obtener metadatos del archivo
                 FilesResource.GetRequest solicitudMetadatos = servicioDrive.Files.Get(idArchivo);
-                solicitudMetadatos.Fields = "name, mimeType";
+                solicitudMetadatos.Fields = "name, mimeType, shortcutDetails";
+                solicitudMetadatos.SupportsAllDrives = true;
                 Google.Apis.Drive.v3.Data.File archivo = await solicitudMetadatos.ExecuteAsync();
 
-                // Descargar el contenido
-                FilesResource.GetRequest solicitudDescarga = servicioDrive.Files.Get(idArchivo);
+                // Si es un shortcut, obtener el archivo destino
+                string archivoIdReal = idArchivo;
+                if (archivo.MimeType == "application/vnd.google-apps.shortcut" && archivo.ShortcutDetails != null)
+                {
+                    archivoIdReal = archivo.ShortcutDetails.TargetId;
+                    // Obtener metadatos del archivo destino
+                    FilesResource.GetRequest solicitudDestino = servicioDrive.Files.Get(archivoIdReal);
+                    solicitudDestino.Fields = "name, mimeType";
+                    solicitudDestino.SupportsAllDrives = true;
+                    archivo = await solicitudDestino.ExecuteAsync();
+                }
+
+                string tipoMime = archivo.MimeType ?? "application/octet-stream";
+                string nombreArchivo = archivo.Name ?? $"documento_{archivoIdReal}";
                 MemoryStream flujo = new MemoryStream();
 
-                await solicitudDescarga.DownloadAsync(flujo);
+                // Los archivos de Google Docs/Sheets/Slides necesitan ser exportados
+                if (tipoMime == "application/vnd.google-apps.document")
+                {
+                    // Exportar Google Docs como DOCX
+                    FilesResource.ExportRequest solicitudExport = servicioDrive.Files.Export(archivoIdReal, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+                    await solicitudExport.DownloadAsync(flujo);
+                    tipoMime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                    nombreArchivo = Path.ChangeExtension(nombreArchivo, ".docx");
+                }
+                else if (tipoMime == "application/vnd.google-apps.spreadsheet")
+                {
+                    // Exportar Google Sheets como XLSX
+                    FilesResource.ExportRequest solicitudExport = servicioDrive.Files.Export(archivoIdReal, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    await solicitudExport.DownloadAsync(flujo);
+                    tipoMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    nombreArchivo = Path.ChangeExtension(nombreArchivo, ".xlsx");
+                }
+                else if (tipoMime == "application/vnd.google-apps.presentation")
+                {
+                    // Exportar Google Slides como PPTX
+                    FilesResource.ExportRequest solicitudExport = servicioDrive.Files.Export(archivoIdReal, "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+                    await solicitudExport.DownloadAsync(flujo);
+                    tipoMime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+                    nombreArchivo = Path.ChangeExtension(nombreArchivo, ".pptx");
+                }
+                else
+                {
+                    // Descargar archivo normal
+                    FilesResource.GetRequest solicitudDescarga = servicioDrive.Files.Get(archivoIdReal);
+                    solicitudDescarga.SupportsAllDrives = true;
+                    await solicitudDescarga.DownloadAsync(flujo);
+                }
 
                 flujo.Position = 0;
                 _logger.LogInformation("Archivo descargado exitosamente. ID: {IdArchivo}, Nombre: {Nombre}, Tamaño: {Tamano} bytes, Usuario: {UsuarioId}",
-                    idArchivo, archivo.Name, flujo.Length, idUsuario);
+                    archivoIdReal, nombreArchivo, flujo.Length, idUsuario);
 
-                return (flujo, archivo.Name ?? $"documento_{idArchivo}", archivo.MimeType ?? "application/octet-stream");
+                return (flujo, nombreArchivo, tipoMime);
             }
             catch (Exception ex)
             {
@@ -283,6 +411,7 @@ namespace Negocio
                 DriveService servicioDrive = await ObtenerServicioDriveAsync(idUsuario);
 
                 FilesResource.DeleteRequest solicitud = servicioDrive.Files.Delete(idArchivo);
+                solicitud.SupportsAllDrives = true;
                 await solicitud.ExecuteAsync();
 
                 _logger.LogInformation("Archivo eliminado exitosamente. ID: {IdArchivo}, Usuario: {UsuarioId}", idArchivo, idUsuario);
@@ -308,6 +437,7 @@ namespace Negocio
                 Google.Apis.Drive.v3.Data.File metadatosArchivo = new Google.Apis.Drive.v3.Data.File();
                 FilesResource.UpdateMediaUpload solicitud = servicioDrive.Files.Update(metadatosArchivo, idArchivo, flujo, tipoMime);
                 solicitud.Fields = "id, name, modifiedTime";
+                solicitud.SupportsAllDrives = true;
 
                 IUploadProgress progreso = await solicitud.UploadAsync();
 
@@ -334,6 +464,9 @@ namespace Negocio
         {
             try
             {
+                // Verificar y limpiar tokens si el usuario cambió
+                await _repositorio.VerificarYLimpiarTokensSiUsuarioCambioAsync(idUsuario);
+
                 _logger.LogInformation("Verificando permisos de Google Drive para usuario {UsuarioId}", idUsuario);
 
                 // Obtener tokens del usuario
@@ -359,6 +492,7 @@ namespace Negocio
                 {
                     FilesResource.GetRequest solicitud = servicioDrive.Files.Get(_idCarpeta);
                     solicitud.Fields = "id, name, permissions";
+                    solicitud.SupportsAllDrives = true;
                     Google.Apis.Drive.v3.Data.File carpeta = await solicitud.ExecuteAsync();
 
                     // Verificar permisos del usuario en la carpeta
@@ -392,7 +526,9 @@ namespace Negocio
                         {
                             FilesResource.ListRequest testRequest = servicioDrive.Files.List();
                             testRequest.Q = $"'{_idCarpeta}' in parents and trashed=false";
-                            testRequest.MaxResults = 1;
+                            testRequest.SupportsAllDrives = true;
+                            testRequest.IncludeItemsFromAllDrives = true;
+                            testRequest.PageSize = 1;
                             await testRequest.ExecuteAsync();
 
                             return new PermisosGoogleDrive
@@ -440,7 +576,9 @@ namespace Negocio
                     {
                         FilesResource.ListRequest testRequest = servicioDrive.Files.List();
                         testRequest.Q = $"'{_idCarpeta}' in parents and trashed=false";
-                        testRequest.MaxResults = 1;
+                        testRequest.PageSize = 1;
+                        testRequest.SupportsAllDrives = true;
+                        testRequest.IncludeItemsFromAllDrives = true;
                         await testRequest.ExecuteAsync();
 
                         return new PermisosGoogleDrive
@@ -484,7 +622,9 @@ namespace Negocio
         /// </summary>
         public string ObtenerUrlAutorizacion(string redirectUri, string state)
         {
-            var scopes = new[] { DriveService.Scope.DriveFile };
+            // Usar scope 'drive' para acceder a archivos existentes y Shared Drives
+            // 'drive.file' solo permite acceso a archivos creados por la app
+            var scopes = new[] { DriveService.Scope.Drive };
             string scopeString = string.Join(" ", scopes);
 
             var parameters = new Dictionary<string, string>
@@ -535,15 +675,15 @@ namespace Negocio
                         // Esto puede pasar si el usuario ya autorizó antes
                         if (tokenResponse.TryGetProperty("access_token", out var accessTokenElement))
                         {
-                            string accessToken = accessTokenElement.GetString();
-                            DateTime expiresAt = DateTime.UtcNow.AddHours(1);
+                            string nuevoAccessToken = accessTokenElement.GetString();
+                            DateTime nuevaExpiracion = DateTime.UtcNow.AddHours(1);
                             
                             // Obtener refresh token existente del usuario
                             var (refreshTokenExistente, _, _) = await _repositorio.ObtenerTokensAsync(idUsuario);
                             
                             if (!string.IsNullOrEmpty(refreshTokenExistente))
                             {
-                                await _repositorio.ActualizarAccessTokenAsync(idUsuario, accessToken, expiresAt);
+                                await _repositorio.ActualizarAccessTokenAsync(idUsuario, nuevoAccessToken, nuevaExpiracion);
                                 _logger.LogInformation("Access token actualizado para usuario {UsuarioId} (refresh token ya existía)", idUsuario);
                                 return;
                             }
@@ -553,10 +693,10 @@ namespace Negocio
                     }
 
                     string refreshToken = refreshTokenElement.GetString();
-                    string accessToken = tokenResponse.TryGetProperty("access_token", out var at) ? at.GetString() : null;
-                    DateTime? expiresAt = accessToken != null ? DateTime.UtcNow.AddHours(1) : null;
+                    string nuevoAccessToken2 = tokenResponse.TryGetProperty("access_token", out var at) ? at.GetString() : null;
+                    DateTime? nuevaExpiracion2 = nuevoAccessToken2 != null ? DateTime.UtcNow.AddHours(1) : null;
 
-                    await _repositorio.GuardarTokensAsync(idUsuario, refreshToken, accessToken, expiresAt);
+                    await _repositorio.GuardarTokensAsync(idUsuario, refreshToken, nuevoAccessToken2, nuevaExpiracion2);
 
                     _logger.LogInformation("Tokens de Google Drive guardados exitosamente para usuario {UsuarioId}", idUsuario);
                 }
@@ -569,51 +709,178 @@ namespace Negocio
         }
 
         /// <summary>
-        /// Obtiene el email del usuario desde la base de datos
+        /// Obtiene información de una carpeta (nombre, ID, padres) para construir breadcrumbs
         /// </summary>
-        private async Task<string?> ObtenerEmailUsuarioAsync(int idUsuario)
+        public async Task<ArchivoGoogleDrive?> ObtenerInformacionCarpetaAsync(int idUsuario, string carpetaId)
         {
-            return await _repositorio.ObtenerEmailUsuarioAsync(idUsuario);
-        }
-
-        /// <summary>
-        /// Obtiene el tipo MIME según el filtro de tipo de archivo
-        /// </summary>
-        private string? ObtenerMimeType(string filtroTipo)
-        {
-            return filtroTipo.ToLower() switch
+            try
             {
-                "pdf" => "application/pdf",
-                "word" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                "excel" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "powerpoint" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-                "imagenes" => "image/",
-                _ => null
-            };
+                // Verificar y limpiar tokens si el usuario cambió
+                await _repositorio.VerificarYLimpiarTokensSiUsuarioCambioAsync(idUsuario);
+
+                DriveService servicioDrive = await ObtenerServicioDriveAsync(idUsuario);
+                FilesResource.GetRequest solicitud = servicioDrive.Files.Get(carpetaId);
+                solicitud.Fields = "id, name, parents, mimeType, webViewLink";
+                solicitud.SupportsAllDrives = true;
+
+                Google.Apis.Drive.v3.Data.File carpeta = await solicitud.ExecuteAsync();
+
+                if (carpeta.MimeType != "application/vnd.google-apps.folder")
+                {
+                    return null; // No es una carpeta
+                }
+
+                DateTime fechaModificacion = DateTime.MinValue;
+                if (!string.IsNullOrEmpty(carpeta.ModifiedTimeRaw))
+                {
+                    if (DateTime.TryParse(carpeta.ModifiedTimeRaw, null, System.Globalization.DateTimeStyles.RoundtripKind, out DateTime parsedDate))
+                    {
+                        fechaModificacion = parsedDate.ToUniversalTime();
+                    }
+                }
+
+                return new ArchivoGoogleDrive
+                {
+                    Id = carpeta.Id,
+                    Nombre = carpeta.Name,
+                    Tamano = 0,
+                    FechaModificacion = fechaModificacion,
+                    TipoMime = carpeta.MimeType,
+                    UrlWeb = carpeta.WebViewLink,
+                    IconoTipo = "carpeta",
+                    EsCarpeta = true,
+                    EsShortcut = false
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener información de carpeta {CarpetaId} para usuario {UsuarioId}", carpetaId, idUsuario);
+                return null;
+            }
         }
 
         /// <summary>
-        /// Obtiene el icono según el tipo MIME
+        /// Obtiene la ruta completa de breadcrumbs desde la carpeta base hasta la carpeta especificada
         /// </summary>
-        private string ObtenerIconoTipo(string? mimeType)
+        public async Task<List<ArchivoGoogleDrive>> ObtenerRutaBreadcrumbsAsync(int idUsuario, string carpetaId)
         {
-            if (string.IsNullOrEmpty(mimeType))
-                return "📄";
+            try
+            {
+                // Verificar y limpiar tokens si el usuario cambió
+                await _repositorio.VerificarYLimpiarTokensSiUsuarioCambioAsync(idUsuario);
 
-            if (mimeType.StartsWith("image/"))
-                return "🖼️";
-            if (mimeType == "application/pdf")
-                return "📕";
-            if (mimeType.Contains("wordprocessingml") || mimeType.Contains("msword"))
-                return "📘";
-            if (mimeType.Contains("spreadsheetml") || mimeType.Contains("excel"))
-                return "📗";
-            if (mimeType.Contains("presentationml") || mimeType.Contains("powerpoint"))
-                return "📙";
-            if (mimeType.Contains("text"))
-                return "📝";
+                List<ArchivoGoogleDrive> breadcrumbs = new List<ArchivoGoogleDrive>();
+                string? carpetaActualId = carpetaId;
+                DriveService servicioDrive = await ObtenerServicioDriveAsync(idUsuario);
+                int nivel = 0;
+                const int maxNiveles = 10;
 
-            return "📄";
+                // Construir la ruta desde la carpeta actual hacia arriba hasta llegar a la carpeta base
+                while (!string.IsNullOrEmpty(carpetaActualId) && carpetaActualId != _idCarpeta && nivel < maxNiveles)
+                {
+                    // Obtener información de la carpeta actual
+                    var carpeta = await ObtenerInformacionCarpetaAsync(idUsuario, carpetaActualId);
+                    if (carpeta == null)
+                        break;
+
+                    // Insertar al inicio de la lista (para mantener el orden: padre -> hijo)
+                    breadcrumbs.Insert(0, carpeta);
+
+                    // Obtener el padre de esta carpeta
+                    FilesResource.GetRequest solicitud = servicioDrive.Files.Get(carpetaActualId);
+                    solicitud.Fields = "parents";
+                    solicitud.SupportsAllDrives = true;
+
+                    Google.Apis.Drive.v3.Data.File carpetaInfo = await solicitud.ExecuteAsync();
+                    
+                    // Si tiene padres, tomar el primero (normalmente solo hay uno)
+                    if (carpetaInfo.Parents != null && carpetaInfo.Parents.Count > 0)
+                    {
+                        carpetaActualId = carpetaInfo.Parents[0];
+                    }
+                    else
+                    {
+                        break; // No tiene más padres
+                    }
+
+                    nivel++;
+                }
+
+                if (nivel >= maxNiveles)
+                {
+                    _logger.LogWarning("Se alcanzó el límite de niveles de breadcrumbs ({MaxNiveles}) para carpeta {CarpetaId}", maxNiveles, carpetaId);
+                }
+
+                return breadcrumbs;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener ruta de breadcrumbs para carpeta {CarpetaId} y usuario {UsuarioId}", carpetaId, idUsuario);
+                return new List<ArchivoGoogleDrive>();
+            }
         }
+
+        /// <summary>
+        /// Obtiene los tipos de archivo únicos presentes en la carpeta actual
+        /// </summary>
+        public async Task<List<string>> ObtenerTiposArchivoDisponiblesAsync(int idUsuario, string? carpetaId = null)
+        {
+            try
+            {
+                // Verificar y limpiar tokens si el usuario cambió
+                await _repositorio.VerificarYLimpiarTokensSiUsuarioCambioAsync(idUsuario);
+
+                // Obtener todos los archivos de la carpeta (sin filtros)
+                var archivos = await ListarArchivosAsync(idUsuario, null, null, null, carpetaId);
+
+                // Obtener tipos MIME únicos de archivos reales (excluir carpetas y shortcuts)
+                // Los shortcuts ya tienen su TipoMime reemplazado por el del destino, pero debemos excluirlos
+                // porque queremos contar solo archivos reales, no accesos directos
+                var tiposMime = archivos
+                    .Where(a => !a.EsCarpeta && !a.EsShortcut && !string.IsNullOrEmpty(a.TipoMime))
+                    .Select(a => a.TipoMime)
+                    .Distinct()
+                    .ToList();
+
+                // Mapear tipos MIME a nombres de filtro usando el gestor centralizado
+                HashSet<string> tiposDisponibles = new HashSet<string>();
+
+                foreach (var tipoMime in tiposMime)
+                {
+                    string? nombreFiltro = GestorTiposArchivo.ObtenerNombreFiltro(tipoMime);
+                    if (!string.IsNullOrEmpty(nombreFiltro))
+                    {
+                        tiposDisponibles.Add(nombreFiltro);
+                    }
+                }
+
+                return tiposDisponibles.OrderBy(t => t).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener tipos de archivo disponibles para usuario {UsuarioId} y carpeta {CarpetaId}", idUsuario, carpetaId ?? "raíz");
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el email del usuario desde los claims de autenticación
+        /// </summary>
+        private Task<string?> ObtenerEmailUsuarioAsync(int idUsuario)
+        {
+            // Obtener email desde los claims del usuario autenticado
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user == null)
+            {
+                return Task.FromResult<string?>(null);
+            }
+
+            string? email = user.FindFirst(ClaimTypes.Email)?.Value
+                ?? user.FindFirst(ClaimTypes.Name)?.Value
+                ?? user.Identity?.Name;
+            
+            return Task.FromResult(email);
+        }
+
     }
 }

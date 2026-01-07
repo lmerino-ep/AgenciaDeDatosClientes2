@@ -175,5 +175,101 @@ namespace Datos
                 return usuario;
             }
         }
+
+        /// <summary>
+        /// Crea un nuevo rol en el sistema
+        /// </summary>
+        public async Task<int> CrearRolAsync(string nombre, string descripcion)
+        {
+            return await EjecutarConTransaccionAsync(async (conexion, transaccion) =>
+            {
+                const string consulta = @"
+                    INSERT INTO Rol (Nombre, Descripcion)
+                    VALUES (@Nombre, @Descripcion);
+                    SELECT LAST_INSERT_ID();
+                ";
+
+                return await conexion.QuerySingleAsync<int>(consulta, new { Nombre = nombre, Descripcion = descripcion }, transaccion);
+            });
+        }
+
+        /// <summary>
+        /// Verifica si existe un rol con el mismo nombre
+        /// </summary>
+        public async Task<bool> ExisteRolConNombreAsync(string nombre)
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SELECT COUNT(*) > 0
+                    FROM Rol
+                    WHERE Nombre = @Nombre;
+                ";
+
+                return await conexion.QuerySingleAsync<bool>(consulta, new { Nombre = nombre });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el conteo de usuarios por rol
+        /// </summary>
+        public async Task<Dictionary<int, int>> ObtenerConteoUsuariosPorRolAsync()
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT
+                        FK_Rol as RolId,
+                        COUNT(DISTINCT FK_Usuario) as TotalUsuarios
+                    FROM UsuarioRol
+                    GROUP BY FK_Rol;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                var resultado = await conexion.QueryAsync<(int RolId, int TotalUsuarios)>(consulta);
+                return resultado.ToDictionary(r => r.RolId, r => r.TotalUsuarios);
+            }
+        }
+
+        /// <summary>
+        /// Obtiene un rol por su ID
+        /// </summary>
+        public async Task<Modelos.Entidades.Rol> ObtenerRolPorIdAsync(int id)
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT Id, Nombre, Descripcion
+                    FROM Rol
+                    WHERE Id = @Id;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                return await conexion.QuerySingleOrDefaultAsync<Modelos.Entidades.Rol>(consulta, new { Id = id });
+            }
+        }
+
+        /// <summary>
+        /// Actualiza solo la descripción de un rol (el nombre no se puede modificar)
+        /// </summary>
+        public async Task ActualizarDescripcionRolAsync(int id, string descripcion)
+        {
+            await EjecutarConTransaccionAsync(async (conexion, transaccion) =>
+            {
+                const string consulta = @"
+                    UPDATE Rol
+                    SET Descripcion = @Descripcion
+                    WHERE Id = @Id;
+                ";
+
+                await conexion.ExecuteAsync(consulta, new { Id = id, Descripcion = descripcion }, transaccion);
+            });
+        }
     }
 }

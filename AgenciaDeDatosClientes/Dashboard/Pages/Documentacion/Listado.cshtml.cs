@@ -37,7 +37,14 @@ namespace Pages.Documentacion
         [BindProperty(SupportsGet = true)]
         public string? FiltroFecha { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public string? CarpetaId { get; set; }
+
         public List<ArchivoGoogleDrive> Archivos { get; set; } = new List<ArchivoGoogleDrive>();
+
+        public List<ArchivoGoogleDrive> Breadcrumbs { get; set; } = new List<ArchivoGoogleDrive>();
+
+        public List<string> TiposDisponibles { get; set; } = new List<string>();
 
         public string? MensajeError { get; set; }
 
@@ -63,11 +70,20 @@ namespace Pages.Documentacion
                     return Page();
                 }
 
-                _logger.LogInformation("Listando documentos para usuario {UsuarioId}. FiltroTipo: {FiltroTipo}, Busqueda: {Busqueda}, FiltroFecha: {FiltroFecha}",
-                    idUsuario, FiltroTipo, Busqueda, FiltroFecha);
+                _logger.LogInformation("Listando documentos para usuario {UsuarioId}. FiltroTipo: {FiltroTipo}, Busqueda: {Busqueda}, FiltroFecha: {FiltroFecha}, CarpetaId: {CarpetaId}",
+                    idUsuario, FiltroTipo, Busqueda, FiltroFecha, CarpetaId ?? "raíz");
 
                 DateTime? fechaDesde = ObtenerFechaDesdeFiltro(FiltroFecha);
-                Archivos = await _servicioGoogleDrive.ListarArchivosAsync(idUsuario, FiltroTipo, Busqueda, fechaDesde);
+                Archivos = await _servicioGoogleDrive.ListarArchivosAsync(idUsuario, FiltroTipo, Busqueda, fechaDesde, CarpetaId);
+
+                // Construir breadcrumbs si estamos en una subcarpeta
+                if (!string.IsNullOrEmpty(CarpetaId))
+                {
+                    Breadcrumbs = await _servicioGoogleDrive.ObtenerRutaBreadcrumbsAsync(idUsuario, CarpetaId);
+                }
+
+                // Obtener tipos de archivo disponibles en la carpeta actual
+                TiposDisponibles = await _servicioGoogleDrive.ObtenerTiposArchivoDisponiblesAsync(idUsuario, CarpetaId);
 
                 return Page();
             }
@@ -114,6 +130,12 @@ namespace Pages.Documentacion
                 );
 
                 TempData["MensajeExito"] = "Documento eliminado exitosamente.";
+                
+                // Preservar CarpetaId al redirigir
+                if (!string.IsNullOrEmpty(CarpetaId))
+                {
+                    return RedirectToPage(new { CarpetaId });
+                }
                 return RedirectToPage();
             }
             catch (Exception ex)
@@ -137,6 +159,7 @@ namespace Pages.Documentacion
                 _ => null
             };
         }
+
     }
 }
 

@@ -97,7 +97,7 @@
                     </div>
 
                     <div class="token-acciones">
-                        <form method="post" asp-page-handler="GenerarToken1" style="display: inline;">
+                        <form method="post" asp-page-handler="GenerarToken1" class="form-inline">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="Id" value="@Model.Id" />
                             <div class="grupo-checkbox">
@@ -113,7 +113,7 @@
 
                         @if (Model.TokensUsuario.TieneRefreshToken1)
                         {
-                            <form method="post" asp-page-handler="RevocarToken1" style="display: inline;" onsubmit="return confirmarRevocacion('token1')">
+                            <form method="post" asp-page-handler="RevocarToken1" class="form-inline" onsubmit="return confirmarRevocacion('token1')">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="Id" value="@Model.Id" />
                                 <button type="submit" class="boton boton-peligro">
@@ -150,7 +150,7 @@
                     </div>
 
                     <div class="token-acciones">
-                        <form method="post" asp-page-handler="GenerarToken2" style="display: inline;">
+                        <form method="post" asp-page-handler="GenerarToken2" class="form-inline">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="Id" value="@Model.Id" />
                             <div class="grupo-checkbox">
@@ -166,7 +166,7 @@
 
                         @if (Model.TokensUsuario.TieneRefreshToken2)
                         {
-                            <form method="post" asp-page-handler="RevocarToken2" style="display: inline;" onsubmit="return confirmarRevocacion('token2')">
+                            <form method="post" asp-page-handler="RevocarToken2" class="form-inline" onsubmit="return confirmarRevocacion('token2')">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="Id" value="@Model.Id" />
                                 <button type="submit" class="boton boton-peligro">
@@ -179,7 +179,7 @@
             </div>
 
             <div class="seccion-acciones-globales">
-                <form method="post" asp-page-handler="GenerarAmbos" style="display: inline;">
+                <form method="post" asp-page-handler="GenerarAmbos" class="form-inline">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="Id" value="@Model.Id" />
                     <div class="grupo-checkbox">
@@ -195,7 +195,7 @@
 
                 @if (Model.TokensUsuario.TieneRefreshToken1 || Model.TokensUsuario.TieneRefreshToken2)
                 {
-                    <form method="post" asp-page-handler="RevocarTodos" style="display: inline;" onsubmit="return confirmarRevocacion('todos')">
+                    <form method="post" asp-page-handler="RevocarTodos" class="form-inline" onsubmit="return confirmarRevocacion('todos')">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="Id" value="@Model.Id" />
                         <button type="submit" class="boton boton-peligro">
@@ -262,7 +262,7 @@
     </div>
 
     <!-- Modal para mostrar token completo -->
-    <div id="modal-token" class="modal" style="display: none;">
+    <div id="modal-token" class="modal">
         <div class="modal-contenido">
             <div class="modal-header">
                 <h3 id="token-display">Token Generado</h3>

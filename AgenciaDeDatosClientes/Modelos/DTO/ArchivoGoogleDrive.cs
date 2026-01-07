@@ -12,7 +12,9 @@ namespace Modelos.DTO
         public string TipoMime { get; set; }
         public string UrlWeb { get; set; }
         public string IconoTipo { get; set; } // Para mostrar icono según tipo
-        public string TamanoFormateado => FormatearTamano(Tamano);
+        public bool EsCarpeta { get; set; } // Indica si es una carpeta
+        public bool EsShortcut { get; set; } // Indica si es un acceso directo (shortcut)
+        public string TamanoFormateado => EsCarpeta ? "-" : FormatearTamano(Tamano);
 
         private string FormatearTamano(long bytes)
         {

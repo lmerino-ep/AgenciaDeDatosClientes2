@@ -8,9 +8,24 @@ namespace Negocio
     public interface IServicioGoogleDrive
     {
         /// <summary>
-        /// Lista archivos en la carpeta configurada de Google Drive
+        /// Lista archivos en la carpeta configurada de Google Drive o en una carpeta específica
         /// </summary>
-        Task<List<ArchivoGoogleDrive>> ListarArchivosAsync(int idUsuario, string? filtroTipo = null, string? busqueda = null, DateTime? fechaDesde = null);
+        Task<List<ArchivoGoogleDrive>> ListarArchivosAsync(int idUsuario, string? filtroTipo = null, string? busqueda = null, DateTime? fechaDesde = null, string? carpetaId = null);
+
+        /// <summary>
+        /// Obtiene información de una carpeta (nombre, ID, padres) para construir breadcrumbs
+        /// </summary>
+        Task<ArchivoGoogleDrive?> ObtenerInformacionCarpetaAsync(int idUsuario, string carpetaId);
+
+        /// <summary>
+        /// Obtiene la ruta completa de breadcrumbs desde la carpeta base hasta la carpeta especificada
+        /// </summary>
+        Task<List<ArchivoGoogleDrive>> ObtenerRutaBreadcrumbsAsync(int idUsuario, string carpetaId);
+
+        /// <summary>
+        /// Obtiene los tipos de archivo únicos presentes en la carpeta actual
+        /// </summary>
+        Task<List<string>> ObtenerTiposArchivoDisponiblesAsync(int idUsuario, string? carpetaId = null);
 
         /// <summary>
         /// Sube un archivo a Google Drive
