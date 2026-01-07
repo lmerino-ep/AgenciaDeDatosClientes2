@@ -58,10 +58,8 @@ namespace Controllers
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Documentacion.Descargar",
-                    "Documentacion",
-                    $"Documento descargado: {nombreArchivo} (ID: {id})",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.DocumentacionDescargar,
+                    $"Documento descargado: {nombreArchivo} (ID: {id})"
                 );
 
                 return File(stream, tipoMime, nombreArchivo);
@@ -72,12 +70,8 @@ namespace Controllers
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Documentacion.Descargar",
-                    "Documentacion",
-                    $"Error al descargar documento: {id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.DocumentacionDescargar,
+                    $"Error al descargar documento: {id} - {ex.Message}"
                 );
 
                 TempData["MensajeError"] = $"Error al descargar el documento: {ex.Message}";

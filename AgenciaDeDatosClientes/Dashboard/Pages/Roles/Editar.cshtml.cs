@@ -98,21 +98,11 @@ namespace Pages.Roles
                     ["Descripcion"] = new { Antes = rolOriginal.Descripcion ?? "", Despues = Descripcion ?? "" }
                 };
 
-                var auditoria = new Modelos.DTO.Auditoria
-                {
-                    FK_Usuario = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0"),
-                    Accion = TiposAccionAuditoria.RolesEditar,
-                    Modulo = ModulosDashboard.Roles,
-                    Descripcion = $"Descripción del rol '{rolOriginal.Nombre}' actualizada",
-                    EntidadAfectada = "Rol",
-                    IdEntidadAfectada = Id,
-                    CambiosRealizados = System.Text.Json.JsonSerializer.Serialize(cambios),
-                    DireccionIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
-                    Resultado = "Exito"
-                };
-
-                await _servicioAuditoria.RegistrarAccionAsync(auditoria);
+                await _servicioAuditoria.RegistrarAccionAsync(
+                    User,
+                    Modelos.AuditoriaAccionEnum.RolEditar,
+                    $"Descripción del rol '{rolOriginal.Nombre}' actualizada. Cambios: {System.Text.Json.JsonSerializer.Serialize(cambios)}"
+                );
 
                 _logger.LogInformation("Descripción del rol {RolId} ({Nombre}) actualizada exitosamente", Id, rolOriginal.Nombre);
                 MensajeExito = $"Descripción del rol '{rolOriginal.Nombre}' actualizada exitosamente.";
@@ -133,21 +123,11 @@ namespace Pages.Roles
                 _logger.LogError(ex, "Error al actualizar descripción del rol {RolId}", Id);
                 
                 // Registrar error en auditoría
-                var auditoriaError = new Modelos.DTO.Auditoria
-                {
-                    FK_Usuario = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0"),
-                    Accion = TiposAccionAuditoria.RolesEditar,
-                    Modulo = ModulosDashboard.Roles,
-                    Descripcion = $"Error al actualizar descripción del rol: {nombreRol}",
-                    EntidadAfectada = "Rol",
-                    IdEntidadAfectada = Id,
-                    DireccionIP = HttpContext.Connection.RemoteIpAddress?.ToString(),
-                    UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
-                    Resultado = "Error",
-                    MensajeError = ex.Message
-                };
-
-                await _servicioAuditoria.RegistrarAccionAsync(auditoriaError);
+                await _servicioAuditoria.RegistrarAccionAsync(
+                    User,
+                    Modelos.AuditoriaAccionEnum.RolEditar,
+                    $"Error al actualizar descripción del rol: {nombreRol} - {ex.Message}"
+                );
 
                 MensajeError = "Error al actualizar el rol. Por favor, intenta nuevamente.";
                 Rol = await _servicioRoles.ObtenerRolPorIdAsync(Id);

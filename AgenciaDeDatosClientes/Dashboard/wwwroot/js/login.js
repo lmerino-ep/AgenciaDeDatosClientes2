@@ -9,6 +9,19 @@ function fMostrarCargando(sNonce) {
     });
 }
 
+// Configurar el formulario de login
+document.addEventListener('DOMContentLoaded', function() {
+    const formLogin = document.querySelector('[data-js-form-login]');
+    if (formLogin) {
+        const nonce = formLogin.dataset.nonce;
+        formLogin.addEventListener('submit', function(e) {
+            if (nonce) {
+                fMostrarCargando(nonce);
+            }
+        });
+    }
+});
+
 /**
  * Muestra alertas de error si hay errores de validación
  */

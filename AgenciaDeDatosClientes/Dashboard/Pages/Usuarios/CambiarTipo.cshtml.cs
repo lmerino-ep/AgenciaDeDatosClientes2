@@ -83,10 +83,8 @@ namespace Pages.Usuarios
                 var tipoNombre = TiposUsuario.FirstOrDefault(t => t.Id == Modelo.FK_UsuarioTipo)?.Nombre ?? "Desconocido";
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Usuario.CambiarTipo",
-                    "Usuarios",
-                    $"Tipo de usuario cambiado a {tipoNombre} para usuario ID {Id}",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.UsuarioCambiarTipo,
+                    $"Tipo de usuario cambiado a {tipoNombre} para usuario ID {Id}"
                 );
 
                 _logger.LogInformation("Tipo de usuario {UsuarioId} cambiado exitosamente", Id);
@@ -99,12 +97,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Usuario.CambiarTipo",
-                    "Usuarios",
-                    $"Error al cambiar tipo de usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.UsuarioCambiarTipo,
+                    $"Error al cambiar tipo de usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = $"Error al cambiar el tipo de usuario: {ex.Message}";

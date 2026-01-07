@@ -20,7 +20,9 @@ namespace Negocio
         Task CambiarContrasenaAsync(CambiarContrasena dto);
         Task CambiarTipoUsuarioAsync(CambiarTipoUsuario dto);
         Task EliminarUsuarioAsync(int idUsuario);
+        Task EliminarUsuarioDefinitivamenteAsync(int idUsuario, int idUsuarioHereditario);
         Task<List<UsuarioTipo>> ObtenerTiposUsuarioAsync();
+        Task<List<UsuarioListado>> ObtenerUsuariosParaHerenciaAsync(int? excluirUsuarioId = null);
         Task<bool> ExisteEmailAsync(string email, int? idUsuarioExcluir = null);
     }
 }

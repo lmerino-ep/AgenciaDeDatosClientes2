@@ -1,5 +1,13 @@
 ﻿[
   {
+    "outputFile": "wwwroot/css/plugins/dropdownfiltrable.css",
+    "inputFile": "wwwroot/less/plugins/dropdownfiltrable.less"
+  },
+  {
+    "outputFile": "wwwroot/css/plugins/modalcargando.css",
+    "inputFile": "wwwroot/less/plugins/modalcargando.less"
+  },
+  {
     "outputFile": "wwwroot/css/critical/cabecera.css",
     "inputFile": "wwwroot/less/critical/cabecera.less"
   },
@@ -18,10 +26,6 @@
   {
     "outputFile": "wwwroot/css/main/usuarios.css",
     "inputFile": "wwwroot/less/main/usuarios.less"
-  },
-  {
-    "outputFile": "wwwroot/css/plugins/modalcargando.css",
-    "inputFile": "wwwroot/less/plugins/modalcargando.less"
   },
   {
     "outputFile": "wwwroot/css/main/metricas.css",

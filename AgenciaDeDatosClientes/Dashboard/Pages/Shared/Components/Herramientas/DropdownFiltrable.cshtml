@@ -1,0 +1,46 @@
+﻿@using Modelos.DTO.Herramientas;
+@model DropdownFiltrable
+
+<div class="dropdownfiltrable">
+    <input onfocus="CargarScriptDinamicamente(true, false, '/js/plugins/dropdownfiltrable.min.js', '@Context.Items["CSP_NONCE"]?.ToString()')" type="text" class="caja" placeholder="@(String.IsNullOrEmpty(Model.Placeholder) ? "Seleccione o escriba para filtrar" : Model.Placeholder)" value="@Model.Valor" disabled="@(!@Model.Habilitado)" />
+    <span onfocus="CargarScriptDinamicamente(true, false, '/js/plugins/dropdownfiltrable.min.js', '@Context.Items["CSP_NONCE"]?.ToString()')" title="Ver todas las opciones" tabindex="-1" class="boton">
+        <span class="icono icono-up visible">
+            <i class="icono-abajo"></i>
+        </span>
+        <span class="icono icono-down">
+            <i class="icono-arriba"></i>
+        </span>
+    </span>
+    <div class="elementos">
+        @foreach (string sGrupoDeElementos in Model.Elementos.Keys)
+        {
+            if (String.IsNullOrEmpty(sGrupoDeElementos))
+            {
+                <p>
+                    @for (int i = 0; i < Model.Elementos[sGrupoDeElementos].Count; i++)
+                    {
+                        <span data-habilitado="@Model.Elementos[sGrupoDeElementos][i].Habilitado"
+                              tabindex="@i"
+                              data-valor="@Model.Elementos[sGrupoDeElementos][i].Valor"
+                              data-texto="@Model.Elementos[sGrupoDeElementos][i].Texto"
+                              data-url="@Model.Elementos[sGrupoDeElementos][i].Url">@Model.Elementos[sGrupoDeElementos][i].Texto</span>
+                    }
+                </p>
+            }
+            else
+            {
+                <p data-label="@sGrupoDeElementos">
+                    <label>@sGrupoDeElementos</label>
+                    @for (int i = 0; i < Model.Elementos[sGrupoDeElementos].Count; i++)
+                    {
+                        <span data-habilitado="@Model.Elementos[sGrupoDeElementos][i].Habilitado"
+                              tabindex="@i"
+                              data-valor="@Model.Elementos[sGrupoDeElementos][i].Valor"
+                              data-texto="@Model.Elementos[sGrupoDeElementos][i].Texto"
+                              data-url="@Model.Elementos[sGrupoDeElementos][i].Url">@Model.Elementos[sGrupoDeElementos][i].Texto</span>
+                    }
+                </p>
+            }
+        }
+    </div>
+</div>

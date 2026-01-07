@@ -116,10 +116,8 @@ namespace Pages.Documentacion
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Documentacion.Sobrescribir",
-                    "Documentacion",
-                    $"Documento sobrescrito: {nombreActual} → {Archivo.FileName} (ID: {Id})",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.DocumentacionSobrescribir,
+                    $"Documento sobrescrito: {nombreActual} → {Archivo.FileName} (ID: {Id})"
                 );
 
                 _logger.LogInformation("Archivo sobrescrito exitosamente. ID: {IdArchivo}, Nombre anterior: {NombreAnterior}, Nombre nuevo: {NombreNuevo}",
@@ -133,12 +131,8 @@ namespace Pages.Documentacion
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Documentacion.Sobrescribir",
-                    "Documentacion",
-                    $"Error al sobrescribir documento: {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.DocumentacionSobrescribir,
+                    $"Error al sobrescribir documento: {Id} - {ex.Message}"
                 );
 
                 MensajeError = $"Error al sobrescribir el archivo: {ex.Message}";

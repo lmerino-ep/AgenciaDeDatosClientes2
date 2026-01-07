@@ -106,11 +106,9 @@ namespace Pages.Usuarios
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Roles.Asignar",
-                    "Roles",
+                    Modelos.AuditoriaAccionEnum.RolAsignar,
                     $"Modificación de roles del usuario {Usuario.Email}. " +
-                    $"Agregados: {rolesAgregados.Count}, Eliminados: {rolesEliminados.Count}",
-                    "Exito"
+                    $"Agregados: {rolesAgregados.Count}, Eliminados: {rolesEliminados.Count}. Cambios: {cambiosRealizados}"
                 );
 
                 _logger.LogInformation("Roles actualizados exitosamente para usuario {UsuarioId}. " +
@@ -127,12 +125,8 @@ namespace Pages.Usuarios
                 // Registrar error en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Roles.Asignar",
-                    "Roles",
-                    $"Error al modificar roles del usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.RolAsignar,
+                    $"Error al modificar roles del usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = "Error al guardar los cambios. Por favor, intenta nuevamente.";

@@ -13,3 +13,10 @@ async function generarPassword() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    const btnGenerarPassword = document.querySelector('[data-js-generar-password]');
+    if (btnGenerarPassword) {
+        btnGenerarPassword.addEventListener('click', generarPassword);
+    }
+});
+

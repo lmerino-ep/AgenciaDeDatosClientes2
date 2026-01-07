@@ -44,7 +44,7 @@
                 </div>
                 <div class="campo">
                     <span class="etiqueta">Fecha/Hora:</span>
-                    <span class="valor">@Model.Auditoria.FechaHora.ToString("dd/MM/yyyy HH:mm:ss.fff")</span>
+                    <span class="valor">@Model.Auditoria.LastUpdate.ToString("dd/MM/yyyy HH:mm:ss.fff")</span>
                 </div>
                 <div class="campo">
                     <span class="etiqueta">Usuario ID:</span>
@@ -52,28 +52,11 @@
                 </div>
                 <div class="campo">
                     <span class="etiqueta">Acción:</span>
-                    <span class="valor"><span class="badge badge-info">@Model.Auditoria.Accion</span></span>
+                    <span class="valor"><span class="badge badge-info">@Model.Auditoria.AccionNombre</span></span>
                 </div>
                 <div class="campo">
-                    <span class="etiqueta">Módulo:</span>
-                    <span class="valor"><span class="badge badge-tipo">@Model.Auditoria.Modulo</span></span>
-                </div>
-                <div class="campo">
-                    <span class="etiqueta">Resultado:</span>
-                    <span class="valor">
-                        @if (Model.Auditoria.Resultado == "Exito")
-                        {
-                            <span class="badge badge-exito">Éxito</span>
-                        }
-                        else if (Model.Auditoria.Resultado == "Error")
-                        {
-                            <span class="badge badge-error">Error</span>
-                        }
-                        else
-                        {
-                            <span class="badge badge-advertencia">@Model.Auditoria.Resultado</span>
-                        }
-                    </span>
+                    <span class="etiqueta">Categoría:</span>
+                    <span class="valor"><span class="badge badge-tipo">@Model.Auditoria.CategoriaNombre</span></span>
                 </div>
                 <div class="campo">
                     <span class="etiqueta">Descripción:</span>
@@ -83,100 +66,6 @@
         </div>
     </section>
 
-    <!-- Información Técnica -->
-    <section class="seccion-datos-usuario">
-        <div class="card">
-            <h2 class="titulo-seccion">Información Técnica</h2>
-            <div class="info-usuario">
-                <div class="campo">
-                    <span class="etiqueta">Dirección IP:</span>
-                    <span class="valor">@(Model.Auditoria.DireccionIP ?? "-")</span>
-                </div>
-                <div class="campo">
-                    <span class="etiqueta">User Agent:</span>
-                    <span class="valor">@Model.ParsearUserAgent(Model.Auditoria.UserAgent)</span>
-                    @if (!string.IsNullOrEmpty(Model.Auditoria.UserAgent) && Model.Auditoria.UserAgent.Length > 50)
-                    {
-                        <br />
-                        <small class="text-muted">Completo: @Model.Auditoria.UserAgent</small>
-                    }
-                </div>
-                <div class="campo">
-                    <span class="etiqueta">Duración:</span>
-                    <span class="valor">@(Model.Auditoria.DuracionMs.HasValue ? $"{Model.Auditoria.DuracionMs} ms" : "-")</span>
-                </div>
-                <div class="campo">
-                    <span class="etiqueta">Entidad Afectada:</span>
-                    <span class="valor">@(Model.Auditoria.EntidadAfectada ?? "-")</span>
-                </div>
-                <div class="campo">
-                    <span class="etiqueta">ID Entidad Afectada:</span>
-                    <span class="valor">@(Model.Auditoria.IdEntidadAfectada?.ToString() ?? "-")</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Cambios Realizados -->
-    @if (Model.Cambios.Any())
-    {
-        <section class="seccion-tabla">
-            <div class="card">
-                <h2 class="titulo-seccion">Cambios Realizados</h2>
-                <div class="tabla-responsive">
-                    <table class="tabla">
-                        <thead>
-                            <tr>
-                                <th>Campo</th>
-                                <th>Antes</th>
-                                <th>Después</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var cambio in Model.Cambios)
-                            {
-                                <tr>
-                                    <td><strong>@cambio.Campo</strong></td>
-                                    <td>
-                                        <span class="text-danger">@cambio.Antes</span>
-                                    </td>
-                                    <td>
-                                        <span class="text-success">@cambio.Despues</span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    }
-
-    <!-- Mensaje de Error -->
-    @if (!string.IsNullOrEmpty(Model.Auditoria.MensajeError))
-    {
-        <section class="seccion-datos-usuario">
-            <div class="card">
-                <h2 class="titulo-seccion">Mensaje de Error</h2>
-                <div class="alerta alerta-error">
-                    <pre class="pre-error">@Model.Auditoria.MensajeError</pre>
-                </div>
-            </div>
-        </section>
-    }
-
-    <!-- JSON de Cambios (si existe y no se pudo parsear) -->
-    @if (!string.IsNullOrEmpty(Model.Auditoria.CambiosRealizados) && !Model.Cambios.Any())
-    {
-        <section class="seccion-datos-usuario">
-            <div class="card">
-                <h2 class="titulo-seccion">Cambios Realizados (JSON)</h2>
-                <div class="info-usuario">
-                    <pre class="pre-json">@Model.Auditoria.CambiosRealizados</pre>
-                </div>
-            </div>
-        </section>
-    }
 
     <!-- Acciones -->
     <div class="form-actions">

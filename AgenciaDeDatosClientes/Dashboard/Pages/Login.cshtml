@@ -23,7 +23,7 @@
     </environment>
 }
 
-<form method="post" onsubmit="fMostrarCargando('@HttpContext.Items["CSP_NONCE"]?.ToString()')">
+<form method="post" data-js-form-login data-nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
     @Html.AntiForgeryToken()
     <div class="login">
         <section class="caja">

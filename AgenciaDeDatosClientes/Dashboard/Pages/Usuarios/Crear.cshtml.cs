@@ -86,10 +86,8 @@ namespace Pages.Usuarios
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Usuario.Crear",
-                    "Usuarios",
-                    $"Usuario creado: {Modelo.Email}",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.UsuarioCrear,
+                    $"Usuario creado: {Modelo.Email}"
                 );
 
                 _logger.LogInformation("Usuario creado exitosamente con ID {UsuarioId}", idUsuario);
@@ -102,12 +100,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Usuario.Crear",
-                    "Usuarios",
-                    $"Error al crear usuario: {Modelo.Email}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.UsuarioCrear,
+                    $"Error al crear usuario: {Modelo.Email} - {ex.Message}"
                 );
 
                 MensajeError = $"Error al crear el usuario: {ex.Message}";

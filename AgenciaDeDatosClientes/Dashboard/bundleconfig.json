@@ -79,5 +79,15 @@
       "enabled": true,
       "renameLocals": false
     }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/usuarios-editar.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/usuarios-editar.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
   }
 ]

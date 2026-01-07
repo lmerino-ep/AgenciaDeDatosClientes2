@@ -2,6 +2,9 @@ using Datos;
 using Microsoft.Extensions.Logging;
 using NugetPortable.Helper;
 using Modelos.DTO.Usuarios;
+using AgenciaDeDatosBD;
+using AgenciaDeDatosBD.Herramientas;
+using Modelos.InyeccionDeDependencias;
 
 namespace Negocio
 {
@@ -13,14 +16,16 @@ namespace Negocio
         private readonly RepositorioUsuarios _repositorio;
         private readonly ILogger<ServicioUsuarios> _logger;
         private readonly Negocio.Autenticacion _negocioAutenticacion;
+        private readonly Aurora _aurora;
 
         public ServicioUsuarios(
             RepositorioUsuarios repositorio,
             ILogger<ServicioUsuarios> logger,
-            Modelos.InyeccionDeDependencias.Aurora aurora)
+            Aurora aurora)
         {
             _repositorio = repositorio ?? throw new ArgumentNullException(nameof(repositorio));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _aurora = aurora ?? throw new ArgumentNullException(nameof(aurora));
             _negocioAutenticacion = new Negocio.Autenticacion(aurora);
         }
 
@@ -237,7 +242,7 @@ namespace Negocio
         {
             try
             {
-                _logger.LogInformation("Eliminando usuario {UsuarioId}", idUsuario);
+                _logger.LogInformation("Desactivando usuario {UsuarioId}", idUsuario);
 
                 // Verificar que el usuario existe
                 var usuario = await _negocioAutenticacion.GetUsuarioAsync(idUsuario, false);
@@ -248,11 +253,75 @@ namespace Negocio
 
                 await _repositorio.EliminarUsuarioAsync(idUsuario);
 
-                _logger.LogInformation("Usuario {UsuarioId} eliminado exitosamente", idUsuario);
+                _logger.LogInformation("Usuario {UsuarioId} desactivado exitosamente", idUsuario);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar usuario {UsuarioId}", idUsuario);
+                _logger.LogError(ex, "Error al desactivar usuario {UsuarioId}", idUsuario);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Elimina un usuario definitivamente (hard delete) usando AgenciaDeDatosBD
+        /// </summary>
+        public async Task EliminarUsuarioDefinitivamenteAsync(int idUsuario, int idUsuarioHereditario)
+        {
+            try
+            {
+                _logger.LogInformation("Eliminando usuario {UsuarioId} definitivamente. Usuario hereditario: {UsuarioHereditario}", idUsuario, idUsuarioHereditario);
+
+                // Verificar que ambos usuarios existen
+                var usuario = await _negocioAutenticacion.GetUsuarioAsync(idUsuario, false);
+                if (usuario == null)
+                {
+                    throw new InvalidOperationException($"Usuario {idUsuario} no encontrado");
+                }
+
+                var usuarioHereditario = await _negocioAutenticacion.GetUsuarioAsync(idUsuarioHereditario, false);
+                if (usuarioHereditario == null)
+                {
+                    throw new InvalidOperationException($"Usuario hereditario {idUsuarioHereditario} no encontrado");
+                }
+
+                // Verificar que el usuario hereditario tiene tipo 4 o 5
+                if (usuarioHereditario.FK_UsuarioTipo != 4 && usuarioHereditario.FK_UsuarioTipo != 5)
+                {
+                    throw new InvalidOperationException($"El usuario hereditario debe tener tipo 4 o 5. Tipo actual: {usuarioHereditario.FK_UsuarioTipo}");
+                }
+
+                // Llamar a la función de AgenciaDeDatosBD para eliminar el usuario
+                using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
+                {
+                    Retorno retorno = await bd.Usuario().Eliminar(idUsuario, idUsuarioHereditario);
+                    
+                    if (!retorno.Correcto)
+                    {
+                        throw new InvalidOperationException($"Error al eliminar usuario: {retorno.Mensaje}");
+                    }
+                }
+
+                _logger.LogInformation("Usuario {UsuarioId} eliminado definitivamente exitosamente", idUsuario);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar usuario {UsuarioId} definitivamente", idUsuario);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene usuarios con tipo 4 o 5 para herencia de datos al eliminar
+        /// </summary>
+        public async Task<List<UsuarioListado>> ObtenerUsuariosParaHerenciaAsync(int? excluirUsuarioId = null)
+        {
+            try
+            {
+                return await _repositorio.ObtenerUsuariosParaHerenciaAsync(excluirUsuarioId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener usuarios para herencia");
                 throw;
             }
         }
@@ -260,13 +329,13 @@ namespace Negocio
         /// <summary>
         /// Obtiene todos los tipos de usuario
         /// </summary>
-        public async Task<List<UsuarioTipo>> ObtenerTiposUsuarioAsync()
+        public async Task<List<Modelos.DTO.Usuarios.UsuarioTipo>> ObtenerTiposUsuarioAsync()
         {
             try
             {
                 var entidades = await _repositorio.ObtenerTiposUsuarioAsync();
                 // Mapear de entidad a DTO
-                return entidades.Select(e => new UsuarioTipo
+                return entidades.Select(e => new Modelos.DTO.Usuarios.UsuarioTipo
                 {
                     Id = e.Id,
                     Nombre = e.Nombre

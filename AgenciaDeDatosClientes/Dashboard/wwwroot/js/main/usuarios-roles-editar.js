@@ -17,3 +17,23 @@ function confirmarCambios(event) {
     return true;
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar toggle de todos los roles
+    const toggleTodos = document.querySelector('[data-js-toggle-todos-roles]');
+    if (toggleTodos) {
+        toggleTodos.addEventListener('change', function() {
+            toggleTodosRoles(this);
+        });
+    }
+    
+    // Configurar formulario de roles
+    const formRoles = document.querySelector('[data-js-form-roles]');
+    if (formRoles) {
+        formRoles.addEventListener('submit', function(e) {
+            if (!confirmarCambios(e)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+

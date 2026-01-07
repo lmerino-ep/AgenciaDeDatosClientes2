@@ -70,10 +70,8 @@ namespace Pages.Roles
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    Modelos.TiposAccionAuditoria.RolesCrear,
-                    Modelos.ModulosDashboard.Roles,
-                    $"Rol creado: {Nombre}",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.RolCrear,
+                    $"Rol creado: {Nombre}"
                 );
 
                 _logger.LogInformation("Rol creado exitosamente: {Nombre} (ID: {RolId})", Nombre, idRol);
@@ -93,12 +91,8 @@ namespace Pages.Roles
                 // Registrar error en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    Modelos.TiposAccionAuditoria.RolesCrear,
-                    Modelos.ModulosDashboard.Roles,
-                    $"Error al crear rol: {Nombre}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.RolCrear,
+                    $"Error al crear rol: {Nombre} - {ex.Message}"
                 );
 
                 MensajeError = "Error al crear el rol. Por favor, intenta nuevamente.";

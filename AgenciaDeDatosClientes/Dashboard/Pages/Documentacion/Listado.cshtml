@@ -231,7 +231,7 @@
                                         }
                                         @if (Model.Permisos?.PuedeEliminar == true && !archivo.EsShortcut)
                                         {
-                                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@archivo.Id" class="form-inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar @(archivo.EsCarpeta ? "esta carpeta" : "este archivo")? Esta acción no se puede deshacer.');">
+                                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@archivo.Id" class="form-inline" data-js-eliminar data-es-carpeta="@archivo.EsCarpeta.ToString().ToLower()">
                                                 @Html.AntiForgeryToken()
                                                 <button type="submit" class="boton boton-pequeno boton-peligro" title="Eliminar">
                                                     Eliminar

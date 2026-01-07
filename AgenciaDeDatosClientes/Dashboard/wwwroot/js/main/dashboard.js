@@ -2,6 +2,41 @@
  * Script para inicializar los gráficos del dashboard principal
  */
 
+// Cargar datos de los gráficos desde el elemento JSON
+let datosGraficos = {};
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', cargarDatosGraficos);
+} else {
+    cargarDatosGraficos();
+}
+
+function cargarDatosGraficos() {
+    const datosElement = document.getElementById('datos-graficos');
+    if (datosElement) {
+        try {
+            datosGraficos = JSON.parse(datosElement.textContent);
+        } catch (e) {
+            console.error('Error al cargar datos de gráficos:', e);
+            datosGraficos = {};
+        }
+    }
+    
+    // Inicializar gráficos cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', inicializarGraficos);
+    } else {
+        inicializarGraficos();
+    }
+}
+
+function inicializarGraficos() {
+    if (typeof Chart !== 'undefined') {
+        inicializarGraficoActividadMensual();
+        inicializarGraficoActividadDiaria();
+        inicializarGraficoAccionesPorModulo();
+    }
+}
+
 /**
  * Inicializa el gráfico de actividad mensual (últimos 6 meses)
  */

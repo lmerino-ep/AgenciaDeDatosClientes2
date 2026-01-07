@@ -30,7 +30,7 @@ namespace Negocio
         /// <summary>
         /// Registra una acción de auditoría con un DTO completo
         /// </summary>
-        public async Task<long> RegistrarAccionAsync(Auditoria auditoria)
+        public async Task<long> RegistrarAccionAsync(AuditoriaDTO auditoria)
         {
             try
             {
@@ -44,26 +44,15 @@ namespace Negocio
         }
 
         /// <summary>
-        /// Registra una acción de auditoría extrayendo automáticamente datos del HttpContext
+        /// Registra una acción de auditoría usando enumerados
         /// </summary>
         public async Task<long> RegistrarAccionAsync(
             ClaimsPrincipal usuario,
-            string accion,
-            string modulo,
-            string descripcion,
-            string resultado = "Exito",
-            int? duracionMs = null,
-            string mensajeError = null)
+            AuditoriaAccionEnum accion,
+            string descripcion)
         {
             try
             {
-                HttpContext contexto = _httpContextAccessor.HttpContext;
-                if (contexto == null)
-                {
-                    _logger.LogWarning("No se pudo obtener HttpContext para auditoría");
-                    return 0;
-                }
-
                 // Obtener ID de usuario del claim
                 string usuarioIdClaim = usuario?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!int.TryParse(usuarioIdClaim, out int usuarioId))
@@ -72,17 +61,23 @@ namespace Negocio
                     return 0;
                 }
 
-                Auditoria auditoria = new Auditoria
+                // Obtener el nombre de la acción desde el enum
+                string nombreAccion = EnumeradosAuditoriaHelper.ObtenerNombreAccion(accion);
+                
+                // Buscar el ID de la acción en la BD por nombre
+                int? idAccion = await _repositorio.ObtenerIdAccionPorNombreAsync(nombreAccion);
+                
+                if (!idAccion.HasValue)
+                {
+                    _logger.LogWarning("No se encontró la acción de auditoría '{NombreAccion}' en la base de datos", nombreAccion);
+                    return 0;
+                }
+
+                AuditoriaDTO auditoria = new AuditoriaDTO
                 {
                     FK_Usuario = usuarioId,
-                    Accion = accion,
-                    Modulo = modulo,
-                    Descripcion = descripcion,
-                    DireccionIP = contexto.Connection.RemoteIpAddress?.ToString(),
-                    UserAgent = contexto.Request.Headers["User-Agent"].ToString(),
-                    DuracionMs = duracionMs,
-                    Resultado = resultado,
-                    MensajeError = mensajeError
+                    FK_AuditoriaAccion = idAccion.Value,
+                    Descripcion = descripcion
                 };
 
                 return await _repositorio.RegistrarAccionAsync(auditoria);
@@ -102,7 +97,6 @@ namespace Negocio
             int? usuarioId = null,
             string accion = null,
             string modulo = null,
-            string resultado = null,
             DateTime? fechaInicio = null,
             DateTime? fechaFin = null,
             int limit = 100,
@@ -114,7 +108,6 @@ namespace Negocio
                     usuarioId,
                     accion,
                     modulo,
-                    resultado,
                     fechaInicio,
                     fechaFin,
                     limit,
@@ -134,28 +127,7 @@ namespace Negocio
         {
             try
             {
-                var entidad = await _repositorio.ObtenerAuditoriaPorIdAsync(id);
-                if (entidad == null)
-                    return null;
-
-                // Mapear de entidad a DTO
-                return new AuditoriaDetalle
-                {
-                    Id = entidad.Id,
-                    FK_Usuario = entidad.FK_Usuario,
-                    Accion = entidad.Accion,
-                    Modulo = entidad.Modulo,
-                    Descripcion = entidad.Descripcion,
-                    EntidadAfectada = entidad.EntidadAfectada,
-                    IdEntidadAfectada = entidad.IdEntidadAfectada,
-                    CambiosRealizados = entidad.CambiosRealizados,
-                    DireccionIP = entidad.DireccionIP,
-                    UserAgent = entidad.UserAgent,
-                    FechaHora = entidad.FechaHora,
-                    DuracionMs = entidad.DuracionMs,
-                    Resultado = entidad.Resultado,
-                    MensajeError = entidad.MensajeError
-                };
+                return await _repositorio.ObtenerAuditoriaPorIdAsync(id);
             }
             catch (Exception ex)
             {
@@ -171,7 +143,6 @@ namespace Negocio
             int? usuarioId = null,
             string accion = null,
             string modulo = null,
-            string resultado = null,
             DateTime? fechaInicio = null,
             DateTime? fechaFin = null)
         {
@@ -181,7 +152,6 @@ namespace Negocio
                     usuarioId,
                     accion,
                     modulo,
-                    resultado,
                     fechaInicio,
                     fechaFin);
             }
@@ -221,6 +191,38 @@ namespace Negocio
             {
                 _logger.LogError(ex, "Error al obtener tendencia de acciones");
                 return new Dictionary<string, int>();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las acciones de auditoría disponibles
+        /// </summary>
+        public async Task<List<string>> ObtenerAccionesDisponiblesAsync()
+        {
+            try
+            {
+                return await _repositorio.ObtenerAccionesDisponiblesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener acciones disponibles");
+                return new List<string>();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las categorías de auditoría disponibles
+        /// </summary>
+        public async Task<List<string>> ObtenerCategoriasDisponiblesAsync()
+        {
+            try
+            {
+                return await _repositorio.ObtenerCategoriasDisponiblesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener categorías disponibles");
+                return new List<string>();
             }
         }
     }

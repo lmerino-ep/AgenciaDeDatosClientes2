@@ -56,21 +56,20 @@ namespace Utils.Middlewares.Auditoria
             {
                 if (contexto.User?.Identity?.IsAuthenticated == true)
                 {
-                    string accion = DeterminarAccion(ruta, contexto.Request.Method);
-                    string modulo = DeterminarModulo(ruta);
-                    string descripcion = $"{contexto.Request.Method} {contexto.Request.Path}";
-                    string resultado = excepcion != null ? "Error" : (contexto.Response.StatusCode < 400 ? "Exito" : "Error");
-                    string mensajeError = excepcion?.Message;
+                    Modelos.AuditoriaAccionEnum? accion = DeterminarAccion(ruta, contexto.Request.Method);
+                    
+                    if (accion.HasValue)
+                    {
+                        string descripcion = $"{contexto.Request.Method} {contexto.Request.Path}";
+                        string resultado = excepcion != null ? "Error" : (contexto.Response.StatusCode < 400 ? "Exito" : "Error");
+                        string mensajeError = excepcion?.Message;
 
-                    await servicioAuditoria.RegistrarAccionAsync(
-                        contexto.User,
-                        accion,
-                        modulo,
-                        descripcion,
-                        resultado,
-                        (int)cronometro.ElapsedMilliseconds,
-                        mensajeError
-                    );
+                        await servicioAuditoria.RegistrarAccionAsync(
+                            contexto.User,
+                            accion.Value,
+                            $"{descripcion} - {resultado}" + (mensajeError != null ? $" - {mensajeError}" : "")
+                        );
+                    }
                 }
             }
             catch (Exception ex)
@@ -113,77 +112,51 @@ namespace Utils.Middlewares.Auditoria
         /// <summary>
         /// Determina la acción basándose en la ruta
         /// </summary>
-        private string DeterminarAccion(string ruta, string metodoHttp)
+        private Modelos.AuditoriaAccionEnum? DeterminarAccion(string ruta, string metodoHttp)
         {
             if (ruta.Contains("/usuarios/crear"))
-                return "Usuario.Crear";
+                return Modelos.AuditoriaAccionEnum.UsuarioCrear;
 
             if (ruta.Contains("/usuarios/editar"))
-                return "Usuario.Editar";
+                return Modelos.AuditoriaAccionEnum.UsuarioEditar;
 
             if (ruta.Contains("/usuarios/eliminar"))
-                return "Usuario.Eliminar";
+                return Modelos.AuditoriaAccionEnum.UsuarioEliminar;
 
             if (ruta.Contains("/usuarios/cambiarcontrasena"))
-                return "Usuario.CambiarContrasena";
+                return Modelos.AuditoriaAccionEnum.UsuarioCambiarContrasena;
 
             if (ruta.Contains("/usuarios/cambiartipo"))
-                return "Usuario.CambiarTipo";
+                return Modelos.AuditoriaAccionEnum.UsuarioCambiarTipo;
 
             if (ruta.Contains("/usuarios/roles/editar"))
-                return "Roles.Asignar";
+                return Modelos.AuditoriaAccionEnum.RolAsignar;
 
             if (ruta.Contains("/usuarios/tokens/generar"))
             {
                 if (ruta.Contains("token1"))
-                    return "Tokens.GenerarRefreshToken1";
+                    return Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken1;
                 if (ruta.Contains("token2"))
-                    return "Tokens.GenerarRefreshToken2";
-                return "Tokens.GenerarRefreshTokens";
+                    return Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken2;
+                return Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken1; // Por defecto usar Token1 cuando se generan ambos
             }
 
             if (ruta.Contains("/usuarios/tokens/revocar"))
-                return "Tokens.RevocarTokens";
+                return Modelos.AuditoriaAccionEnum.TokenRevocarTokens;
 
             if (ruta.Contains("/metricas/exportar"))
-                return "Metricas.Exportar";
+                return Modelos.AuditoriaAccionEnum.MetricaExportar;
 
             if (ruta.Contains("/documentacion/subir"))
-                return "Documentacion.Subir";
+                return Modelos.AuditoriaAccionEnum.DocumentacionSubir;
 
             if (ruta.Contains("/documentacion/eliminar"))
-                return "Documentacion.Eliminar";
+                return Modelos.AuditoriaAccionEnum.DocumentacionEliminar;
 
             if (ruta.Contains("/documentacion/sobrescribir"))
-                return "Documentacion.Sobrescribir";
+                return Modelos.AuditoriaAccionEnum.DocumentacionSobrescribir;
 
-            return $"{metodoHttp}.Desconocido";
-        }
-
-        /// <summary>
-        /// Determina el módulo basándose en la ruta
-        /// </summary>
-        private string DeterminarModulo(string ruta)
-        {
-            if (ruta.Contains("/usuarios/roles"))
-                return "Roles";
-
-            if (ruta.Contains("/usuarios/tokens"))
-                return "Tokens";
-
-            if (ruta.Contains("/usuarios"))
-                return "Usuarios";
-
-            if (ruta.Contains("/metricas"))
-                return "Metricas";
-
-            if (ruta.Contains("/documentacion"))
-                return "Documentacion";
-
-            if (ruta.Contains("/auditoria"))
-                return "Auditoria";
-
-            return "Desconocido";
+            return null; // Acción desconocida, no se audita
         }
     }
 

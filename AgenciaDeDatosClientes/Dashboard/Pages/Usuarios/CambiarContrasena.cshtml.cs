@@ -89,10 +89,8 @@ namespace Pages.Usuarios
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Usuario.CambiarContrasena",
-                    "Usuarios",
-                    $"Contraseña cambiada para usuario ID {Id}" + (Modelo.EnviarPorEmail ? " (enviada por email)" : ""),
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.UsuarioCambiarContrasena,
+                    $"Contraseña cambiada para usuario ID {Id}" + (Modelo.EnviarPorEmail ? " (enviada por email)" : "")
                 );
 
                 _logger.LogInformation("Contraseña del usuario {UsuarioId} cambiada exitosamente", Id);
@@ -105,12 +103,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Usuario.CambiarContrasena",
-                    "Usuarios",
-                    $"Error al cambiar contraseña para usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.UsuarioCambiarContrasena,
+                    $"Error al cambiar contraseña para usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = $"Error al cambiar la contraseña: {ex.Message}";

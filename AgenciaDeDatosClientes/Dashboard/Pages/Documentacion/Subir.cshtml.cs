@@ -91,10 +91,8 @@ namespace Pages.Documentacion
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Documentacion.Subir",
-                    "Documentacion",
-                    $"Documento subido: {Archivo.FileName} (ID: {idArchivo})",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.DocumentacionSubir,
+                    $"Documento subido: {Archivo.FileName} (ID: {idArchivo})"
                 );
 
                 _logger.LogInformation("Archivo subido exitosamente. ID: {IdArchivo}, Nombre: {NombreArchivo}", idArchivo, Archivo.FileName);
@@ -107,12 +105,8 @@ namespace Pages.Documentacion
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Documentacion.Subir",
-                    "Documentacion",
-                    $"Error al subir documento: {Archivo?.FileName}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.DocumentacionSubir,
+                    $"Error al subir documento: {Archivo?.FileName} - {ex.Message}"
                 );
 
                 MensajeError = $"Error al subir el archivo: {ex.Message}";

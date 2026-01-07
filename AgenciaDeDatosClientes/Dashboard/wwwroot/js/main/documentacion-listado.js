@@ -11,6 +11,22 @@ document.addEventListener('DOMContentLoaded', function () {
             descargarArchivo(url);
         });
     });
+    
+    // Configurar formularios de eliminación
+    const formulariosEliminar = document.querySelectorAll('form[data-js-eliminar]');
+    formulariosEliminar.forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            const esCarpeta = form.dataset.esCarpeta === 'true';
+            const mensaje = esCarpeta 
+                ? '¿Estás seguro de que deseas eliminar esta carpeta? Esta acción no se puede deshacer.'
+                : '¿Estás seguro de que deseas eliminar este archivo? Esta acción no se puede deshacer.';
+            
+            if (!confirm(mensaje)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
 });
 
 function descargarArchivo(url) {

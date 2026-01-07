@@ -123,10 +123,8 @@ namespace Pages.Documentacion
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Documentacion.Eliminar",
-                    "Documentacion",
-                    $"Documento eliminado: {id}",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.DocumentacionEliminar,
+                    $"Documento eliminado: {id}"
                 );
 
                 TempData["MensajeExito"] = "Documento eliminado exitosamente.";

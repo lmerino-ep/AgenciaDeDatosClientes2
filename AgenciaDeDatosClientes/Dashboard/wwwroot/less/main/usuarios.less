@@ -705,3 +705,179 @@
         }
     }
 }
+
+/* ============================================
+   Zona de Peligro - Eliminar Usuario
+   ============================================ */
+
+.seccion-eliminar {
+    margin-top: 50px;
+
+    .card {
+        .titulo-seccion {
+            margin-bottom: 30px;
+        }
+
+        form {
+            margin-bottom: 30px;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            .alerta {
+                margin-bottom: 20px;
+            }
+
+            .boton-peligro {
+                background-color: #dc3545;
+                border-color: #dc3545;
+                color: white;
+
+                &:hover {
+                    background-color: #c82333;
+                    border-color: #bd2130;
+                }
+            }
+        }
+
+        .form-group-eliminar-usuario {
+            margin-bottom: 20px;
+
+            label {
+                display: block;
+                margin-bottom: 10px;
+                font-weight: bold;
+                color: @ColorEpDataComplementario;
+                font-size: 0.95rem;
+            }
+
+            .dropdown-container {
+                display: flex;
+                align-items: flex-start;
+                gap: 15px;
+                margin-bottom: 10px;
+
+                .dropdownfiltrable {
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                .boton-eliminar-usuario {
+                    flex-shrink: 0;
+                    white-space: nowrap;
+                }
+            }
+
+            .form-text {
+                display: block;
+                margin-top: 5px;
+                font-size: 0.9rem;
+                color: #6c757d;
+            }
+        }
+    }
+}
+
+/* ============================================
+   Modal de Confirmación
+   ============================================ */
+
+.modal-confirmacion {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    
+    &[style*="flex"],
+    &.visible {
+        display: flex !important;
+    }
+}
+
+.modal-confirmacion-contenido {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-confirmacion-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #ddd;
+    background-color: #f8f9fa;
+
+    h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: @ColorEpDataComplementario;
+    }
+}
+
+.modal-confirmacion-body {
+    padding: 25px;
+    flex: 1;
+
+    .alerta {
+        margin-bottom: 0;
+
+        p {
+            margin: 10px 0;
+
+            &:first-child {
+                margin-top: 0;
+            }
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.modal-confirmacion-footer {
+    padding: 20px 25px;
+    border-top: 1px solid #ddd;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .boton {
+        min-width: 120px;
+    }
+}
+
+/* Responsive - Modal */
+@media (max-width: 768px) {
+    .modal-confirmacion-contenido {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .modal-confirmacion-header,
+    .modal-confirmacion-body,
+    .modal-confirmacion-footer {
+        padding: 15px;
+    }
+
+    .modal-confirmacion-footer {
+        flex-direction: column-reverse;
+
+        .boton {
+            width: 100%;
+        }
+    }
+}

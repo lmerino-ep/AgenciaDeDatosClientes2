@@ -75,15 +75,6 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="Resultado">Resultado:</label>
-                    <select name="Resultado" id="Resultado" class="form-control">
-                        <option value="">Todos</option>
-                        <option value="Exito" selected="@(Model.Resultado == "Exito")">Éxito</option>
-                        <option value="Error" selected="@(Model.Resultado == "Error")">Error</option>
-                        <option value="NoAutorizado" selected="@(Model.Resultado == "NoAutorizado")">No Autorizado</option>
-                    </select>
-                </div>
 
                 <div class="form-group">
                     <label for="FechaInicio">Fecha Inicio:</label>
@@ -110,9 +101,9 @@
             <div class="form-actions">
                 <button type="submit" class="boton boton-primario">Filtrar</button>
                 <a href="/auditoria" class="boton boton-secundario">Limpiar</a>
-                <a href="?handler=ExportarJson&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))" 
+                <a href="?handler=ExportarJson&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))" 
                    class="boton boton-secundario">Exportar JSON</a>
-                <a href="?handler=ExportarCsv&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))" 
+                <a href="?handler=ExportarCsv&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))" 
                    class="boton boton-secundario">Exportar CSV</a>
             </div>
         </form>
@@ -137,8 +128,6 @@
                             <th>Acción</th>
                             <th>Módulo</th>
                             <th>Descripción</th>
-                            <th>Resultado</th>
-                            <th>IP</th>
                             <th>Detalles</th>
                         </tr>
                     </thead>
@@ -146,31 +135,16 @@
                         @foreach (var auditoria in Model.Auditorias)
                         {
                             <tr>
-                                <td>@auditoria.FechaHora.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                <td>@auditoria.LastUpdate.ToString("dd/MM/yyyy HH:mm:ss")</td>
                                 <td>
                                     <div>
                                         <strong>@auditoria.UsuarioEmail</strong><br />
                                         <small>@auditoria.UsuarioNombre</small>
                                     </div>
                                 </td>
-                                <td><span class="badge badge-info">@auditoria.Accion</span></td>
-                                <td><span class="badge badge-tipo">@auditoria.Modulo</span></td>
+                                <td><span class="badge badge-info">@auditoria.AccionNombre</span></td>
+                                <td><span class="badge badge-tipo">@auditoria.CategoriaNombre</span></td>
                                 <td>@(auditoria.Descripcion?.Length > 100 ? auditoria.Descripcion.Substring(0, 100) + "..." : auditoria.Descripcion)</td>
-                                <td>
-                                    @if (auditoria.Resultado == "Exito")
-                                    {
-                                        <span class="badge badge-exito">Éxito</span>
-                                    }
-                                    else if (auditoria.Resultado == "Error")
-                                    {
-                                        <span class="badge badge-error">Error</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge badge-advertencia">@auditoria.Resultado</span>
-                                    }
-                                </td>
-                                <td><small>@(auditoria.DireccionIP ?? "-")</small></td>
                                 <td>
                                     <a href="/auditoria/detalle/@auditoria.Id" class="boton boton-pequeno boton-secundario">Ver detalles</a>
                                 </td>
@@ -186,7 +160,7 @@
                 <div class="paginacion">
                     @if (Model.Pagina > 0)
                     {
-                        <a href="?Pagina=@(Model.Pagina - 1)&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))&TamanoPagina=@Model.TamanoPagina" 
+                        <a href="?Pagina=@(Model.Pagina - 1)&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))&TamanoPagina=@Model.TamanoPagina" 
                            class="boton boton-secundario">Anterior</a>
                     }
 
@@ -196,7 +170,7 @@
 
                     @if (Model.Pagina < Model.TotalPaginas - 1)
                     {
-                        <a href="?Pagina=@(Model.Pagina + 1)&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&Resultado=@Model.Resultado&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))&TamanoPagina=@Model.TamanoPagina" 
+                        <a href="?Pagina=@(Model.Pagina + 1)&UsuarioId=@Model.UsuarioId&Accion=@Model.Accion&Modulo=@Model.Modulo&FechaInicio=@(Model.FechaInicio?.ToString("yyyy-MM-dd"))&FechaFin=@(Model.FechaFin?.ToString("yyyy-MM-dd"))&TamanoPagina=@Model.TamanoPagina" 
                            class="boton boton-secundario">Siguiente</a>
                     }
                 </div>

@@ -37,9 +37,6 @@ namespace Pages.Auditoria
         public string? Modulo { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string? Resultado { get; set; }
-
-        [BindProperty(SupportsGet = true)]
         public DateTime? FechaInicio { get; set; }
 
         [BindProperty(SupportsGet = true)]
@@ -87,9 +84,9 @@ namespace Pages.Auditoria
                 // Obtener usuarios con roles de dashboard para el dropdown
                 Usuarios = await ObtenerUsuariosConRolesDashboardAsync();
 
-                // Obtener acciones y módulos únicos para los dropdowns
-                Acciones = await ObtenerAccionesUnicasAsync();
-                Modulos = await ObtenerModulosUnicosAsync();
+                // Obtener acciones y categorías únicas para los dropdowns desde la base de datos
+                Acciones = await _servicioAuditoria.ObtenerAccionesDisponiblesAsync();
+                Modulos = await _servicioAuditoria.ObtenerCategoriasDisponiblesAsync();
 
                 // Obtener auditorías con filtros
                 int offset = Pagina * TamanoPagina;
@@ -97,7 +94,6 @@ namespace Pages.Auditoria
                     UsuarioId,
                     Accion,
                     Modulo,
-                    Resultado,
                     FechaInicio,
                     FechaFin,
                     TamanoPagina,
@@ -109,7 +105,6 @@ namespace Pages.Auditoria
                     UsuarioId,
                     Accion,
                     Modulo,
-                    Resultado,
                     FechaInicio,
                     FechaFin
                 );
@@ -138,7 +133,6 @@ namespace Pages.Auditoria
                     UsuarioId,
                     Accion,
                     Modulo,
-                    Resultado,
                     FechaInicio,
                     FechaFin,
                     100000, // Límite alto para exportación
@@ -155,7 +149,6 @@ namespace Pages.Auditoria
                         usuario_id = UsuarioId,
                         accion = Accion,
                         modulo = Modulo,
-                        resultado = Resultado,
                         fecha_inicio = FechaInicio,
                         fecha_fin = FechaFin
                     },
@@ -194,7 +187,6 @@ namespace Pages.Auditoria
                     UsuarioId,
                     Accion,
                     Modulo,
-                    Resultado,
                     FechaInicio,
                     FechaFin,
                     100000, // Límite alto para exportación
@@ -205,19 +197,17 @@ namespace Pages.Auditoria
                 var csv = new System.Text.StringBuilder();
                 
                 // Encabezados
-                csv.AppendLine("Fecha/Hora;Usuario Email;Usuario Nombre;Acción;Módulo;Descripción;Resultado;Dirección IP");
+                csv.AppendLine("Fecha/Hora;Usuario Email;Usuario Nombre;Acción;Categoría;Descripción");
 
                 // Datos
                 foreach (var auditoria in auditorias)
                 {
-                    csv.AppendLine($"{auditoria.FechaHora:yyyy-MM-dd HH:mm:ss};" +
+                    csv.AppendLine($"{auditoria.LastUpdate:yyyy-MM-dd HH:mm:ss};" +
                                    $"{EscapeCsv(auditoria.UsuarioEmail)};" +
                                    $"{EscapeCsv(auditoria.UsuarioNombre)};" +
-                                   $"{EscapeCsv(auditoria.Accion)};" +
-                                   $"{EscapeCsv(auditoria.Modulo)};" +
-                                   $"{EscapeCsv(auditoria.Descripcion)};" +
-                                   $"{EscapeCsv(auditoria.Resultado)};" +
-                                   $"{EscapeCsv(auditoria.DireccionIP ?? "")}");
+                                   $"{EscapeCsv(auditoria.AccionNombre)};" +
+                                   $"{EscapeCsv(auditoria.CategoriaNombre)};" +
+                                   $"{EscapeCsv(auditoria.Descripcion)}");
                 }
 
                 // UTF-8 con BOM para Excel
@@ -279,42 +269,6 @@ namespace Pages.Auditoria
             }
         }
 
-        private Task<List<string>> ObtenerAccionesUnicasAsync()
-        {
-            // Valores estáticos basados en TiposAccionAuditoria
-            return Task.FromResult(new List<string>
-            {
-                Modelos.TiposAccionAuditoria.UsuarioCrear,
-                Modelos.TiposAccionAuditoria.UsuarioEditar,
-                Modelos.TiposAccionAuditoria.UsuarioEliminar,
-                Modelos.TiposAccionAuditoria.UsuarioCambiarContrasena,
-                Modelos.TiposAccionAuditoria.UsuarioCambiarTipo,
-                Modelos.TiposAccionAuditoria.RolesAsignar,
-                Modelos.TiposAccionAuditoria.RolesRemover,
-                Modelos.TiposAccionAuditoria.TokensGenerarRefreshToken1,
-                Modelos.TiposAccionAuditoria.TokensGenerarRefreshToken2,
-                Modelos.TiposAccionAuditoria.TokensRevocarTokens,
-                Modelos.TiposAccionAuditoria.MetricasConsultar,
-                Modelos.TiposAccionAuditoria.MetricasExportar,
-                Modelos.TiposAccionAuditoria.DocumentacionSubir,
-                Modelos.TiposAccionAuditoria.DocumentacionDescargar,
-                Modelos.TiposAccionAuditoria.DocumentacionEliminar,
-                Modelos.TiposAccionAuditoria.DocumentacionSobrescribir
-            });
-        }
-
-        private Task<List<string>> ObtenerModulosUnicosAsync()
-        {
-            // Valores estáticos basados en ModulosDashboard
-            return Task.FromResult(new List<string>
-            {
-                Modelos.ModulosDashboard.Usuarios,
-                Modelos.ModulosDashboard.Roles,
-                Modelos.ModulosDashboard.Tokens,
-                Modelos.ModulosDashboard.Metricas,
-                Modelos.ModulosDashboard.Documentacion
-            });
-        }
     }
 }
 

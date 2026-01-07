@@ -76,11 +76,9 @@ namespace Pages.Usuarios
                     // Registrar en auditoría
                     await _servicioAuditoria.RegistrarAccionAsync(
                         User,
-                        "Tokens.GenerarRefreshToken1",
-                        "Tokens",
+                        Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken1,
                         $"RefreshToken1 generado para usuario ID {Id}" +
-                        (enviarPorEmail ? " (enviado por email)" : ""),
-                        "Exito"
+                        (enviarPorEmail ? " (enviado por email)" : "")
                     );
 
                     string mensajeEmail = enviarPorEmail && resultado.EmailEnviado
@@ -113,12 +111,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.GenerarRefreshToken1",
-                    "Tokens",
-                    $"Error al generar RefreshToken1 para usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken1,
+                    $"Error al generar RefreshToken1 para usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = "Error al generar el token. Por favor, intenta nuevamente.";
@@ -139,11 +133,9 @@ namespace Pages.Usuarios
                 {
                     await _servicioAuditoria.RegistrarAccionAsync(
                         User,
-                        "Tokens.GenerarRefreshToken2",
-                        "Tokens",
+                        Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken2,
                         $"RefreshToken2 generado para usuario ID {Id}" +
-                        (enviarPorEmail ? " (enviado por email)" : ""),
-                        "Exito"
+                        (enviarPorEmail ? " (enviado por email)" : "")
                     );
 
                     string mensajeEmail = enviarPorEmail && resultado.EmailEnviado
@@ -175,12 +167,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.GenerarRefreshToken2",
-                    "Tokens",
-                    $"Error al generar RefreshToken2 para usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken2,
+                    $"Error al generar RefreshToken2 para usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = "Error al generar el token. Por favor, intenta nuevamente.";
@@ -199,13 +187,12 @@ namespace Pages.Usuarios
 
                 if (resultado.Exito)
                 {
+                    // Registrar en auditoría (usar TokenGenerarRefreshToken1 para ambos tokens)
                     await _servicioAuditoria.RegistrarAccionAsync(
                         User,
-                        "Tokens.GenerarRefreshTokens",
-                        "Tokens",
+                        Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken1,
                         $"Ambos RefreshTokens generados para usuario ID {Id}" +
-                        (enviarPorEmail ? " (enviados por email)" : ""),
-                        "Exito"
+                        (enviarPorEmail ? " (enviados por email)" : "")
                     );
 
                     string mensajeEmail = enviarPorEmail && resultado.EmailEnviado
@@ -231,12 +218,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.GenerarRefreshTokens",
-                    "Tokens",
-                    $"Error al generar ambos RefreshTokens para usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.TokenGenerarRefreshToken1,
+                    $"Error al generar ambos RefreshTokens para usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = "Error al generar los tokens. Por favor, intenta nuevamente.";
@@ -254,10 +237,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.RevocarTokens",
-                    "Tokens",
-                    $"RefreshToken1 revocado para usuario ID {Id}",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.TokenRevocarTokens,
+                    $"RefreshToken1 revocado para usuario ID {Id}"
                 );
 
                 MensajeExito = "RefreshToken1 revocado exitosamente.";
@@ -271,12 +252,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.RevocarTokens",
-                    "Tokens",
-                    $"Error al revocar RefreshToken1 para usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.TokenRevocarTokens,
+                    $"Error al revocar RefreshToken1 para usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = "Error al revocar el token. Por favor, intenta nuevamente.";
@@ -294,10 +271,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.RevocarTokens",
-                    "Tokens",
-                    $"RefreshToken2 revocado para usuario ID {Id}",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.TokenRevocarTokens,
+                    $"RefreshToken2 revocado para usuario ID {Id}"
                 );
 
                 MensajeExito = "RefreshToken2 revocado exitosamente.";
@@ -311,12 +286,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.RevocarTokens",
-                    "Tokens",
-                    $"Error al revocar RefreshToken2 para usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.TokenRevocarTokens,
+                    $"Error al revocar RefreshToken2 para usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = "Error al revocar el token. Por favor, intenta nuevamente.";
@@ -334,10 +305,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.RevocarTokens",
-                    "Tokens",
-                    $"Todos los tokens revocados para usuario ID {Id}",
-                    "Exito"
+                    Modelos.AuditoriaAccionEnum.TokenRevocarTokens,
+                    $"Todos los tokens revocados para usuario ID {Id}"
                 );
 
                 MensajeExito = "Todos los tokens han sido revocados exitosamente.";
@@ -351,12 +320,8 @@ namespace Pages.Usuarios
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
-                    "Tokens.RevocarTokens",
-                    "Tokens",
-                    $"Error al revocar todos los tokens para usuario ID {Id}",
-                    "Error",
-                    null,
-                    ex.Message
+                    Modelos.AuditoriaAccionEnum.TokenRevocarTokens,
+                    $"Error al revocar todos los tokens para usuario ID {Id} - {ex.Message}"
                 );
 
                 MensajeError = "Error al revocar los tokens. Por favor, intenta nuevamente.";

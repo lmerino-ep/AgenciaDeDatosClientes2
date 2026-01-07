@@ -72,7 +72,7 @@
         </div>
     </section>
 
-    <form method="post" onsubmit="return confirmarCambios(event)">
+    <form method="post" data-js-form-roles>
         @Html.AntiForgeryToken()
 
         <section class="seccion-seleccion-roles">
@@ -80,7 +80,7 @@
                 <div class="header-con-accion">
                     <h2 class="titulo-seccion">Seleccionar Roles</h2>
                     <label class="checkbox-toggle">
-                        <input type="checkbox" onchange="toggleTodosRoles(this)" />
+                        <input type="checkbox" data-js-toggle-todos-roles />
                         <span>Seleccionar Todos</span>
                     </label>
                 </div>

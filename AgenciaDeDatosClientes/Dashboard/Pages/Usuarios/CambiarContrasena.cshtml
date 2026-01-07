@@ -74,7 +74,7 @@
                     <label asp-for="Modelo.NuevaPassword">Nueva Contraseña *</label>
                     <div class="input-group">
                         <input asp-for="Modelo.NuevaPassword" class="form-control" type="password" required minlength="8" id="Modelo_NuevaPassword" />
-                        <button type="button" class="boton boton-secundario" onclick="generarPassword()">Generar Automática</button>
+                        <button type="button" class="boton boton-secundario" data-js-generar-password>Generar Automática</button>
                     </div>
                     <small class="form-text text-muted">Mínimo 8 caracteres, 1 mayúscula, 1 número</small>
                     <span asp-validation-for="Modelo.NuevaPassword" class="text-danger"></span>

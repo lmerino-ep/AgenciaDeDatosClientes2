@@ -231,6 +231,48 @@ namespace Datos
                 return (await conexion.QueryAsync<Modelos.Entidades.UsuarioTipo>(consulta)).ToList();
             }
         }
+
+        /// <summary>
+        /// Obtiene usuarios con tipo 4 o 5 (para herencia de datos al eliminar)
+        /// </summary>
+        public async Task<List<UsuarioListado>> ObtenerUsuariosParaHerenciaAsync(int? excluirUsuarioId = null)
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT
+                        U.Id,
+                        U.Email,
+                        U.Nombre,
+                        U.Apellidos,
+                        U.Empresa,
+                        U.Activo,
+                        U.FK_UsuarioTipo,
+                        UT.Nombre as TipoUsuarioNombre
+                    FROM Usuario U
+                    INNER JOIN UsuarioTipo UT ON U.FK_UsuarioTipo = UT.Id
+                    WHERE U.FK_UsuarioTipo IN (4, 5)
+                ";
+
+                var parametros = new DynamicParameters();
+                
+                if (excluirUsuarioId.HasValue)
+                {
+                    consulta += " AND U.Id != @ExcluirUsuarioId";
+                    parametros.Add("ExcluirUsuarioId", excluirUsuarioId.Value);
+                }
+
+                consulta += @"
+                    ORDER BY U.Nombre, U.Apellidos, U.Email;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                return (await conexion.QueryAsync<UsuarioListado>(consulta, parametros)).ToList();
+            }
+        }
     }
 }
 

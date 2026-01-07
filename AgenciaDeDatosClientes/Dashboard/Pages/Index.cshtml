@@ -14,28 +14,12 @@
         <script src="~/js/main/dashboard.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
     </environment>
 
-    <script nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
-        // Datos para los gráficos
-        const datosGraficos = {
-            actividadMensual: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ActividadMensualUltimos6Meses)),
-            accionesPorModulo: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccionesPorModuloHoy)),
-            actividadDiaria: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ActividadDiariaUltimos7Dias))
-        };
-
-        // Inicializar gráficos cuando el DOM esté listo
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', inicializarGraficos);
-        } else {
-            inicializarGraficos();
-        }
-
-        function inicializarGraficos() {
-            if (typeof Chart !== 'undefined') {
-                inicializarGraficoActividadMensual();
-                inicializarGraficoActividadDiaria();
-                inicializarGraficoAccionesPorModulo();
-            }
-        }
+    <script type="application/json" id="datos-graficos" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+            actividadMensual = Model.ActividadMensualUltimos6Meses,
+            accionesPorModulo = Model.AccionesPorModuloHoy,
+            actividadDiaria = Model.ActividadDiariaUltimos7Dias
+        }))
     </script>
 }
 

@@ -18,37 +18,19 @@ namespace Datos
         /// <summary>
         /// Registra una acción de auditoría
         /// </summary>
-        public async Task<long> RegistrarAccionAsync(Auditoria auditoria)
+        public async Task<long> RegistrarAccionAsync(AuditoriaDTO auditoria)
         {
             return await EjecutarConTransaccionAsync(async (conexion, transaccion) =>
             {
                 const string consulta = @"
-                    INSERT INTO AuditoriaAccion (
+                    INSERT INTO Auditoria (
                         FK_Usuario,
-                        Accion,
-                        Modulo,
-                        Descripcion,
-                        EntidadAfectada,
-                        IdEntidadAfectada,
-                        CambiosRealizados,
-                        DireccionIP,
-                        UserAgent,
-                        DuracionMs,
-                        Resultado,
-                        MensajeError
+                        FK_AuditoriaAccion,
+                        Descripcion
                     ) VALUES (
                         @FK_Usuario,
-                        @Accion,
-                        @Modulo,
-                        @Descripcion,
-                        @EntidadAfectada,
-                        @IdEntidadAfectada,
-                        @CambiosRealizados,
-                        @DireccionIP,
-                        @UserAgent,
-                        @DuracionMs,
-                        @Resultado,
-                        @MensajeError
+                        @FK_AuditoriaAccion,
+                        @Descripcion
                     );
                     SELECT LAST_INSERT_ID();
                 ";
@@ -64,7 +46,6 @@ namespace Datos
             int? usuarioId = null,
             string accion = null,
             string modulo = null,
-            string resultado = null,
             DateTime? fechaInicio = null,
             DateTime? fechaFin = null,
             int limit = 100,
@@ -76,25 +57,24 @@ namespace Datos
                     SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
                     SELECT
-                        AA.Id,
-                        AA.FechaHora,
+                        A.Id,
+                        A.LastUpdate,
                         U.Email as UsuarioEmail,
                         U.Nombre as UsuarioNombre,
-                        AA.Accion,
-                        AA.Modulo,
-                        AA.Descripcion,
-                        AA.Resultado,
-                        AA.DireccionIP
-                    FROM AuditoriaAccion AA
-                    INNER JOIN Usuario U ON AA.FK_Usuario = U.Id
+                        AA.Nombre as AccionNombre,
+                        AC.Nombre as CategoriaNombre,
+                        A.Descripcion
+                    FROM Auditoria A
+                    INNER JOIN Usuario U ON A.FK_Usuario = U.Id
+                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
+                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
                     WHERE
-                        (AA.FK_Usuario = @UsuarioId OR @UsuarioId IS NULL)
-                        AND (AA.Accion = @Accion OR @Accion IS NULL)
-                        AND (AA.Modulo = @Modulo OR @Modulo IS NULL)
-                        AND (AA.Resultado = @Resultado OR @Resultado IS NULL)
-                        AND (AA.FechaHora >= @FechaInicio OR @FechaInicio IS NULL)
-                        AND (AA.FechaHora <= @FechaFin OR @FechaFin IS NULL)
-                    ORDER BY AA.FechaHora DESC
+                        (A.FK_Usuario = @UsuarioId OR @UsuarioId IS NULL)
+                        AND (AA.Nombre = @Accion OR @Accion IS NULL)
+                        AND (AC.Nombre = @Modulo OR @Modulo IS NULL)
+                        AND (A.LastUpdate >= @FechaInicio OR @FechaInicio IS NULL)
+                        AND (A.LastUpdate <= @FechaFin OR @FechaFin IS NULL)
+                    ORDER BY A.LastUpdate DESC
                     LIMIT @Limit OFFSET @Offset;
 
                     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
@@ -105,7 +85,6 @@ namespace Datos
                     UsuarioId = usuarioId,
                     Accion = accion,
                     Modulo = modulo,
-                    Resultado = resultado,
                     FechaInicio = fechaInicio,
                     FechaFin = fechaFin,
                     Limit = limit,
@@ -117,19 +96,78 @@ namespace Datos
         /// <summary>
         /// Obtiene el detalle completo de una acción de auditoría
         /// </summary>
-        public async Task<AuditoriaAccion> ObtenerAuditoriaPorIdAsync(long id)
+        public async Task<AuditoriaDetalle> ObtenerAuditoriaPorIdAsync(long id)
         {
             using (MySqlConnection conexion = ObtenerConexionLectura())
             {
                 const string consulta = @"
                     SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
-                    SELECT * FROM AuditoriaAccion WHERE Id = @Id;
+                    SELECT
+                        A.Id,
+                        A.FK_Usuario,
+                        AA.Nombre as AccionNombre,
+                        AC.Nombre as CategoriaNombre,
+                        A.Descripcion,
+                        A.LastUpdate
+                    FROM Auditoria A
+                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
+                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
+                    WHERE A.Id = @Id;
 
                     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
                 ";
 
-                return await conexion.QuerySingleOrDefaultAsync<AuditoriaAccion>(consulta, new { Id = id });
+                return await conexion.QuerySingleOrDefaultAsync<AuditoriaDetalle>(consulta, new { Id = id });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el ID de una acción de auditoría por su nombre
+        /// </summary>
+        public async Task<int?> ObtenerIdAccionPorNombreAsync(string nombreAccion)
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT Id
+                    FROM AuditoriaAccion
+                    WHERE Nombre = @Nombre
+                    LIMIT 1;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                return await conexion.QuerySingleOrDefaultAsync<int?>(consulta, new { Nombre = nombreAccion });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene el nombre de la acción y categoría por ID de acción
+        /// </summary>
+        public async Task<(string AccionNombre, string CategoriaNombre)> ObtenerInfoAccionPorIdAsync(int idAccion)
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT 
+                        AA.Nombre as AccionNombre,
+                        AC.Nombre as CategoriaNombre
+                    FROM AuditoriaAccion AA
+                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
+                    WHERE AA.Id = @Id;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                return await conexion.QuerySingleOrDefaultAsync<(string AccionNombre, string CategoriaNombre)>(
+                    consulta, 
+                    new { Id = idAccion }
+                );
             }
         }
 
@@ -140,7 +178,6 @@ namespace Datos
             int? usuarioId = null,
             string accion = null,
             string modulo = null,
-            string resultado = null,
             DateTime? fechaInicio = null,
             DateTime? fechaFin = null)
         {
@@ -150,14 +187,15 @@ namespace Datos
                     SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
                     SELECT COUNT(*)
-                    FROM AuditoriaAccion AA
+                    FROM Auditoria A
+                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
+                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
                     WHERE
-                        (AA.FK_Usuario = @UsuarioId OR @UsuarioId IS NULL)
-                        AND (AA.Accion = @Accion OR @Accion IS NULL)
-                        AND (AA.Modulo = @Modulo OR @Modulo IS NULL)
-                        AND (AA.Resultado = @Resultado OR @Resultado IS NULL)
-                        AND (AA.FechaHora >= @FechaInicio OR @FechaInicio IS NULL)
-                        AND (AA.FechaHora <= @FechaFin OR @FechaFin IS NULL);
+                        (A.FK_Usuario = @UsuarioId OR @UsuarioId IS NULL)
+                        AND (AA.Nombre = @Accion OR @Accion IS NULL)
+                        AND (AC.Nombre = @Modulo OR @Modulo IS NULL)
+                        AND (A.LastUpdate >= @FechaInicio OR @FechaInicio IS NULL)
+                        AND (A.LastUpdate <= @FechaFin OR @FechaFin IS NULL);
 
                     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
                 ";
@@ -167,7 +205,6 @@ namespace Datos
                     UsuarioId = usuarioId,
                     Accion = accion,
                     Modulo = modulo,
-                    Resultado = resultado,
                     FechaInicio = fechaInicio,
                     FechaFin = fechaFin
                 });
@@ -185,11 +222,13 @@ namespace Datos
                     SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
                     SELECT
-                        Modulo,
+                        AC.Nombre as Modulo,
                         COUNT(*) as Total
-                    FROM AuditoriaAccion
-                    WHERE DATE(FechaHora) = CURDATE()
-                    GROUP BY Modulo
+                    FROM Auditoria A
+                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
+                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
+                    WHERE DATE(A.LastUpdate) = CURDATE()
+                    GROUP BY AC.Nombre
                     ORDER BY Total DESC;
 
                     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
@@ -211,11 +250,11 @@ namespace Datos
                     SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
                     SELECT
-                        DATE(FechaHora) as Fecha,
+                        DATE(A.LastUpdate) as Fecha,
                         COUNT(*) as Total
-                    FROM AuditoriaAccion
-                    WHERE FechaHora >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-                    GROUP BY DATE(FechaHora)
+                    FROM Auditoria A
+                    WHERE A.LastUpdate >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                    GROUP BY DATE(A.LastUpdate)
                     ORDER BY Fecha ASC;
 
                     SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
@@ -226,6 +265,50 @@ namespace Datos
                     r => r.Fecha.ToString("yyyy-MM-dd"),
                     r => r.Total
                 );
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las acciones de auditoría disponibles
+        /// </summary>
+        public async Task<List<string>> ObtenerAccionesDisponiblesAsync()
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT DISTINCT AA.Nombre
+                    FROM AuditoriaAccion AA
+                    ORDER BY AA.Nombre;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                var resultado = await conexion.QueryAsync<string>(consulta);
+                return resultado.ToList();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene todas las categorías de auditoría disponibles
+        /// </summary>
+        public async Task<List<string>> ObtenerCategoriasDisponiblesAsync()
+        {
+            using (MySqlConnection conexion = ObtenerConexionLectura())
+            {
+                const string consulta = @"
+                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+                    SELECT DISTINCT AC.Nombre
+                    FROM AuditoriaCategoria AC
+                    ORDER BY AC.Nombre;
+
+                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+                ";
+
+                var resultado = await conexion.QueryAsync<string>(consulta);
+                return resultado.ToList();
             }
         }
     }

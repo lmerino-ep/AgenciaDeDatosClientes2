@@ -3,7 +3,7 @@ namespace Modelos
     /// <summary>
     /// Entidad que representa un registro de auditoría de acciones administrativas en el dashboard
     /// </summary>
-    public class AuditoriaAccion
+    public class Auditoria
     {
         /// <summary>
         /// Identificador único del registro de auditoría
@@ -11,75 +11,30 @@ namespace Modelos
         public long Id { get; set; }
 
         /// <summary>
+        /// Descripción legible de la acción (lo modificado)
+        /// </summary>
+        public string Descripcion { get; set; }
+
+        /// <summary>
         /// ID del usuario que realizó la acción
         /// </summary>
         public int FK_Usuario { get; set; }
 
         /// <summary>
-        /// Tipo de acción realizada (ej: Usuario.Crear, Tokens.Generar)
+        /// ID del tipo de acción de auditoría
         /// </summary>
-        public string Accion { get; set; }
+        public int FK_AuditoriaAccion { get; set; }
 
         /// <summary>
-        /// Módulo del sistema (Usuarios, Roles, Tokens, Metricas, Documentacion)
+        /// Fecha y hora de última actualización con precisión de milisegundos
         /// </summary>
-        public string Modulo { get; set; }
-
-        /// <summary>
-        /// Descripción legible de la acción
-        /// </summary>
-        public string Descripcion { get; set; }
-
-        /// <summary>
-        /// Nombre de la entidad afectada (ej: Usuario, Rol, Token)
-        /// </summary>
-        public string EntidadAfectada { get; set; }
-
-        /// <summary>
-        /// ID de la entidad afectada
-        /// </summary>
-        public int? IdEntidadAfectada { get; set; }
-
-        /// <summary>
-        /// JSON con diff antes/después de los cambios
-        /// Formato: { "antes": {...}, "despues": {...} }
-        /// </summary>
-        public string CambiosRealizados { get; set; }
-
-        /// <summary>
-        /// Dirección IP del usuario (IPv4 o IPv6)
-        /// </summary>
-        public string DireccionIP { get; set; }
-
-        /// <summary>
-        /// User Agent del navegador
-        /// </summary>
-        public string UserAgent { get; set; }
-
-        /// <summary>
-        /// Fecha y hora de la acción con precisión de milisegundos
-        /// </summary>
-        public DateTime FechaHora { get; set; }
-
-        /// <summary>
-        /// Duración de la operación en milisegundos
-        /// </summary>
-        public int? DuracionMs { get; set; }
-
-        /// <summary>
-        /// Resultado de la acción: Exito, Error, NoAutorizado
-        /// </summary>
-        public string Resultado { get; set; }
-
-        /// <summary>
-        /// Mensaje de error si el resultado fue Error
-        /// </summary>
-        public string MensajeError { get; set; }
+        public DateTime LastUpdate { get; set; }
     }
 
     /// <summary>
-    /// Tipos de acciones de auditoría
+    /// Tipos de acciones de auditoría (OBSOLETO - Usar AuditoriaAccionEnum)
     /// </summary>
+    [Obsolete("Usar AuditoriaAccionEnum en su lugar")]
     public static class TiposAccionAuditoria
     {
         // Usuarios
@@ -112,8 +67,9 @@ namespace Modelos
     }
 
     /// <summary>
-    /// Módulos del dashboard
+    /// Módulos del dashboard (OBSOLETO - Usar AuditoriaCategoriaEnum)
     /// </summary>
+    [Obsolete("Usar AuditoriaCategoriaEnum en su lugar")]
     public static class ModulosDashboard
     {
         public const string Usuarios = "Usuarios";
@@ -133,3 +89,4 @@ namespace Modelos
         public const string NoAutorizado = "NoAutorizado";
     }
 }
+

@@ -30,6 +30,8 @@
         window.AntiForgeryToken = '@Antiforgery.GetAndStoreTokens(Context).RequestToken';
     </script>
 
+    <script src="~/js/include/carga-dinamica.js" nonce="@Html.Raw(Context.Items["CSP_NONCE"]?.ToString())"></script>
+
     <script type="text/javascript" nonce="@Html.Raw(Context.Items["CSP_NONCE"]?.ToString())">
         function fOpcionesMiCuenta() {
             try {

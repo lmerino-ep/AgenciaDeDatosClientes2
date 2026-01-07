@@ -11,6 +11,7 @@
 
 @section estilos {
     <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    <link href="~/css/plugins/dropdownfiltrable.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
 }
 
 <div class="page-header">
@@ -97,14 +98,75 @@
     <section class="seccion-eliminar">
         <div class="card">
             <h2 class="titulo-seccion">Zona de Peligro</h2>
-            <div class="alerta alerta-advertencia">
-                <p><strong>ADVERTENCIA:</strong> Esta acción marcará el usuario como inactivo (soft delete). El usuario no podrá iniciar sesión, pero sus datos se conservarán en el sistema.</p>
-            </div>
-            <form method="post" asp-page-handler="Eliminar" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción quedará registrada en la auditoría.');">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="boton boton-peligro">Eliminar Usuario</button>
-            </form>
+            
+            @if (User.IsInRole("Dashboard - Gestión de Usuarios"))
+            {
+                <form method="post" asp-page-handler="Desactivar" onsubmit="return confirm('¿Estás seguro de que deseas desactivar este usuario? Esta acción quedará registrada en la auditoría.');">
+                    @Html.AntiForgeryToken()
+                    <div class="alerta alerta-advertencia">
+                        <p><strong>ADVERTENCIA:</strong> Esta acción marcará el usuario como inactivo (soft delete). El usuario no podrá iniciar sesión, pero sus datos se conservarán en el sistema.</p>
+                    </div>
+                    <button type="submit" class="boton boton-peligro">Desactivar Usuario</button>
+                </form>
+            }
+
+            @if (User.IsInRole("Dashboard - Acceso total"))
+            {
+                <form method="post" asp-page-handler="EliminarDefinitivamente" id="formEliminarDefinitivamente" data-js-form-eliminar-definitivamente>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="idUsuarioHereditario" name="idUsuarioHereditario" />
+                    <div class="alerta alerta-error">
+                        <p><strong>ADVERTENCIA CRÍTICA:</strong> Esta acción eliminará permanentemente el usuario y todos sus datos asociados. Esta acción NO es reversible. Toda la información del usuario será transferida al usuario seleccionado.</p>
+                    </div>
+                    @if (Model.DropdownUsuariosHerencia != null && Model.DropdownUsuariosHerencia.Elementos != null && Model.DropdownUsuariosHerencia.Elementos.Count > 0)
+                    {
+                        <div class="form-group form-group-eliminar-usuario">
+                            <label for="dropdownUsuarioHerencia">Usuario que heredará la información *</label>
+                            <div class="dropdown-container">
+                                @await Html.PartialAsync("Shared/Components/Herramientas/DropdownFiltrable", Model.DropdownUsuariosHerencia)
+                                <button type="submit" class="boton boton-peligro boton-eliminar-usuario">Eliminar Usuario</button>
+                            </div>
+                            <small class="form-text text-muted">Selecciona el usuario que recibirá toda la información asociada al usuario que se va a eliminar.</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alerta alerta-advertencia">
+                            <p>No hay usuarios disponibles con tipo 4 o 5 para heredar la información. No se puede eliminar este usuario definitivamente.</p>
+                        </div>
+                    }
+                </form>
+            }
         </div>
     </section>
+}
+
+<!-- Modal de confirmación de eliminación definitiva -->
+<div id="modalConfirmarEliminacion" class="modal-confirmacion" style="display: none;">
+    <div class="modal-confirmacion-contenido">
+        <div class="modal-confirmacion-header">
+            <h3>Confirmar Eliminación Definitiva</h3>
+        </div>
+        <div class="modal-confirmacion-body">
+            <div class="alerta alerta-error">
+                <p><strong>ADVERTENCIA CRÍTICA:</strong></p>
+                <p>¿ESTÁ COMPLETAMENTE SEGURO de que desea eliminar este usuario de forma permanente?</p>
+                <p>Esta acción <strong>NO se puede deshacer</strong>. Todos los datos del usuario serán transferidos al usuario seleccionado y el usuario será eliminado definitivamente.</p>
+            </div>
+        </div>
+        <div class="modal-confirmacion-footer">
+            <button type="button" class="boton boton-secundario" id="btnCancelarEliminacion">Cancelar</button>
+            <button type="button" class="boton boton-peligro" id="btnConfirmarEliminacion">Eliminar Usuario</button>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/main/usuarios-editar.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/main/usuarios-editar.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
 }
 

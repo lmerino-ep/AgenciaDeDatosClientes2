@@ -55,46 +55,6 @@ namespace Pages.Auditoria
                     return Page();
                 }
 
-                // Parsear cambios realizados si existen
-                if (!string.IsNullOrEmpty(Auditoria.CambiosRealizados))
-                {
-                    try
-                    {
-                        var cambiosJson = JsonSerializer.Deserialize<JsonElement>(Auditoria.CambiosRealizados);
-                        
-                        if (cambiosJson.TryGetProperty("antes", out var antes) && 
-                            cambiosJson.TryGetProperty("despues", out var despues))
-                        {
-                            // Obtener todas las propiedades de ambos objetos
-                            var propiedadesAntes = antes.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.ToString());
-                            var propiedadesDespues = despues.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.ToString());
-
-                            // Obtener todas las claves únicas
-                            var todasLasClaves = propiedadesAntes.Keys.Union(propiedadesDespues.Keys).Distinct();
-
-                            foreach (var clave in todasLasClaves)
-                            {
-                                var valorAntes = propiedadesAntes.ContainsKey(clave) ? propiedadesAntes[clave] : "(vacío)";
-                                var valorDespues = propiedadesDespues.ContainsKey(clave) ? propiedadesDespues[clave] : "(vacío)";
-
-                                if (valorAntes != valorDespues)
-                                {
-                                    Cambios.Add(new CambioRealizado
-                                    {
-                                        Campo = clave,
-                                        Antes = valorAntes,
-                                        Despues = valorDespues
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    catch (JsonException ex)
-                    {
-                        _logger.LogWarning(ex, "Error al parsear cambios realizados para auditoría {Id}", Id);
-                        // Si no se puede parsear, simplemente no mostramos los cambios
-                    }
-                }
 
                 return Page();
             }
@@ -106,29 +66,6 @@ namespace Pages.Auditoria
             }
         }
 
-        /// <summary>
-        /// Parsea el User Agent para mostrar información legible
-        /// </summary>
-        public string ParsearUserAgent(string userAgent)
-        {
-            if (string.IsNullOrEmpty(userAgent))
-                return "-";
-
-            // Parseo básico del User Agent
-            // Esto es una versión simplificada, se puede mejorar con una librería como UAParser
-            if (userAgent.Contains("Chrome") && !userAgent.Contains("Edg"))
-                return "Chrome";
-            if (userAgent.Contains("Firefox"))
-                return "Firefox";
-            if (userAgent.Contains("Safari") && !userAgent.Contains("Chrome"))
-                return "Safari";
-            if (userAgent.Contains("Edg"))
-                return "Edge";
-            if (userAgent.Contains("Opera") || userAgent.Contains("OPR"))
-                return "Opera";
-
-            return userAgent.Length > 50 ? userAgent.Substring(0, 50) + "..." : userAgent;
-        }
     }
 }
 

@@ -7,18 +7,20 @@ namespace Modelos.DTO
     {
         public long Id { get; set; }
         public int FK_Usuario { get; set; }
-        public string Accion { get; set; }
-        public string Modulo { get; set; }
+        public string AccionNombre { get; set; }
+        public string CategoriaNombre { get; set; }
         public string Descripcion { get; set; }
-        public string EntidadAfectada { get; set; }
-        public int? IdEntidadAfectada { get; set; }
-        public string CambiosRealizados { get; set; }
-        public string DireccionIP { get; set; }
-        public string UserAgent { get; set; }
-        public DateTime FechaHora { get; set; }
-        public int? DuracionMs { get; set; }
-        public string Resultado { get; set; }
-        public string MensajeError { get; set; }
+        public DateTime LastUpdate { get; set; }
+        
+        // Propiedades de compatibilidad (obsoletas)
+        [Obsolete("Usar AccionNombre en su lugar")]
+        public string Accion => AccionNombre;
+        
+        [Obsolete("Usar CategoriaNombre en su lugar")]
+        public string Modulo => CategoriaNombre;
+        
+        [Obsolete("Usar LastUpdate en su lugar")]
+        public DateTime FechaHora => LastUpdate;
     }
 }
 
