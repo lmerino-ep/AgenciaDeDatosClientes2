@@ -88,30 +88,10 @@ function limpiarFormulario() {
 function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
     if (!resultadoDatos || resultadoDatos.length === 0) return;
 
-    // KPIs que no deben generar gráfico, solo tabla
-    const kpisSinGrafico = [
-        'tokens-activos',
-        'total-datos',
-        'fuentes-totales'
-    ];
-
-    if (kpiId && kpisSinGrafico.includes(kpiId)) {
-        // Ocultar contenedor del gráfico si existe
-        const contenedorGrafico = document.querySelector('.contenedor-grafico');
-        if (contenedorGrafico) {
-            contenedorGrafico.classList.add('oculto');
-        }
-        return;
-    }
-
-    // Detectar tipo de gráfico según las columnas
-    const columnas = Object.keys(resultadoDatos[0]);
-    let tipoGrafico = 'bar'; // Por defecto
-
     // Función para determinar si una columna es numérica
     function esColumnaNumerica(nombreColumna, datos) {
         const nombreLower = nombreColumna.toLowerCase();
-        // Columnas que siempre son numéricas (incluyendo TotalUsuarios)
+        // Columnas que siempre son numéricas
         if (nombreLower.includes('total') || 
             nombreLower.includes('cantidad') || 
             nombreLower.includes('count') ||
@@ -129,6 +109,72 @@ function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
         return valoresNumericos.length / valores.length >= 0.8;
     }
 
+    // Detectar si hay columnas numéricas en los datos
+    const columnas = Object.keys(resultadoDatos[0]);
+    const tieneColumnasNumericas = columnas.some(c => esColumnaNumerica(c, resultadoDatos));
+
+    // Si no hay columnas numéricas, ocultar gráfico y mostrar tabla por defecto
+    if (!tieneColumnasNumericas) {
+        const contenedorGrafico = document.querySelector('.contenedor-grafico');
+        if (contenedorGrafico) {
+            contenedorGrafico.style.display = 'none';
+        }
+        
+        // Mostrar tabla por defecto
+        const contenidoTabla = document.getElementById('contenidoTabla');
+        const textoToggleTabla = document.getElementById('textoToggleTabla');
+        const btnToggleTabla = document.getElementById('btnToggleTabla');
+        
+        if (contenidoTabla) {
+            contenidoTabla.classList.remove('tabla-contenido-oculto');
+        }
+        if (textoToggleTabla) {
+            textoToggleTabla.textContent = 'Ocultar tabla';
+        }
+        if (btnToggleTabla) {
+            btnToggleTabla.style.display = 'none'; // Ocultar el botón ya que la tabla está visible por defecto
+        }
+        
+        return;
+    }
+
+    // KPIs que no deben generar gráfico, solo tabla (mantener para compatibilidad)
+    const kpisSinGrafico = [
+        'tokens-activos',
+        'total-datos',
+        'fuentes-totales'
+    ];
+
+    if (kpiId && kpisSinGrafico.includes(kpiId)) {
+        // Ocultar contenedor del gráfico si existe
+        const contenedorGrafico = document.querySelector('.contenedor-grafico');
+        if (contenedorGrafico) {
+            contenedorGrafico.style.display = 'none';
+        }
+        
+        // Mostrar tabla por defecto
+        const contenidoTabla = document.getElementById('contenidoTabla');
+        const textoToggleTabla = document.getElementById('textoToggleTabla');
+        const btnToggleTabla = document.getElementById('btnToggleTabla');
+        
+        if (contenidoTabla) {
+            contenidoTabla.classList.remove('tabla-contenido-oculto');
+        }
+        if (textoToggleTabla) {
+            textoToggleTabla.textContent = 'Ocultar tabla';
+        }
+        if (btnToggleTabla) {
+            btnToggleTabla.style.display = 'none';
+        }
+        
+        return;
+    }
+
+    // Detectar tipo de gráfico según las columnas
+    // (columnas ya está declarada arriba, reutilizamos la misma variable)
+    let tipoGrafico = 'bar'; // Por defecto
+
+
     // Función para determinar si una columna es descriptiva/metadatos (debe ignorarse para el gráfico)
     function esColumnaDescriptiva(nombreColumna) {
         const nombreLower = nombreColumna.toLowerCase();
@@ -136,21 +182,33 @@ function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
         if (nombreLower.includes('total') || nombreLower.includes('cantidad')) {
             return false;
         }
+        // NO excluir "Actividad" - es una columna de categoría válida
+        if (nombreLower === 'actividad') {
+            return false;
+        }
         // Patrones de columnas descriptivas que no deben usarse en gráficos
         const patronesDescriptivos = [
             'nombre', 'email', 'usuario', 'descripcion', 'descripción',
-            'ultima', 'última', 'fecha', 'fechaalta', 'fechacreacion',
-            'id', 'codigo', 'código', 'tipo', 'categoria', 'categoría',
-            'empresa', 'apellidos', 'foto', 'gmailid', 'token',
+            'ultima', 'última', 'fechaalta', 'fechacreacion',
+            'id', 'codigo', 'código', 'empresa', 'apellidos', 'foto', 'gmailid', 'token',
             'password', 'restablecer', 'solicitud', 'nacimiento'
         ];
         return patronesDescriptivos.some(patron => nombreLower.includes(patron));
     }
 
     // Identificar columnas clave de forma más precisa
+    // Buscar columna de fecha (puede ser "Fecha", "Mes", etc.)
     const columnaFecha = columnas.find(c => {
         const cLower = c.toLowerCase();
-        return (cLower === 'fecha' || cLower.includes('fecha')) && !esColumnaDescriptiva(c);
+        // Buscar columnas que sean exactamente "fecha" o contengan "fecha" pero no sean descriptivas
+        if (cLower === 'fecha' || (cLower.includes('fecha') && !esColumnaDescriptiva(c))) {
+            return true;
+        }
+        // También considerar "mes" o "año" si no hay una columna "fecha" explícita
+        if (cLower === 'mes' || cLower === 'año' || cLower === 'ano') {
+            return true;
+        }
+        return false;
     });
     
     // Filtrar columnas numéricas (excluyendo descriptivas)
@@ -168,7 +226,19 @@ function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
     }) || (columnasNumericas.length > 0 ? columnasNumericas[0] : null);
     
     // Columna de categoría: primera columna que no sea fecha, valor numérico, ni descriptiva
+    // Priorizar columnas que parecen categorías (Actividad, Tipo, Categoría, etc.)
     const columnaCategoria = columnas.find(c => {
+        if (c === columnaFecha || c === columnaValor) return false;
+        if (esColumnaDescriptiva(c)) return false;
+        if (esColumnaNumerica(c, resultadoDatos)) return false;
+        // Priorizar columnas que parecen categorías
+        const cLower = c.toLowerCase();
+        if (cLower === 'actividad' || cLower === 'tipo' || cLower === 'categoria' || cLower === 'categoría') {
+            return true;
+        }
+        return true;
+    }) || columnas.find(c => {
+        // Si no encontramos una columna obvia de categoría, buscar cualquier columna no numérica ni fecha
         if (c === columnaFecha || c === columnaValor) return false;
         if (esColumnaDescriptiva(c)) return false;
         if (esColumnaNumerica(c, resultadoDatos)) return false;
@@ -449,6 +519,12 @@ function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
 document.addEventListener('DOMContentLoaded', function() {
     inicializarKpisData();
     
+    // Inicializar ModalCargando
+    let oCargando = null;
+    if (typeof ModalCargando !== 'undefined') {
+        oCargando = new ModalCargando();
+    }
+    
     const kpiSelect = document.getElementById('kpiSeleccionado');
     if (kpiSelect) {
         kpiSelect.addEventListener('change', actualizarFormularioParametros);
@@ -457,9 +533,83 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Botón Ejecutar KPI
+    const formKpi = document.getElementById('formKpi');
+    if (formKpi && oCargando) {
+        formKpi.addEventListener('submit', function() {
+            const kpiSeleccionado = document.getElementById('kpiSeleccionado');
+            if (kpiSeleccionado && kpiSeleccionado.value) {
+                oCargando.Mostrar();
+            }
+        });
+    }
+
+    // Botón Limpiar
     const btnLimpiar = document.getElementById('btnLimpiar');
     if (btnLimpiar) {
-        btnLimpiar.addEventListener('click', limpiarFormulario);
+        btnLimpiar.addEventListener('click', function() {
+            if (oCargando) {
+                oCargando.Mostrar();
+            }
+            limpiarFormulario();
+            // Redirigir a la página sin parámetros
+            window.location.href = window.location.pathname;
+        });
+    }
+
+    // Botones de exportación
+    const btnExportarJson = document.getElementById('btnExportarJson');
+    if (btnExportarJson && oCargando) {
+        btnExportarJson.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = btnExportarJson.getAttribute('href');
+            if (url) {
+                // Mostrar modal de carga
+                oCargando.Mostrar();
+                
+                // Crear un elemento <a> temporal para iniciar la descarga
+                const link = document.createElement('a');
+                link.href = url;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Ocultar el modal después de un tiempo razonable
+                // Nota: No podemos detectar cuando termina la descarga del navegador,
+                // así que ocultamos después de un tiempo estimado
+                setTimeout(function() {
+                    oCargando.Ocultar();
+                }, 2000);
+            }
+        });
+    }
+
+    const btnExportarCsv = document.getElementById('btnExportarCsv');
+    if (btnExportarCsv && oCargando) {
+        btnExportarCsv.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = btnExportarCsv.getAttribute('href');
+            if (url) {
+                // Mostrar modal de carga
+                oCargando.Mostrar();
+                
+                // Crear un elemento <a> temporal para iniciar la descarga
+                const link = document.createElement('a');
+                link.href = url;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Ocultar el modal después de un tiempo razonable
+                // Nota: No podemos detectar cuando termina la descarga del navegador,
+                // así que ocultamos después de un tiempo estimado
+                setTimeout(function() {
+                    oCargando.Ocultar();
+                }, 2000);
+            }
+        });
     }
 
     // Toggle de tabla

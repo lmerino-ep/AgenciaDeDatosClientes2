@@ -9,14 +9,26 @@
 @section estilos {
     <environment include="Development">
         <link href="~/css/main/metricas.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/plugins/modalcargando.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
     </environment>
     <environment include="Staging,Production">
         <link href="~/css/main/metricas.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/plugins/modalcargando.min.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
     </environment>
 }
 
+<div class="page-header">
+    <h1 class="page-title">Consulta de Métricas y KPIs</h1>
+    <div class="breadcrumb">
+        <a href="/">Dashboard</a>
+        <span class="separador">/</span>
+        <span>Métricas y KPIs</span>
+    </div>
+</div>
+
 <div class="container-metricas">
-    <h1>Consulta de Métricas y KPIs</h1>
 
     @if (!string.IsNullOrEmpty(Model.MensajeError))
     {
@@ -69,7 +81,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Ejecutar KPI</button>
+                <button type="submit" class="btn btn-primary" id="btnEjecutar">Ejecutar KPI</button>
                 <button type="button" class="btn btn-secondary" id="btnLimpiar">Limpiar</button>
             </div>
         </form>
@@ -113,11 +125,11 @@
             <!-- Botones de exportación -->
             <div class="acciones-exportacion">
                 <a href="/Metricas/KPIs?handler=ExportarJson&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)"
-                   class="btn btn-export btn-json">
+                   class="btn btn-export btn-json" id="btnExportarJson">
                     <i class="icon-download"></i> Exportar JSON
                 </a>
                 <a href="/Metricas/KPIs?handler=ExportarCsv&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)"
-                   class="btn btn-export btn-csv">
+                   class="btn btn-export btn-csv" id="btnExportarCsv">
                     <i class="icon-download"></i> Exportar CSV
                 </a>
             </div>
@@ -221,9 +233,11 @@
     }
 
     <environment include="Development">
+        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
         <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
     </environment>
     <environment include="Staging,Production">
+        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
         <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
     </environment>
 }

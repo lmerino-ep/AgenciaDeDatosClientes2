@@ -65,7 +65,7 @@ namespace Datos
                     Categoria = "Actividad",
                     Parametros = new List<ParametroKpi>
                     {
-                        new ParametroKpi { Nombre = "usuario_id", Tipo = "numero", Requerido = true, Descripcion = "ID del usuario" },
+                        new ParametroKpi { Nombre = "usuario_email", Tipo = "texto", Requerido = true, Descripcion = "Email del usuario" },
                         new ParametroKpi { Nombre = "fecha_inicio", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de inicio" },
                         new ParametroKpi { Nombre = "fecha_fin", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de fin" }
                     }
@@ -117,7 +117,7 @@ namespace Datos
                     Categoria = "Descargas",
                     Parametros = new List<ParametroKpi>
                     {
-                        new ParametroKpi { Nombre = "limite", Tipo = "numero", Requerido = false, ValorPorDefecto = "50", Descripcion = "Número máximo de resultados" }
+                        new ParametroKpi { Nombre = "limite", Tipo = "numero", Requerido = false, ValorPorDefecto = "10", Descripcion = "Número máximo de resultados" }
                     }
                 },
                 new Kpi
@@ -128,7 +128,7 @@ namespace Datos
                     Categoria = "Descargas",
                     Parametros = new List<ParametroKpi>
                     {
-                        new ParametroKpi { Nombre = "limite", Tipo = "numero", Requerido = false, ValorPorDefecto = "50", Descripcion = "Número máximo de resultados" }
+                        new ParametroKpi { Nombre = "limite", Tipo = "numero", Requerido = false, ValorPorDefecto = "10", Descripcion = "Número máximo de resultados" }
                     }
                 },
                 new Kpi
@@ -139,7 +139,7 @@ namespace Datos
                     Categoria = "Descargas",
                     Parametros = new List<ParametroKpi>
                     {
-                        new ParametroKpi { Nombre = "limite", Tipo = "numero", Requerido = false, ValorPorDefecto = "50", Descripcion = "Número máximo de resultados" }
+                        new ParametroKpi { Nombre = "limite", Tipo = "numero", Requerido = false, ValorPorDefecto = "10", Descripcion = "Número máximo de resultados" }
                     }
                 },
 
@@ -369,31 +369,51 @@ namespace Datos
 
         private async Task<List<Dictionary<string, object>>> ActividadUsuarioMensual(Dictionary<string, object> parametros)
         {
-            if (!parametros.ContainsKey("usuario_id"))
+            if (!parametros.ContainsKey("usuario_email"))
             {
-                throw new ArgumentException("El parámetro 'usuario_id' es requerido");
+                throw new ArgumentException("El parámetro 'usuario_email' es requerido");
             }
 
-            int usuarioId = Convert.ToInt32(parametros["usuario_id"]);
+            string usuarioEmail = parametros["usuario_email"]?.ToString() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(usuarioEmail))
+            {
+                throw new ArgumentException("El email del usuario no puede estar vacío");
+            }
+
             DateTime? fechaInicio = parametros.ContainsKey("fecha_inicio") ? Convert.ToDateTime(parametros["fecha_inicio"]) : null;
             DateTime? fechaFin = parametros.ContainsKey("fecha_fin") ? Convert.ToDateTime(parametros["fecha_fin"]) : null;
 
-            string sql = @"
-                SELECT
-                    DATE_FORMAT(UA.LastUpdate, '%Y-%m') as Fecha,
-                    A.Nombre as Actividad,
-                    COUNT(*) as Total
-                FROM UsuarioActividad UA
-                INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
-                WHERE UA.FK_Usuario = @UsuarioId
-                  AND (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
-                  AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
-                GROUP BY DATE_FORMAT(UA.LastUpdate, '%Y-%m'), A.Nombre
-                ORDER BY Fecha DESC, Total DESC";
-
             using (IDbConnection db = ObtenerConexionLectura())
             {
-                var resultado = await db.QueryAsync(sql, new { UsuarioId = usuarioId, FechaInicio = fechaInicio, FechaFin = fechaFin });
+                // Primero buscar el ID del usuario por email
+                string sqlBuscarUsuario = @"
+                    SELECT Id
+                    FROM Usuario
+                    WHERE UPPER(Email) = UPPER(@Email)
+                    LIMIT 1";
+
+                int? usuarioId = await db.QueryFirstOrDefaultAsync<int?>(sqlBuscarUsuario, new { Email = usuarioEmail });
+
+                if (!usuarioId.HasValue)
+                {
+                    throw new ArgumentException($"No se encontró ningún usuario con el email '{usuarioEmail}'");
+                }
+
+                // Ejecutar la consulta de actividad con el ID encontrado
+                string sql = @"
+                    SELECT
+                        DATE_FORMAT(UA.LastUpdate, '%Y-%m') as Fecha,
+                        A.Nombre as Actividad,
+                        COUNT(*) as Total
+                    FROM UsuarioActividad UA
+                    INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
+                    WHERE UA.FK_Usuario = @UsuarioId
+                      AND (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
+                      AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
+                    GROUP BY DATE_FORMAT(UA.LastUpdate, '%Y-%m'), A.Nombre
+                    ORDER BY Fecha DESC, Total DESC";
+
+                var resultado = await db.QueryAsync(sql, new { UsuarioId = usuarioId.Value, FechaInicio = fechaInicio, FechaFin = fechaFin });
                 return resultado.Select(r => ((IDictionary<string, object>)r).ToDictionary(k => k.Key, v => v.Value ?? (object)DBNull.Value)).ToList();
             }
         }
@@ -498,7 +518,7 @@ namespace Datos
 
         private async Task<List<Dictionary<string, object>>> DescargasCSV(Dictionary<string, object> parametros)
         {
-            int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 50;
+            int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 10;
 
             string sql = @"
                 SELECT
@@ -509,7 +529,7 @@ namespace Datos
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
                 LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
-                WHERE A.Nombre = 'Descargado CSV'
+                WHERE A.Nombre = 'Descargado CSV de datos de representación'
                 GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalDescargas DESC
                 LIMIT @Limite";
@@ -523,7 +543,7 @@ namespace Datos
 
         private async Task<List<Dictionary<string, object>>> DescargasJSON(Dictionary<string, object> parametros)
         {
-            int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 50;
+            int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 10;
 
             string sql = @"
                 SELECT
@@ -534,7 +554,7 @@ namespace Datos
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
                 LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
-                WHERE A.Nombre = 'Descargado JSON'
+                WHERE A.Nombre = 'Descargado JSON de datos de representación'
                 GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalDescargas DESC
                 LIMIT @Limite";
@@ -548,7 +568,7 @@ namespace Datos
 
         private async Task<List<Dictionary<string, object>>> DescargasImagenes(Dictionary<string, object> parametros)
         {
-            int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 50;
+            int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 10;
 
             string sql = @"
                 SELECT
@@ -559,7 +579,7 @@ namespace Datos
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
                 LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
-                WHERE A.Nombre = 'Descargado imagen'
+                WHERE A.Nombre = 'Descargada imagen de representación'
                 GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalDescargas DESC
                 LIMIT @Limite";
@@ -672,8 +692,7 @@ namespace Datos
                 INNER JOIN Representacion R ON UA.FK_Representacion = R.Id
                 LEFT JOIN RepresentacionDisegno RD ON R.Id = RD.FK_Representacion
                 INNER JOIN Actividad A ON UA.FK_Actividad = A.Id
-                WHERE A.Nombre = 'Visitado'
-                  AND (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
+                WHERE (@FechaInicio IS NULL OR UA.LastUpdate >= @FechaInicio)
                   AND (@FechaFin IS NULL OR UA.LastUpdate <= @FechaFin)
                 GROUP BY R.Id, RD.Titulo
                 ORDER BY TotalVistas DESC
@@ -721,18 +740,23 @@ namespace Datos
         {
             int limite = parametros.ContainsKey("limite") ? Convert.ToInt32(parametros["limite"]) : 100;
 
-            // Nota: Esta consulta asume que existe una tabla de logs de errores
-            // Si no existe, se puede adaptar para usar CloudWatch Logs o crear la tabla
+            // Consulta actualizada para usar la nueva estructura de tablas de auditoría
+            // Los errores se identifican porque la descripción contiene " - Error" o un mensaje de error
             string sql = @"
                 SELECT
-                    FechaHora,
-                    Modulo,
-                    Accion,
-                    MensajeError
-                FROM AuditoriaAccion
-                WHERE Resultado = 'Error'
-                  AND FechaHora >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-                ORDER BY FechaHora DESC
+                    A.LastUpdate as FechaHora,
+                    AC.Nombre as Modulo,
+                    AA.Nombre as Accion,
+                    A.Descripcion as MensajeError,
+                    U.Email as UsuarioEmail,
+                    U.Nombre as UsuarioNombre
+                FROM Auditoria A
+                INNER JOIN Usuario U ON A.FK_Usuario = U.Id
+                INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
+                INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
+                WHERE A.Descripcion LIKE '% - Error%'
+                  AND A.LastUpdate >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                ORDER BY A.LastUpdate DESC
                 LIMIT @Limite";
 
             using (IDbConnection db = ObtenerConexionLectura())
