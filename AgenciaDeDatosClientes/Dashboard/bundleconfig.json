@@ -89,5 +89,25 @@
       "enabled": true,
       "renameLocals": false
     }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/documentacion-subir.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/documentacion-subir.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/documentacion-sobrescribir.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/documentacion-sobrescribir.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
   }
 ]

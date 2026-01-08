@@ -5,12 +5,30 @@
 
 @{
     ViewData["Title"] = "Subir Documento";
-    ViewBag.Description = "Subir un nuevo documento a Google Drive";
+    ViewBag.Description = "Subir un nuevo documento a S3";
     ViewBag.PoliticaIndexFollow = "noindex, nofollow";
 }
 
 @section estilos {
-    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    <environment include="Development">
+        <link href="~/css/plugins/modalcargando.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
+    <environment include="Staging,Production">
+        <link href="~/css/plugins/modalcargando.min.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
+}
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-subir.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-subir.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
 }
 
 <div class="page-header">
@@ -38,29 +56,59 @@
     </div>
 }
 
-<form method="post" enctype="multipart/form-data" class="form-usuario">
+<form method="post" enctype="multipart/form-data" class="form-usuario" data-js-form-subir data-nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="All" class="alerta alerta-error"></div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alerta alerta-error"></div>
+    }
 
     <section class="seccion-formulario">
         <div class="card">
             <h2 class="titulo-seccion">Información del Archivo</h2>
 
+            @if (!string.IsNullOrEmpty(Model.CarpetaRuta))
+            {
+                <div class="form-group">
+                    <label>Ruta de destino:</label>
+                    <div class="ruta-destino">
+                        <span class="ruta-texto">@Model.CarpetaRuta</span>
+                    </div>
+                    <small class="form-text text-muted">
+                        El archivo se subirá en esta ubicación.
+                    </small>
+                </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label>Ruta de destino:</label>
+                    <div class="ruta-destino">
+                        <span class="ruta-texto">Raíz de documentación</span>
+                    </div>
+                    <small class="form-text text-muted">
+                        El archivo se subirá en la raíz de la documentación.
+                    </small>
+                </div>
+            }
+
             <div class="form-group">
-                <label asp-for="Archivo">Seleccionar archivo *</label>
-                <input asp-for="Archivo" type="file" class="form-control" accept=".pdf,.docx,.xlsx,.pptx,.png,.jpg,.jpeg,.txt,.md" required />
+                <label for="Archivos">Seleccionar archivo(s) *</label>
+                <input id="Archivos" name="Archivos" type="file" class="form-control" accept=".pdf,.doc,.docx,.xlsx,.pptx,.png,.jpg,.jpeg,.txt,.md" multiple required />
                 <small class="form-text text-muted">
-                    Tipos permitidos: PDF, Word (DOCX), Excel (XLSX), PowerPoint (PPTX), Imágenes (PNG, JPG), Texto (TXT, MD).<br />
-                    Tamaño máximo: 50 MB
+                    Puede seleccionar uno o varios archivos a la vez.<br />
+                    Tipos permitidos: PDF, Word (DOC, DOCX), Excel (XLSX), PowerPoint (PPTX), Imágenes (PNG, JPG), Texto (TXT, MD).<br />
+                    Tamaño máximo por archivo: 50 MB<br />
+                    Los archivos se renombrarán automáticamente con un número de versión (ej: archivo_v001.pdf).<br />
+                    Los archivos se subirán en paralelo para mayor velocidad.
                 </small>
-                <span asp-validation-for="Archivo" class="text-danger"></span>
+                <span asp-validation-for="Archivos" class="text-danger"></span>
             </div>
         </div>
     </section>
 
     <div class="form-actions">
-        <button type="submit" class="boton boton-primario">Subir Archivo</button>
-        <a href="/documentacion/listado" class="boton boton-secundario">Cancelar</a>
+        <button type="submit" class="boton boton-primario">Subir Archivo(s)</button>
+        <a href="/documentacion/listado@(!string.IsNullOrEmpty(Model.CarpetaRuta) ? $"?CarpetaRuta={Uri.EscapeDataString(Model.CarpetaRuta)}" : "")" class="boton boton-secundario">Cancelar</a>
     </div>
 </form>
-

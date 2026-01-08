@@ -203,7 +203,7 @@ namespace Pages
                     Texto = "Documentación",
                     Icono = "documentacion",
                     Pagina = "/documentacion/listado",
-                    Descripcion = "Gestiona documentos almacenados en Google Drive"
+                    Descripcion = "Gestiona documentos almacenados"
                 });
             }
         }

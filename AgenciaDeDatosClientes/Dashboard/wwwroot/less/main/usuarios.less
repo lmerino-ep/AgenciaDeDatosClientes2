@@ -261,6 +261,18 @@
     color: #0c5460;
 }
 
+.version-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background-color: #e9ecef;
+    color: #495057;
+    vertical-align: middle;
+}
+
 /* Paginación */
 .paginacion {
     display: flex;
@@ -631,6 +643,21 @@
                 color: #6c757d;
             }
 
+            .ruta-destino {
+                padding: 10px 14px;
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 4px;
+                margin-top: 6px;
+
+                .ruta-texto {
+                    font-family: 'Courier New', monospace;
+                    font-size: 13px;
+                    color: @ColorEpDataComplementario;
+                    word-break: break-all;
+                }
+            }
+
             .text-danger {
                 display: block;
                 margin-top: 5px;
@@ -878,6 +905,226 @@
 
         .boton {
             width: 100%;
+        }
+    }
+}
+
+/* ============================================
+   Modal Eliminar Archivo - Documentación
+   ============================================ */
+
+.modal-eliminar-archivo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal-eliminar-archivo-contenido {
+    background-color: #fff;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-eliminar-archivo-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+
+    h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: @ColorEpDataComplementario;
+    }
+}
+
+.modal-eliminar-archivo-cerrar {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+
+    &:hover {
+        color: #333;
+    }
+}
+
+.modal-eliminar-archivo-body {
+    padding: 25px;
+    flex: 1;
+    overflow-y: auto;
+
+    p {
+        margin-bottom: 20px;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .opciones-eliminacion {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+
+        .boton {
+            flex: 1;
+            min-width: 200px;
+        }
+    }
+
+    .info-eliminacion {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        border-left: 4px solid @ColorEpDataComplementario;
+
+        p {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #666;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+
+            strong {
+                color: #333;
+            }
+        }
+    }
+}
+
+.modal-eliminar-archivo-footer {
+    padding: 20px 25px;
+    border-top: 1px solid #ddd;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    .boton {
+        min-width: 120px;
+    }
+}
+
+/* Responsive - Modal Eliminar Archivo */
+@media (max-width: 768px) {
+    .modal-eliminar-archivo-contenido {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .modal-eliminar-archivo-header,
+    .modal-eliminar-archivo-body,
+    .modal-eliminar-archivo-footer {
+        padding: 15px;
+    }
+
+    .modal-eliminar-archivo-body {
+        .opciones-eliminacion {
+            flex-direction: column;
+
+            .boton {
+                width: 100%;
+                min-width: unset;
+            }
+        }
+    }
+
+    .modal-eliminar-archivo-footer {
+        flex-direction: column-reverse;
+
+        .boton {
+            width: 100%;
+        }
+    }
+}
+
+/* Drag & Drop Overlay */
+.drag-drop-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 10001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(4px);
+
+    &.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .drag-drop-message {
+        background-color: @ColorEpDataComplementario;
+        color: white;
+        padding: 50px 80px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        pointer-events: none;
+        border: 3px dashed rgba(255, 255, 255, 0.5);
+        animation: pulse 1.5s ease-in-out infinite;
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        i {
+            font-size: 5rem;
+            display: block;
+            margin-bottom: 25px;
+            font-style: normal;
+            opacity: 0.5;
+            line-height: 1;
+            
+            &::before {
+                content: "+";
+                display: block;
+            }
+        }
+
+        p {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
     }
 }

@@ -546,16 +546,6 @@ namespace Utils.Servicios
                     }
                 }
 
-                // Configuración de Google Drive
-                if (!string.IsNullOrEmpty(_googleConfig.SecretoClaveDriveFolder))
-                {
-                    var driveFolder = secretos.GetSecretValue(secretString, _googleConfig.SecretoClaveDriveFolder);
-                    if (!string.IsNullOrEmpty(driveFolder))
-                    {
-                        _googleConfig.DriveFolder = driveFolder;
-                        _logger.LogInformation("DriveFolder de Google resuelto correctamente desde Secrets Manager");
-                    }
-                }
             }
             else
             {

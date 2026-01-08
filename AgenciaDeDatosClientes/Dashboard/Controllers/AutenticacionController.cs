@@ -94,7 +94,7 @@ namespace Controllers
                         });
                     }
 
-                    // === MÉTRICAS Y KPIs (Fase 3) ===
+                    // === MÉTRICAS Y KPIs ===
                     // Verificar permisos para consulta de métricas
                     if (User.IsInRole("Dashboard - Consulta de Métricas") ||
                         User.IsInRole("Dashboard - Exportación de Métricas") ||

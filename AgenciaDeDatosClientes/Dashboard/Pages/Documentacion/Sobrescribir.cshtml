@@ -1,26 +1,33 @@
-@page "/documentacion/sobrescribir/{id}"
+@page "/documentacion/sobrescribir"
 @model Pages.Documentacion.SobrescribirModel
 @using Microsoft.AspNetCore.Authorization
 @using Utils.Authorization
 
 @{
-    ViewData["Title"] = "Sobrescribir Documento";
-    ViewBag.Description = "Sobrescribir un documento existente en Google Drive";
+    ViewData["Title"] = "Subir Nueva Versión";
+    ViewBag.Description = "Subir una nueva versión de un documento existente en S3";
     ViewBag.PoliticaIndexFollow = "noindex, nofollow";
 }
 
 @section estilos {
-    <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    <environment include="Development">
+        <link href="~/css/plugins/modalcargando.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
+    <environment include="Staging,Production">
+        <link href="~/css/plugins/modalcargando.min.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+        <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+    </environment>
 }
 
 <div class="page-header">
-    <h1 class="page-title">Sobrescribir Documento</h1>
+    <h1 class="page-title">Subir Nueva Versión</h1>
     <div class="breadcrumb">
         <a href="/">Dashboard</a>
         <span class="separador">/</span>
         <a href="/documentacion/listado">Documentación</a>
         <span class="separador">/</span>
-        <span>Sobrescribir</span>
+        <span>Nueva Versión</span>
     </div>
 </div>
 
@@ -48,21 +55,38 @@
                     <span class="etiqueta">Nombre:</span>
                     <span class="valor">@Model.NombreArchivoActual</span>
                 </div>
+                @if (!string.IsNullOrEmpty(Model.CarpetaRuta))
+                {
+                    <div class="campo">
+                        <span class="etiqueta">Ruta:</span>
+                        <span class="valor">@Model.CarpetaRuta</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="campo">
+                        <span class="etiqueta">Ruta:</span>
+                        <span class="valor">Raíz de documentación</span>
+                    </div>
+                }
             </div>
         </div>
     </section>
 }
 
-<form method="post" enctype="multipart/form-data" class="form-usuario">
+<form method="post" enctype="multipart/form-data" class="form-usuario" data-js-form-sobrescribir data-nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="All" class="alerta alerta-error"></div>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alerta alerta-error"></div>
+    }
 
     <section class="seccion-formulario">
         <div class="card">
             <h2 class="titulo-seccion">Nuevo Archivo</h2>
 
             <div class="alerta alerta-advertencia">
-                <strong>ADVERTENCIA:</strong> Esta acción reemplazará el archivo actual. El archivo mantendrá el mismo ID en Google Drive.
+                <strong>INFORMACIÓN:</strong> Esta acción subirá una nueva versión del archivo.
             </div>
 
             <div class="form-group">
@@ -78,8 +102,19 @@
     </section>
 
     <div class="form-actions">
-        <button type="submit" class="boton boton-primario">Sobrescribir Archivo</button>
-        <a href="/documentacion/listado" class="boton boton-secundario">Cancelar</a>
+        <button type="submit" class="boton boton-primario">Subir Nueva Versión</button>
+        <a href="/documentacion/listado@(!string.IsNullOrEmpty(Model.CarpetaRuta) ? $"?CarpetaRuta={Uri.EscapeDataString(Model.CarpetaRuta)}" : "")" class="boton boton-secundario">Cancelar</a>
     </div>
 </form>
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-sobrescribir.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-sobrescribir.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
 

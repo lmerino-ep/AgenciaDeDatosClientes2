@@ -11,12 +11,15 @@ namespace Pages.Documentacion
     [ResponseCache(CacheProfileName = "NoCache")]
     public class SobrescribirModel : PageModel
     {
-        private readonly IServicioGoogleDrive _servicioGoogleDrive;
+        private readonly IServicioDocumentacionS3 _servicioDocumentacionS3;
         private readonly IServicioAuditoria _servicioAuditoria;
         private readonly ILogger<SobrescribirModel> _logger;
 
         [BindProperty(SupportsGet = true)]
-        public string Id { get; set; }
+        public string NombreBase { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string? CarpetaRuta { get; set; }
 
         [BindProperty]
         public IFormFile? Archivo { get; set; }
@@ -26,11 +29,11 @@ namespace Pages.Documentacion
         public string? MensajeError { get; set; }
 
         public SobrescribirModel(
-            IServicioGoogleDrive servicioGoogleDrive,
+            IServicioDocumentacionS3 servicioDocumentacionS3,
             IServicioAuditoria servicioAuditoria,
             ILogger<SobrescribirModel> logger)
         {
-            _servicioGoogleDrive = servicioGoogleDrive ?? throw new ArgumentNullException(nameof(servicioGoogleDrive));
+            _servicioDocumentacionS3 = servicioDocumentacionS3 ?? throw new ArgumentNullException(nameof(servicioDocumentacionS3));
             _servicioAuditoria = servicioAuditoria ?? throw new ArgumentNullException(nameof(servicioAuditoria));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -39,23 +42,18 @@ namespace Pages.Documentacion
         {
             try
             {
-                // Obtener ID del usuario autenticado
-                string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int idUsuario))
+                if (string.IsNullOrEmpty(NombreBase))
                 {
-                    _logger.LogWarning("No se pudo obtener el ID del usuario autenticado");
-                    MensajeError = "Error al obtener información del usuario.";
+                    MensajeError = "Nombre de archivo no proporcionado.";
                     return Page();
                 }
 
-                // Obtener información del archivo actual
-                var (_, nombre, _) = await _servicioGoogleDrive.DescargarArchivoAsync(idUsuario, Id);
-                NombreArchivoActual = nombre;
+                NombreArchivoActual = NombreBase;
                 return Page();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cargar información del archivo {IdArchivo}", Id);
+                _logger.LogError(ex, "Error al cargar información del archivo {NombreBase}", NombreBase);
                 MensajeError = $"Error al cargar el archivo: {ex.Message}";
                 return Page();
             }
@@ -91,48 +89,60 @@ namespace Pages.Documentacion
                 }
 
                 // Verificar permisos
-                var permisos = await _servicioGoogleDrive.VerificarPermisosAsync(idUsuario);
+                var permisos = await _servicioDocumentacionS3.VerificarPermisosAsync(User);
                 if (!permisos.PuedeEscribir)
                 {
-                    ModelState.AddModelError(string.Empty, "No tienes permisos para sobrescribir documentos en esta carpeta.");
+                    ModelState.AddModelError(string.Empty, "No tienes permisos para subir nuevas versiones de documentos.");
                     await OnGetAsync();
                     return Page();
                 }
 
-                _logger.LogInformation("Sobrescribiendo archivo para usuario {UsuarioId}: {IdArchivo}, Nuevo archivo: {NombreArchivo}, Tamaño: {Tamano} bytes, Tipo: {TipoMime}",
-                    idUsuario, Id, Archivo.FileName, Archivo.Length, Archivo.ContentType);
+                if (string.IsNullOrEmpty(NombreBase))
+                {
+                    ModelState.AddModelError(string.Empty, "Nombre de archivo base no proporcionado.");
+                    await OnGetAsync();
+                    return Page();
+                }
 
-                // Obtener nombre del archivo actual para auditoría
-                var (_, nombreActual, _) = await _servicioGoogleDrive.DescargarArchivoAsync(idUsuario, Id);
+                _logger.LogInformation("Subiendo nueva versión para usuario {UsuarioId}: {NombreBase}, Nuevo archivo: {NombreArchivo}, Tamaño: {Tamano} bytes, Tipo: {TipoMime}, Carpeta: {CarpetaRuta}",
+                    idUsuario, NombreBase, Archivo.FileName, Archivo.Length, Archivo.ContentType, CarpetaRuta ?? "raíz");
 
-                // Sobrescribir archivo en Google Drive
-                await _servicioGoogleDrive.SobrescribirArchivoAsync(
+                // Subir nueva versión del archivo (incrementa automáticamente el número de versión)
+                string key = await _servicioDocumentacionS3.SubirNuevaVersionAsync(
                     idUsuario,
-                    Id,
+                    NombreBase,
                     Archivo.OpenReadStream(),
-                    Archivo.ContentType
+                    Archivo.ContentType,
+                    CarpetaRuta
                 );
 
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
                     Modelos.AuditoriaAccionEnum.DocumentacionSobrescribir,
-                    $"Documento sobrescrito: {nombreActual} → {Archivo.FileName} (ID: {Id})"
+                    $"Nueva versión subida: {NombreBase} → {Archivo.FileName} (Key: {key})"
                 );
 
-                _logger.LogInformation("Archivo sobrescrito exitosamente. ID: {IdArchivo}, Nombre anterior: {NombreAnterior}, Nombre nuevo: {NombreNuevo}",
-                    Id, nombreActual, Archivo.FileName);
-                TempData["MensajeExito"] = $"Archivo '{nombreActual}' sobrescrito exitosamente con '{Archivo.FileName}'.";
+                _logger.LogInformation("Nueva versión subida exitosamente. Key: {Key}, Nombre base: {NombreBase}, Nombre nuevo: {NombreNuevo}",
+                    key, NombreBase, Archivo.FileName);
+                TempData["MensajeExito"] = $"Nueva versión de '{NombreBase}' subida exitosamente.";
+                
+                // Preservar CarpetaRuta al redirigir (construir URL manualmente para preservar el case)
+                if (!string.IsNullOrEmpty(CarpetaRuta))
+                {
+                    string url = $"/documentacion/listado?CarpetaRuta={Uri.EscapeDataString(CarpetaRuta)}";
+                    return Redirect(url);
+                }
                 return RedirectToPage("/Documentacion/Listado");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al sobrescribir archivo {IdArchivo}", Id);
+                _logger.LogError(ex, "Error al subir nueva versión {NombreBase}", NombreBase);
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
                     Modelos.AuditoriaAccionEnum.DocumentacionSobrescribir,
-                    $"Error al sobrescribir documento: {Id} - {ex.Message}"
+                    $"Error al subir nueva versión: {NombreBase} - {ex.Message}"
                 );
 
                 MensajeError = $"Error al sobrescribir el archivo: {ex.Message}";

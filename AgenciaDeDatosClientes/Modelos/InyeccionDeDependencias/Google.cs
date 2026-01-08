@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Modelos.InyeccionDeDependencias
 {
     public class Google
@@ -24,9 +18,6 @@ namespace Modelos.InyeccionDeDependencias
         public string CallbackPath { get; set; }
         public string ReCaptchaClaveSitio { get; set; }
         public string ReCaptchaClaveSecreta { get; set; }
-
-        // Configuración para Google Drive
-        public string DriveFolder { get; set; }
-        public string SecretoClaveDriveFolder { get; set; }
     }
 }
+

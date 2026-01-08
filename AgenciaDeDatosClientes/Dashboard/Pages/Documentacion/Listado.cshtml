@@ -5,7 +5,7 @@
 
 @{
     ViewData["Title"] = "Documentación";
-    ViewBag.Description = "Gestión de documentación en Google Drive";
+    ViewBag.Description = "Gestión de documentación en S3";
     ViewBag.PoliticaIndexFollow = "noindex, nofollow";
 }
 
@@ -50,22 +50,22 @@
 @if (Model.Permisos != null && !Model.Permisos.TieneAcceso)
 {
     <div class="alerta alerta-advertencia">
-        <p><strong>Acceso a Google Drive requerido</strong></p>
+        <p><strong>Acceso a la documentación requerido</strong></p>
         <p>@Model.Permisos.Mensaje</p>
-        <p>
-            <a href="/documentacion/autorizar" class="boton boton-primario">Autorizar acceso a Google Drive</a>
-        </p>
     </div>
 }
+
+<!-- Token antiforgery oculto para formularios dinámicos -->
+@Html.AntiForgeryToken()
 
 <!-- Filtros -->
 <section class="seccion-filtros">
     <div class="card">
         <h2 class="titulo-seccion">Filtros</h2>
         <form method="get" class="form-filtros">
-            @if (!string.IsNullOrEmpty(Model.CarpetaId))
+            @if (!string.IsNullOrEmpty(Model.CarpetaRuta))
             {
-                <input type="hidden" name="CarpetaId" value="@Model.CarpetaId" />
+                <input type="hidden" name="CarpetaRuta" value="@Model.CarpetaRuta" />
             }
             <div class="grid-filtros">
                 <div class="form-group">
@@ -117,35 +117,36 @@
 
             <div class="form-actions">
                 <button type="submit" class="boton boton-primario">Filtrar</button>
-                <a href="/documentacion/listado@(!string.IsNullOrEmpty(Model.CarpetaId) ? $"?CarpetaId={Model.CarpetaId}" : "")" class="boton boton-secundario">Limpiar</a>
-                @if (Model.Permisos?.PuedeEscribir == true)
-                {
-                    <a href="/documentacion/subir" class="boton boton-primario">Subir Documento</a>
-                }
+                <a href="/documentacion/listado@(!string.IsNullOrEmpty(Model.CarpetaRuta) ? $"?CarpetaRuta={Model.CarpetaRuta}" : "")" class="boton boton-secundario">Limpiar</a>
             </div>
         </form>
     </div>
 </section>
 
 <!-- Breadcrumbs -->
-@if (Model.Breadcrumbs.Any() || !string.IsNullOrEmpty(Model.CarpetaId))
+@if (Model.Breadcrumbs.Any())
 {
     <section class="seccion-breadcrumbs">
         <div class="card">
             <div class="breadcrumb">
-                <a href="/documentacion/listado" title="Carpeta raíz">Documentación</a>
-                @if (Model.Breadcrumbs.Any())
+                @foreach (var breadcrumb in Model.Breadcrumbs)
                 {
-                    @foreach (var breadcrumb in Model.Breadcrumbs)
+                    if (breadcrumb != Model.Breadcrumbs.Last())
                     {
+                        // Extraer la ruta relativa preservando el case
+                        string rutaBreadcrumb = breadcrumb.Key;
+                        if (rutaBreadcrumb.StartsWith("documentacion/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            rutaBreadcrumb = rutaBreadcrumb.Substring("documentacion/".Length);
+                        }
+                        rutaBreadcrumb = rutaBreadcrumb.TrimEnd('/');
+                        <a href="/documentacion/listado?CarpetaRuta=@Uri.EscapeDataString(rutaBreadcrumb)" title="@breadcrumb.Nombre">@breadcrumb.Nombre</a>
                         <span class="separador">/</span>
-                        <a href="/documentacion/listado?CarpetaId=@breadcrumb.Id" title="@breadcrumb.Nombre">@breadcrumb.Nombre</a>
                     }
-                }
-                else if (!string.IsNullOrEmpty(Model.CarpetaId))
-                {
-                    <span class="separador">/</span>
-                    <span>Carpeta</span>
+                    else
+                    {
+                        <span>@breadcrumb.Nombre</span>
+                    }
                 }
             </div>
         </div>
@@ -157,6 +158,10 @@
     <div class="card">
         <div class="header-con-accion">
             <h2 class="titulo-seccion">Documentos (@Model.Archivos.Count)</h2>
+            @if (Model.Permisos?.PuedeEscribir == true)
+            {
+                <a href="/documentacion/subir@(!string.IsNullOrEmpty(Model.CarpetaRuta) ? $"?CarpetaRuta={Uri.EscapeDataString(Model.CarpetaRuta)}" : "")" class="boton boton-primario">Subir Documento</a>
+            }
         </div>
 
         @if (Model.Archivos.Any())
@@ -183,12 +188,6 @@
                                             <span class="@archivo.IconoTipo">Carpeta</span>
                                         </span>
                                     }
-                                    else if (archivo.EsShortcut)
-                                    {
-                                        <span class="icono">
-                                            <span class="shortcut">Acceso directo</span>
-                                        </span>
-                                    }
                                     else
                                     {
                                         <span class="icono">
@@ -199,44 +198,54 @@
                                 <td>
                                     @if (archivo.EsCarpeta)
                                     {
-                                        <a href="/documentacion/listado?CarpetaId=@archivo.Id" title="Abrir carpeta: @archivo.Nombre">
+                                        // Extraer la ruta relativa preservando el case
+                                        string rutaRelativa = archivo.Key;
+                                        if (rutaRelativa.StartsWith("documentacion/", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            rutaRelativa = rutaRelativa.Substring("documentacion/".Length);
+                                        }
+                                        rutaRelativa = rutaRelativa.TrimEnd('/');
+                                        <a href="/documentacion/listado?CarpetaRuta=@Uri.EscapeDataString(rutaRelativa)" title="Abrir carpeta: @archivo.Nombre">
                                             @archivo.Nombre
                                         </a>
                                     }
                                     else
                                     {
-                                        <a href="@archivo.UrlWeb" target="_blank" title="Abrir en Google Drive">
-                                            @archivo.Nombre
-                                        </a>
+                                        <div>
+                                            <a href="@archivo.UrlWeb" target="_blank" title="Abrir en S3">
+                                                @(archivo.NombreBase ?? archivo.Nombre)
+                                            </a>
+                                            @if (archivo.NumeroVersion.HasValue)
+                                            {
+                                                <span class="version-badge">v@(archivo.NumeroVersion.Value)</span>
+                                            }
+                                        </div>
                                     }
                                 </td>
                                 <td>@archivo.TamanoFormateado</td>
                                 <td>@(archivo.FechaModificacion != DateTime.MinValue ? archivo.FechaModificacion.ToString("dd/MM/yyyy HH:mm") : "-")</td>
                                 <td>
                                     <div class="acciones-tabla">
-                                        @if (!archivo.EsCarpeta && !archivo.EsShortcut)
+                                        @if (!archivo.EsCarpeta)
                                         {
                                             @if (Model.Permisos?.PuedeLeer == true)
                                             {
-                                                <a href="/documentacion/descargar/@archivo.Id" class="boton boton-pequeno boton-secundario" data-js-descargar title="Descargar">
+                                                <a href="/documentacion/descargar?key=@Uri.EscapeDataString(archivo.Key)" class="boton boton-pequeno boton-secundario" data-js-descargar title="Descargar">
                                                     Descargar
                                                 </a>
                                             }
                                             @if (Model.Permisos?.PuedeEscribir == true)
                                             {
-                                                <a href="/documentacion/sobrescribir/@archivo.Id" class="boton boton-pequeno boton-secundario" title="Sobrescribir">
-                                                    Sobrescribir
+                                                <a href="/documentacion/sobrescribir?nombreBase=@Uri.EscapeDataString(archivo.NombreBase ?? archivo.Nombre)&carpetaRuta=@Uri.EscapeDataString(Model.CarpetaRuta ?? "")" class="boton boton-pequeno boton-secundario" title="Subir nueva versión">
+                                                    Nueva Versión
                                                 </a>
                                             }
                                         }
-                                        @if (Model.Permisos?.PuedeEliminar == true && !archivo.EsShortcut)
+                                        @if (Model.Permisos?.PuedeEliminar == true && !archivo.EsCarpeta)
                                         {
-                                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@archivo.Id" class="form-inline" data-js-eliminar data-es-carpeta="@archivo.EsCarpeta.ToString().ToLower()">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="boton boton-pequeno boton-peligro" title="Eliminar">
-                                                    Eliminar
-                                                </button>
-                                            </form>
+                                            <button type="button" class="boton boton-pequeno boton-peligro" data-js-eliminar-archivo data-key="@Uri.EscapeDataString(archivo.Key)" data-nombre="@archivo.NombreBase" title="Eliminar">
+                                                Eliminar
+                                            </button>
                                         }
                                     </div>
                                 </td>
@@ -254,4 +263,32 @@
         }
     </div>
 </section>
+
+<!-- Modal de eliminación -->
+<div id="modal-eliminar-archivo" class="modal-eliminar-archivo" style="display: none;">
+    <div class="modal-eliminar-archivo-contenido">
+        <div class="modal-eliminar-archivo-header">
+            <h3>Eliminar archivo</h3>
+            <button type="button" class="modal-eliminar-archivo-cerrar" onclick="ocultarModalEliminacion()">&times;</button>
+        </div>
+        <div class="modal-eliminar-archivo-body">
+            <p>¿Qué deseas hacer con el archivo <strong id="nombre-archivo-eliminar"></strong>?</p>
+            <div class="opciones-eliminacion">
+                <button type="button" class="boton boton-secundario" onclick="volverVersionAnterior()">
+                    Volver a versión anterior
+                </button>
+                <button type="button" class="boton boton-peligro" onclick="eliminarCompletamente()">
+                    Eliminar completamente
+                </button>
+            </div>
+            <div class="info-eliminacion">
+                <p><strong>Volver a versión anterior:</strong> Se eliminará la versión actual y se mostrará la versión anterior.</p>
+                <p><strong>Eliminar completamente:</strong> Se eliminarán todas las versiones. La última versión se moverá a la papelera y se eliminará automáticamente pasados unos días.</p>
+            </div>
+        </div>
+        <div class="modal-eliminar-archivo-footer">
+            <button type="button" class="boton boton-secundario" onclick="ocultarModalEliminacion()">Cancelar</button>
+        </div>
+    </div>
+</div>
 

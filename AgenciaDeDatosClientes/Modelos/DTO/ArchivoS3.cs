@@ -1,20 +1,21 @@
 namespace Modelos.DTO
 {
     /// <summary>
-    /// DTO para un archivo de Google Drive
+    /// DTO para un archivo o carpeta en S3
     /// </summary>
-    public class ArchivoGoogleDrive
+    public class ArchivoS3
     {
-        public string Id { get; set; }
-        public string Nombre { get; set; }
+        public string Key { get; set; } // Ruta completa en S3 (ej: "documentacion/carpeta/archivo.pdf")
+        public string Nombre { get; set; } // Nombre del archivo o carpeta
         public long Tamano { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string TipoMime { get; set; }
-        public string UrlWeb { get; set; }
+        public string UrlWeb { get; set; } // URL pública de CloudFront o S3
         public string IconoTipo { get; set; } // Para mostrar icono según tipo
         public bool EsCarpeta { get; set; } // Indica si es una carpeta
-        public bool EsShortcut { get; set; } // Indica si es un acceso directo (shortcut)
         public string TamanoFormateado => EsCarpeta ? "-" : FormatearTamano(Tamano);
+        public string NombreBase { get; set; } // Nombre sin versión (ej: "Contrato de negocio.xlsx")
+        public int? NumeroVersion { get; set; } // Número de versión si tiene (ej: 5 para "_v005")
 
         private string FormatearTamano(long bytes)
         {
@@ -28,3 +29,4 @@ namespace Modelos.DTO
         }
     }
 }
+

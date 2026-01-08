@@ -12,26 +12,26 @@ namespace Controllers
     [Authorize(Policy = PoliticasAutorizacion.Politicas.GestionDocumentacion)]
     public class DocumentacionController : Controller
     {
-        private readonly IServicioGoogleDrive _servicioGoogleDrive;
+        private readonly IServicioDocumentacionS3 _servicioDocumentacionS3;
         private readonly IServicioAuditoria _servicioAuditoria;
         private readonly ILogger<DocumentacionController> _logger;
 
         public DocumentacionController(
-            IServicioGoogleDrive servicioGoogleDrive,
+            IServicioDocumentacionS3 servicioDocumentacionS3,
             IServicioAuditoria servicioAuditoria,
             ILogger<DocumentacionController> logger)
         {
-            _servicioGoogleDrive = servicioGoogleDrive ?? throw new ArgumentNullException(nameof(servicioGoogleDrive));
+            _servicioDocumentacionS3 = servicioDocumentacionS3 ?? throw new ArgumentNullException(nameof(servicioDocumentacionS3));
             _servicioAuditoria = servicioAuditoria ?? throw new ArgumentNullException(nameof(servicioAuditoria));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
-        /// Descarga un archivo de Google Drive
+        /// Descarga un archivo de S3
         /// </summary>
         [HttpGet]
-        [Route("/documentacion/descargar/{id}")]
-        public async Task<IActionResult> Descargar(string id)
+        [Route("/documentacion/descargar")]
+        public async Task<IActionResult> Descargar([FromQuery] string key)
         {
             try
             {
@@ -44,34 +44,34 @@ namespace Controllers
                     return Redirect("/documentacion/listado");
                 }
 
-                if (string.IsNullOrEmpty(id))
+                if (string.IsNullOrEmpty(key))
                 {
-                    _logger.LogWarning("ID de archivo no proporcionado para descarga");
-                    TempData["MensajeError"] = "ID de archivo no válido.";
+                    _logger.LogWarning("Key de archivo no proporcionado para descarga");
+                    TempData["MensajeError"] = "Key de archivo no válido.";
                     return Redirect("/documentacion/listado");
                 }
 
-                _logger.LogInformation("Descargando documento: {IdArchivo} por usuario {UsuarioId}", id, idUsuario);
+                _logger.LogInformation("Descargando documento: {Key} por usuario {UsuarioId}", key, idUsuario);
 
-                var (stream, nombreArchivo, tipoMime) = await _servicioGoogleDrive.DescargarArchivoAsync(idUsuario, id);
+                var (stream, nombreArchivo, tipoMime) = await _servicioDocumentacionS3.DescargarArchivoAsync(idUsuario, key);
 
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
                     Modelos.AuditoriaAccionEnum.DocumentacionDescargar,
-                    $"Documento descargado: {nombreArchivo} (ID: {id})"
+                    $"Documento descargado: {nombreArchivo} (Key: {key})"
                 );
 
                 return File(stream, tipoMime, nombreArchivo);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al descargar documento {IdArchivo}", id);
+                _logger.LogError(ex, "Error al descargar documento {Key}", key);
 
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
                     Modelos.AuditoriaAccionEnum.DocumentacionDescargar,
-                    $"Error al descargar documento: {id} - {ex.Message}"
+                    $"Error al descargar documento: {key} - {ex.Message}"
                 );
 
                 TempData["MensajeError"] = $"Error al descargar el documento: {ex.Message}";

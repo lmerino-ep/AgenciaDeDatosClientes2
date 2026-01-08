@@ -12,18 +12,18 @@ namespace Pages.Documentacion
     [ResponseCache(CacheProfileName = "NoCache")]
     public class ListadoModel : PageModel
     {
-        private readonly IServicioGoogleDrive _servicioGoogleDrive;
+        private readonly IServicioDocumentacionS3 _servicioDocumentacionS3;
         private readonly IServicioAuditoria _servicioAuditoria;
         private readonly ILogger<ListadoModel> _logger;
 
-        public PermisosGoogleDrive Permisos { get; set; }
+        public PermisosDocumentacionS3 Permisos { get; set; }
 
         public ListadoModel(
-            IServicioGoogleDrive servicioGoogleDrive,
+            IServicioDocumentacionS3 servicioDocumentacionS3,
             IServicioAuditoria servicioAuditoria,
             ILogger<ListadoModel> logger)
         {
-            _servicioGoogleDrive = servicioGoogleDrive ?? throw new ArgumentNullException(nameof(servicioGoogleDrive));
+            _servicioDocumentacionS3 = servicioDocumentacionS3 ?? throw new ArgumentNullException(nameof(servicioDocumentacionS3));
             _servicioAuditoria = servicioAuditoria ?? throw new ArgumentNullException(nameof(servicioAuditoria));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -38,11 +38,11 @@ namespace Pages.Documentacion
         public string? FiltroFecha { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public string? CarpetaId { get; set; }
+        public string? CarpetaRuta { get; set; }
 
-        public List<ArchivoGoogleDrive> Archivos { get; set; } = new List<ArchivoGoogleDrive>();
+        public List<ArchivoS3> Archivos { get; set; } = new List<ArchivoS3>();
 
-        public List<ArchivoGoogleDrive> Breadcrumbs { get; set; } = new List<ArchivoGoogleDrive>();
+        public List<ArchivoS3> Breadcrumbs { get; set; } = new List<ArchivoS3>();
 
         public List<string> TiposDisponibles { get; set; } = new List<string>();
 
@@ -62,28 +62,28 @@ namespace Pages.Documentacion
                 }
 
                 // Verificar permisos
-                Permisos = await _servicioGoogleDrive.VerificarPermisosAsync(idUsuario);
+                Permisos = await _servicioDocumentacionS3.VerificarPermisosAsync(User);
 
                 if (!Permisos.TieneAcceso)
                 {
-                    MensajeError = Permisos.Mensaje ?? "No tienes acceso a Google Drive. Por favor, autoriza el acceso.";
+                    MensajeError = Permisos.Mensaje ?? "No tienes acceso a la documentación.";
                     return Page();
                 }
 
-                _logger.LogInformation("Listando documentos para usuario {UsuarioId}. FiltroTipo: {FiltroTipo}, Busqueda: {Busqueda}, FiltroFecha: {FiltroFecha}, CarpetaId: {CarpetaId}",
-                    idUsuario, FiltroTipo, Busqueda, FiltroFecha, CarpetaId ?? "raíz");
+                _logger.LogInformation("Listando documentos para usuario {UsuarioId}. FiltroTipo: {FiltroTipo}, Busqueda: {Busqueda}, FiltroFecha: {FiltroFecha}, CarpetaRuta: {CarpetaRuta}",
+                    idUsuario, FiltroTipo, Busqueda, FiltroFecha, CarpetaRuta ?? "raíz");
 
                 DateTime? fechaDesde = ObtenerFechaDesdeFiltro(FiltroFecha);
-                Archivos = await _servicioGoogleDrive.ListarArchivosAsync(idUsuario, FiltroTipo, Busqueda, fechaDesde, CarpetaId);
+                Archivos = await _servicioDocumentacionS3.ListarArchivosAsync(idUsuario, FiltroTipo, Busqueda, fechaDesde, CarpetaRuta);
 
                 // Construir breadcrumbs si estamos en una subcarpeta
-                if (!string.IsNullOrEmpty(CarpetaId))
+                if (!string.IsNullOrEmpty(CarpetaRuta))
                 {
-                    Breadcrumbs = await _servicioGoogleDrive.ObtenerRutaBreadcrumbsAsync(idUsuario, CarpetaId);
+                    Breadcrumbs = await _servicioDocumentacionS3.ObtenerRutaBreadcrumbsAsync(idUsuario, CarpetaRuta);
                 }
 
                 // Obtener tipos de archivo disponibles en la carpeta actual
-                TiposDisponibles = await _servicioGoogleDrive.ObtenerTiposArchivoDisponiblesAsync(idUsuario, CarpetaId);
+                TiposDisponibles = await _servicioDocumentacionS3.ObtenerTiposArchivoDisponiblesAsync(idUsuario, CarpetaRuta);
 
                 return Page();
             }
@@ -95,7 +95,10 @@ namespace Pages.Documentacion
             }
         }
 
-        public async Task<IActionResult> OnPostEliminarAsync(string id)
+        [BindProperty]
+        public string? TipoEliminacion { get; set; }
+
+        public async Task<IActionResult> OnPostVolverVersionAnteriorAsync(string key)
         {
             try
             {
@@ -109,37 +112,109 @@ namespace Pages.Documentacion
                 }
 
                 // Verificar permisos
-                Permisos = await _servicioGoogleDrive.VerificarPermisosAsync(idUsuario);
+                Permisos = await _servicioDocumentacionS3.VerificarPermisosAsync(User);
                 if (!Permisos.PuedeEliminar)
                 {
-                    TempData["MensajeError"] = "No tienes permisos para eliminar documentos en esta carpeta.";
+                    TempData["MensajeError"] = "No tienes permisos para eliminar documentos.";
                     return RedirectToPage();
                 }
 
-                _logger.LogInformation("Eliminando documento: {IdArchivo} por usuario {UsuarioId}", id, idUsuario);
+                _logger.LogInformation("Volviendo a versión anterior: {Key} por usuario {UsuarioId}", key, idUsuario);
 
-                await _servicioGoogleDrive.EliminarArchivoAsync(idUsuario, id);
+                await _servicioDocumentacionS3.VolverAVersionAnteriorAsync(idUsuario, key);
 
                 // Registrar en auditoría
                 await _servicioAuditoria.RegistrarAccionAsync(
                     User,
                     Modelos.AuditoriaAccionEnum.DocumentacionEliminar,
-                    $"Documento eliminado: {id}"
+                    $"Volver a versión anterior: {key}"
                 );
 
-                TempData["MensajeExito"] = "Documento eliminado exitosamente.";
+                TempData["MensajeExito"] = "Se ha vuelto a la versión anterior del documento.";
                 
-                // Preservar CarpetaId al redirigir
-                if (!string.IsNullOrEmpty(CarpetaId))
+                // Preservar CarpetaRuta al redirigir (construir URL manualmente para preservar el case)
+                if (!string.IsNullOrEmpty(CarpetaRuta))
                 {
-                    return RedirectToPage(new { CarpetaId });
+                    string url = $"/documentacion/listado?CarpetaRuta={Uri.EscapeDataString(CarpetaRuta)}";
+                    return Redirect(url);
+                }
+                return RedirectToPage();
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Intento de volver a versión anterior no válido: {Key}", key);
+                TempData["MensajeError"] = ex.Message;
+                if (!string.IsNullOrEmpty(CarpetaRuta))
+                {
+                    string url = $"/documentacion/listado?CarpetaRuta={Uri.EscapeDataString(CarpetaRuta)}";
+                    return Redirect(url);
                 }
                 return RedirectToPage();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al eliminar documento {IdArchivo}", id);
+                _logger.LogError(ex, "Error al volver a versión anterior {Key}", key);
+                TempData["MensajeError"] = $"Error al volver a la versión anterior: {ex.Message}";
+                if (!string.IsNullOrEmpty(CarpetaRuta))
+                {
+                    string url = $"/documentacion/listado?CarpetaRuta={Uri.EscapeDataString(CarpetaRuta)}";
+                    return Redirect(url);
+                }
+                return RedirectToPage();
+            }
+        }
+
+        public async Task<IActionResult> OnPostEliminarCompletamenteAsync(string key)
+        {
+            try
+            {
+                // Obtener ID del usuario autenticado
+                string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int idUsuario))
+                {
+                    _logger.LogWarning("No se pudo obtener el ID del usuario autenticado");
+                    TempData["MensajeError"] = "Error al obtener información del usuario.";
+                    return RedirectToPage();
+                }
+
+                // Verificar permisos
+                Permisos = await _servicioDocumentacionS3.VerificarPermisosAsync(User);
+                if (!Permisos.PuedeEliminar)
+                {
+                    TempData["MensajeError"] = "No tienes permisos para eliminar documentos.";
+                    return RedirectToPage();
+                }
+
+                _logger.LogInformation("Eliminando completamente documento: {Key} por usuario {UsuarioId}", key, idUsuario);
+
+                await _servicioDocumentacionS3.EliminarCompletamenteAsync(idUsuario, key);
+
+                // Registrar en auditoría
+                await _servicioAuditoria.RegistrarAccionAsync(
+                    User,
+                    Modelos.AuditoriaAccionEnum.DocumentacionEliminar,
+                    $"Documento eliminado completamente: {key}"
+                );
+
+                TempData["MensajeExito"] = "Documento eliminado completamente. La última versión se ha movido a la papelera.";
+                
+                // Preservar CarpetaRuta al redirigir (construir URL manualmente para preservar el case)
+                if (!string.IsNullOrEmpty(CarpetaRuta))
+                {
+                    string url = $"/documentacion/listado?CarpetaRuta={Uri.EscapeDataString(CarpetaRuta)}";
+                    return Redirect(url);
+                }
+                return RedirectToPage();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar completamente documento {Key}", key);
                 TempData["MensajeError"] = $"Error al eliminar el documento: {ex.Message}";
+                if (!string.IsNullOrEmpty(CarpetaRuta))
+                {
+                    string url = $"/documentacion/listado?CarpetaRuta={Uri.EscapeDataString(CarpetaRuta)}";
+                    return Redirect(url);
+                }
                 return RedirectToPage();
             }
         }

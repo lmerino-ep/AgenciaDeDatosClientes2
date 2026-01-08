@@ -62,7 +62,10 @@
 
     <form method="post" class="form-usuario">
         @Html.AntiForgeryToken()
-        <div asp-validation-summary="All" class="alerta alerta-error"></div>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="All" class="alerta alerta-error"></div>
+        }
 
         <input type="hidden" asp-for="Modelo.IdUsuario" />
 
