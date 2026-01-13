@@ -1,5 +1,7 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Identity;
+using Modelos.Autenticacion;
 
 namespace Utils.Middlewares.GlobalExceptionHandler
 {
@@ -11,15 +13,18 @@ namespace Utils.Middlewares.GlobalExceptionHandler
         private readonly RequestDelegate _next;
         private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;
         private readonly IWebHostEnvironment _environment;
+        private readonly UserManager<Usuario> _userManager;
 
         public GlobalExceptionHandlerMiddleware(
             RequestDelegate next,
             ILogger<GlobalExceptionHandlerMiddleware> logger,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            UserManager<Usuario> userManager)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
+            _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -70,15 +75,25 @@ namespace Utils.Middlewares.GlobalExceptionHandler
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception, string exceptionId)
         {
-            // Obtener información del request
+            // Obtener UserId de forma segura (sin exponer datos sensibles)
+            string userId = "Anonymous";
+            if (context.User?.Identity?.IsAuthenticated == true)
+            {
+                try
+                {
+                    userId = _userManager.GetUserId(context.User) ?? "Unknown";
+                }
+                catch
+                {
+                    userId = "Unknown";
+                }
+            }
+
+            // Obtener información del request (sin datos sensibles)
             var requestInfo = new
             {
                 Method = context.Request.Method,
-                Path = context.Request.Path,
-                QueryString = context.Request.QueryString.ToString(),
-                UserAgent = context.Request.Headers.UserAgent.ToString(),
-                RemoteIpAddress = context.Connection.RemoteIpAddress?.ToString(),
-                User = context.User?.Identity?.Name ?? "Anonymous"
+                Path = context.Request.Path
             };
 
             // Construir el mensaje completo con stack trace (limpiando saltos de línea para CloudWatch)
@@ -92,7 +107,7 @@ namespace Utils.Middlewares.GlobalExceptionHandler
                 .Replace("\n", " ")
                 .Replace("\r", " ");
             
-            var logMessage = $"Excepción no controlada capturada. ExceptionId: {exceptionId}. Request: {{ Method = {requestInfo.Method}, Path = {requestInfo.Path}, QueryString = {requestInfo.QueryString}, UserAgent = {requestInfo.UserAgent}, RemoteIpAddress = {requestInfo.RemoteIpAddress}, User = {requestInfo.User} }}. " +
+            var logMessage = $"Excepción no controlada capturada. ExceptionId: {exceptionId}. Request: {{ Method = {requestInfo.Method}, Path = {requestInfo.Path}, UserId = {userId} }}. " +
                              $"Exception Type: {exception.GetType().FullName}. " +
                              $"Message: {exceptionMessage}. " +
                              $"Stack Trace: {stackTrace}";

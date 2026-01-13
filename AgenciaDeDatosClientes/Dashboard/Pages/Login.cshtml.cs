@@ -13,6 +13,7 @@ namespace Pages
     {
         private readonly ILogger<LoginModel> _logger;
         private readonly SignInManager<Modelos.Autenticacion.Usuario> _signInManager;
+        private readonly UserManager<Modelos.Autenticacion.Usuario> _userManager;
         private readonly HtmlSanitizer _sanitizerContraXss;
 
         #region Propiedades página
@@ -31,10 +32,11 @@ namespace Pages
         #endregion
 
 
-        public LoginModel(ILogger<LoginModel> logger, IRedis redis, SignInManager<Modelos.Autenticacion.Usuario> signInManager, HtmlSanitizer sanitizerContraXss)
+        public LoginModel(ILogger<LoginModel> logger, IRedis redis, SignInManager<Modelos.Autenticacion.Usuario> signInManager, UserManager<Modelos.Autenticacion.Usuario> userManager, HtmlSanitizer sanitizerContraXss)
         {
             _logger = logger;
             _signInManager = signInManager;
+            _userManager = userManager;
             _sanitizerContraXss = sanitizerContraXss;
         }
 
@@ -74,31 +76,41 @@ namespace Pages
                     );
                     if (result.Succeeded)
                     {
-                        // Debug: logear valores para diagnóstico (todo en una línea para CloudWatch)
-                        var returnUrlEsNull = returnUrl == null;
-                        var returnUrlValue = (returnUrl ?? "(null)").Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
-                        var returnUrlLength = returnUrl?.Length ?? -1;
                         var urlContentReturnUrl = Url.Content(returnUrl);
                         var urlDestino = Url.Content("~/");
-
                         var computedUrl = urlContentReturnUrl ?? urlDestino;
 
-                        var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-                        _logger.LogInformation("[AUTH] Login exitoso. Email: {Email}, RemoteIP: {RemoteIP}, Recordar: {Recordar}, ReturnUrl: {ReturnUrl}",
-                            sanitizedEmail, remoteIp, Recordar, returnUrlValue);
+                        // Obtener UserId después del login exitoso
+                        var userId = _userManager.GetUserId(User) ?? "Unknown";
+                        _logger.LogInformation("[AUTH] Login exitoso. UserId: {UserId}, Recordar: {Recordar}",
+                            userId, Recordar);
 
                         return new RedirectResult(computedUrl);
                     }
                     else
                     {
-                        var remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                         var failureReason = result.IsLockedOut ? "Cuenta bloqueada" :
                                           result.IsNotAllowed ? "Cuenta sin permiso" :
                                           result.RequiresTwoFactor ? "Requiere autenticación de dos factores" :
                                           "Credenciales incorrectas";
 
-                        _logger.LogWarning("[AUTH] Error al iniciar sesión. Email: {Email}, RemoteIP: {RemoteIP}, Razón: {Razon}, IsLockedOut: {IsLockedOut}, IsNotAllowed: {IsNotAllowed}, RequiresTwoFactor: {RequiresTwoFactor}",
-                            sanitizedEmail, remoteIp, failureReason, result.IsLockedOut, result.IsNotAllowed, result.RequiresTwoFactor);
+                        // Intentar obtener UserId buscando el usuario por email (si existe)
+                        string userId = "Unknown";
+                        try
+                        {
+                            var usuario = await _userManager.FindByEmailAsync(sanitizedEmail);
+                            if (usuario != null)
+                            {
+                                userId = usuario.Id.ToString();
+                            }
+                        }
+                        catch
+                        {
+                            // Si no se puede obtener el usuario, mantener "Unknown"
+                        }
+
+                        _logger.LogWarning("[AUTH] Error al iniciar sesión. UserId: {UserId}, Razón: {Razon}, IsLockedOut: {IsLockedOut}, IsNotAllowed: {IsNotAllowed}, RequiresTwoFactor: {RequiresTwoFactor}",
+                            userId, failureReason, result.IsLockedOut, result.IsNotAllowed, result.RequiresTwoFactor);
 
                         ModelState.AddModelError(string.Empty, $"Error al iniciar sesión: {failureReason}");
                     }

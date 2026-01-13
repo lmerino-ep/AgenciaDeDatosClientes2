@@ -81,8 +81,8 @@ namespace Utils.Middlewares.ProxyHeaders
                 else if (_policy.LogIPsNoConfiables)
                 {
                     var logger = context.RequestServices.GetService<ILogger<ProxyHeadersMiddleware>>();
-                    logger?.LogWarning("IP no confiable en X-Forwarded-For: {IP} desde {RemoteIP}", 
-                        clientIP, context.Connection.RemoteIpAddress);
+                    // No loguear IPs por seguridad - solo registrar que hubo un intento no confiable
+                    logger?.LogWarning("IP no confiable detectada en X-Forwarded-For");
                 }
             }
 
