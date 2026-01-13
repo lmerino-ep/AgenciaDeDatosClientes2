@@ -581,6 +581,49 @@
   font-size: 0.9rem;
   color: #6c757d;
 }
+/* Password Input Wrapper with Toggle */
+.seccion-formulario .card .form-group .input-group {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.seccion-formulario .card .form-group .password-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.seccion-formulario .card .form-group .password-input-wrapper .form-control {
+  padding-right: 45px;
+}
+.seccion-formulario .card .form-group .password-input-wrapper .password-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  transition: color 0.2s ease;
+  z-index: 1;
+}
+.seccion-formulario .card .form-group .password-input-wrapper .password-toggle:hover {
+  color: #05576B;
+}
+.seccion-formulario .card .form-group .password-input-wrapper .password-toggle:focus {
+  outline: 2px solid #05576B;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.seccion-formulario .card .form-group .password-input-wrapper .password-toggle .eye-icon {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+}
 .seccion-formulario .card .form-group .ruta-destino {
   padding: 10px 14px;
   background-color: #f8f9fa;

@@ -621,9 +621,9 @@ Outputs:
 #ó
 #cd D:\Programación\AgenciaDeDatosClientes\AgenciaDeDatosClientes\Dashboard
 #dotnet publish -c Release
-#docker build -t clientes:2026.01.08.002 .
-#docker tag clientes:2026.01.08.002 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2026.01.08.002
-#docker push 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2026.01.08.002
+#docker build -t clientes:2026.01.13.001 .
+#docker tag clientes:2026.01.13.001 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2026.01.13.001
+#docker push 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2026.01.13.001
 
 #Vamos al ECS de AWS y en la definicion de tareas seleccionamos la nuestra (epdata-clientes-production), la revision mas reciente -> Crear revision
 #Definimos la uri de la imagen con la tag nueva: 442500115196.dkr.ecr.eu-west-1.amazonaws.com/epdata/clientes:2026.01.08.001

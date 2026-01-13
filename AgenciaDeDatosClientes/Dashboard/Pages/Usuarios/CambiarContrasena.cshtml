@@ -76,16 +76,40 @@
                 <div class="form-group">
                     <label asp-for="Modelo.NuevaPassword">Nueva Contraseña *</label>
                     <div class="input-group">
-                        <input asp-for="Modelo.NuevaPassword" class="form-control" type="password" required minlength="8" id="Modelo_NuevaPassword" />
+                        <div class="password-input-wrapper">
+                            <input asp-for="Modelo.NuevaPassword" class="form-control" type="password" required minlength="8" id="modelo-nueva-password" />
+                            <button type="button" class="password-toggle" data-toggle-password="modelo-nueva-password" aria-label="Mostrar/Ocultar contraseña">
+                                <svg class="eye-icon eye-icon-show" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="eye-icon eye-icon-hide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
                         <button type="button" class="boton boton-secundario" data-js-generar-password>Generar Automática</button>
                     </div>
-                    <small class="form-text text-muted">Mínimo 8 caracteres, 1 mayúscula, 1 número</small>
+                    <small class="form-text text-muted">Mínimo 8 caracteres</small>
                     <span asp-validation-for="Modelo.NuevaPassword" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="Modelo.ConfirmarPassword">Confirmar Contraseña *</label>
-                    <input asp-for="Modelo.ConfirmarPassword" class="form-control" type="password" required id="Modelo_ConfirmarPassword" />
+                    <div class="password-input-wrapper">
+                        <input asp-for="Modelo.ConfirmarPassword" class="form-control" type="password" required id="modelo-confirmar-password" />
+                        <button type="button" class="password-toggle" data-toggle-password="modelo-confirmar-password" aria-label="Mostrar/Ocultar contraseña">
+                            <svg class="eye-icon eye-icon-show" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-icon eye-icon-hide" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
                     <span asp-validation-for="Modelo.ConfirmarPassword" class="text-danger"></span>
                 </div>
 

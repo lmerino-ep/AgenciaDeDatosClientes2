@@ -643,6 +643,56 @@
                 color: #6c757d;
             }
 
+            // Password Input Wrapper with Toggle
+            .input-group {
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .password-input-wrapper {
+                position: relative;
+                flex: 1;
+                display: flex;
+                align-items: center;
+
+                .form-control {
+                    padding-right: 45px;
+                }
+
+                .password-toggle {
+                    position: absolute;
+                    right: 10px;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    padding: 5px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #6c757d;
+                    transition: color 0.2s ease;
+                    z-index: 1;
+
+                    &:hover {
+                        color: @ColorEpDataComplementario;
+                    }
+
+                    &:focus {
+                        outline: 2px solid @ColorEpDataComplementario;
+                        outline-offset: 2px;
+                        border-radius: 3px;
+                    }
+
+                    .eye-icon {
+                        width: 20px;
+                        height: 20px;
+                        stroke: currentColor;
+                        fill: none;
+                    }
+                }
+            }
+
             .ruta-destino {
                 padding: 10px 14px;
                 background-color: #f8f9fa;
