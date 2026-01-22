@@ -1,10 +1,14 @@
-using Negocio;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Modelos.DTO.Roles;
+using Negocio;
+using Utils.Authorization;
 
 namespace Pages.Usuarios
 {
+    [Authorize(Policy = PoliticasAutorizacion.Politicas.GestionRoles)]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public class RolesModel : PageModel
     {
         private readonly IServicioRoles _servicioRoles;

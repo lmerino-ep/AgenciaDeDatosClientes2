@@ -1,8 +1,9 @@
 using Modelos;
 using Modelos.InyeccionDeDependencias;
-using Dapper;
-using MySql.Data.MySqlClient;
+using AgenciaDeDatosBD;
+using AgenciaDeDatosBD.Herramientas;
 using Modelos.DTO;
+using System.Linq;
 
 namespace Datos
 {
@@ -20,23 +21,22 @@ namespace Datos
         /// </summary>
         public async Task<long> RegistrarAccionAsync(AuditoriaDTO auditoria)
         {
-            return await EjecutarConTransaccionAsync(async (conexion, transaccion) =>
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    INSERT INTO Auditoria (
-                        FK_Usuario,
-                        FK_AuditoriaAccion,
-                        Descripcion
-                    ) VALUES (
-                        @FK_Usuario,
-                        @FK_AuditoriaAccion,
-                        @Descripcion
-                    );
-                    SELECT LAST_INSERT_ID();
-                ";
+                Retorno retorno = await bd.Auditoria().RegistrarAccion(
+                    auditoria.FK_Usuario,
+                    auditoria.FK_AuditoriaAccion,
+                    auditoria.Descripcion
+                );
 
-                return await conexion.QuerySingleAsync<long>(consulta, auditoria, transaccion);
-            });
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
+
+                var resultado = retorno.Resultado<Modelos.Auditoria>();
+                return resultado.FirstOrDefault()?.Id ?? 0;
+            }
         }
 
         /// <summary>
@@ -51,45 +51,36 @@ namespace Datos
             int limit = 100,
             int offset = 0)
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerAuditorias(
+                    usuarioId,
+                    accion,
+                    modulo,
+                    fechaInicio,
+                    fechaFin,
+                    limit,
+                    offset
+                );
 
-                    SELECT
-                        A.Id,
-                        A.LastUpdate,
-                        U.Email as UsuarioEmail,
-                        U.Nombre as UsuarioNombre,
-                        AA.Nombre as AccionNombre,
-                        AC.Nombre as CategoriaNombre,
-                        A.Descripcion
-                    FROM Auditoria A
-                    INNER JOIN Usuario U ON A.FK_Usuario = U.Id
-                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
-                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
-                    WHERE
-                        (A.FK_Usuario = @UsuarioId OR @UsuarioId IS NULL)
-                        AND (AA.Nombre = @Accion OR @Accion IS NULL)
-                        AND (AC.Nombre = @Modulo OR @Modulo IS NULL)
-                        AND (A.LastUpdate >= @FechaInicio OR @FechaInicio IS NULL)
-                        AND (A.LastUpdate <= @FechaFin OR @FechaFin IS NULL)
-                    ORDER BY A.LastUpdate DESC
-                    LIMIT @Limit OFFSET @Offset;
-
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                return (await conexion.QueryAsync<AuditoriaConUsuario>(consulta, new
+                if (!retorno.Correcto)
                 {
-                    UsuarioId = usuarioId,
-                    Accion = accion,
-                    Modulo = modulo,
-                    FechaInicio = fechaInicio,
-                    FechaFin = fechaFin,
-                    Limit = limit,
-                    Offset = offset
-                })).ToList();
+                    throw new Exception(retorno.Mensaje);
+                }
+
+                var resultadoNuGet = retorno.Resultado<AgenciaDeDatosBD.Auditoria.AuditoriaConUsuario>();
+                
+                // Convertir de DTOs del NuGet a DTOs del Cliente
+                return resultadoNuGet.Select(a => new AuditoriaConUsuario
+                {
+                    Id = a.Id,
+                    LastUpdate = a.LastUpdate,
+                    UsuarioEmail = a.UsuarioEmail,
+                    UsuarioNombre = a.UsuarioNombre,
+                    AccionNombre = a.AccionNombre,
+                    CategoriaNombre = a.CategoriaNombre,
+                    Descripcion = a.Descripcion
+                }).ToList();
             }
         }
 
@@ -98,27 +89,32 @@ namespace Datos
         /// </summary>
         public async Task<AuditoriaDetalle> ObtenerAuditoriaPorIdAsync(long id)
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerAuditoriaPorId(id);
 
-                    SELECT
-                        A.Id,
-                        A.FK_Usuario,
-                        AA.Nombre as AccionNombre,
-                        AC.Nombre as CategoriaNombre,
-                        A.Descripcion,
-                        A.LastUpdate
-                    FROM Auditoria A
-                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
-                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
-                    WHERE A.Id = @Id;
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
 
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
+                var resultadoNuGet = retorno.Resultado<AgenciaDeDatosBD.Auditoria.AuditoriaDetalle>().FirstOrDefault();
+                
+                if (resultadoNuGet == null)
+                {
+                    return null;
+                }
 
-                return await conexion.QuerySingleOrDefaultAsync<AuditoriaDetalle>(consulta, new { Id = id });
+                // Convertir de DTO del NuGet a DTO del Cliente
+                return new AuditoriaDetalle
+                {
+                    Id = resultadoNuGet.Id,
+                    FK_Usuario = resultadoNuGet.FK_Usuario,
+                    AccionNombre = resultadoNuGet.AccionNombre,
+                    CategoriaNombre = resultadoNuGet.CategoriaNombre,
+                    Descripcion = resultadoNuGet.Descripcion,
+                    LastUpdate = resultadoNuGet.LastUpdate
+                };
             }
         }
 
@@ -127,20 +123,17 @@ namespace Datos
         /// </summary>
         public async Task<int?> ObtenerIdAccionPorNombreAsync(string nombreAccion)
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerIdAccionPorNombre(nombreAccion);
 
-                    SELECT Id
-                    FROM AuditoriaAccion
-                    WHERE Nombre = @Nombre
-                    LIMIT 1;
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
 
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                return await conexion.QuerySingleOrDefaultAsync<int?>(consulta, new { Nombre = nombreAccion });
+                var resultado = retorno.Resultado<int?>();
+                return resultado.FirstOrDefault();
             }
         }
 
@@ -149,25 +142,17 @@ namespace Datos
         /// </summary>
         public async Task<(string AccionNombre, string CategoriaNombre)> ObtenerInfoAccionPorIdAsync(int idAccion)
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerInfoAccionPorId(idAccion);
 
-                    SELECT 
-                        AA.Nombre as AccionNombre,
-                        AC.Nombre as CategoriaNombre
-                    FROM AuditoriaAccion AA
-                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
-                    WHERE AA.Id = @Id;
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
 
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                return await conexion.QuerySingleOrDefaultAsync<(string AccionNombre, string CategoriaNombre)>(
-                    consulta, 
-                    new { Id = idAccion }
-                );
+                var resultado = retorno.Resultado<(string AccionNombre, string CategoriaNombre)>();
+                return resultado.FirstOrDefault();
             }
         }
 
@@ -181,33 +166,23 @@ namespace Datos
             DateTime? fechaInicio = null,
             DateTime? fechaFin = null)
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerTotalAuditorias(
+                    usuarioId,
+                    accion,
+                    modulo,
+                    fechaInicio,
+                    fechaFin
+                );
 
-                    SELECT COUNT(*)
-                    FROM Auditoria A
-                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
-                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
-                    WHERE
-                        (A.FK_Usuario = @UsuarioId OR @UsuarioId IS NULL)
-                        AND (AA.Nombre = @Accion OR @Accion IS NULL)
-                        AND (AC.Nombre = @Modulo OR @Modulo IS NULL)
-                        AND (A.LastUpdate >= @FechaInicio OR @FechaInicio IS NULL)
-                        AND (A.LastUpdate <= @FechaFin OR @FechaFin IS NULL);
-
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                return await conexion.QuerySingleAsync<int>(consulta, new
+                if (!retorno.Correcto)
                 {
-                    UsuarioId = usuarioId,
-                    Accion = accion,
-                    Modulo = modulo,
-                    FechaInicio = fechaInicio,
-                    FechaFin = fechaFin
-                });
+                    throw new Exception(retorno.Mensaje);
+                }
+
+                var resultado = retorno.Resultado<int>();
+                return resultado.FirstOrDefault();
             }
         }
 
@@ -216,26 +191,17 @@ namespace Datos
         /// </summary>
         public async Task<Dictionary<string, int>> ObtenerAccionesPorModuloHoyAsync()
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerAccionesPorModuloHoy();
 
-                    SELECT
-                        AC.Nombre as Modulo,
-                        COUNT(*) as Total
-                    FROM Auditoria A
-                    INNER JOIN AuditoriaAccion AA ON A.FK_AuditoriaAccion = AA.Id
-                    INNER JOIN AuditoriaCategoria AC ON AA.FK_AuditoriaCategoria = AC.Id
-                    WHERE DATE(A.LastUpdate) = CURDATE()
-                    GROUP BY AC.Nombre
-                    ORDER BY Total DESC;
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
 
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                var resultado = await conexion.QueryAsync<(string Modulo, int Total)>(consulta);
-                return resultado.ToDictionary(r => r.Modulo, r => r.Total);
+                var resultado = retorno.Resultado<Dictionary<string, int>>();
+                return resultado.FirstOrDefault() ?? new Dictionary<string, int>();
             }
         }
 
@@ -244,27 +210,17 @@ namespace Datos
         /// </summary>
         public async Task<Dictionary<string, int>> ObtenerTendenciaAccionesUltimos7DiasAsync()
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerTendenciaAccionesUltimos7Dias();
 
-                    SELECT
-                        DATE(A.LastUpdate) as Fecha,
-                        COUNT(*) as Total
-                    FROM Auditoria A
-                    WHERE A.LastUpdate >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-                    GROUP BY DATE(A.LastUpdate)
-                    ORDER BY Fecha ASC;
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
 
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                var resultado = await conexion.QueryAsync<(DateTime Fecha, int Total)>(consulta);
-                return resultado.ToDictionary(
-                    r => r.Fecha.ToString("yyyy-MM-dd"),
-                    r => r.Total
-                );
+                var resultado = retorno.Resultado<Dictionary<string, int>>();
+                return resultado.FirstOrDefault() ?? new Dictionary<string, int>();
             }
         }
 
@@ -273,20 +229,16 @@ namespace Datos
         /// </summary>
         public async Task<List<string>> ObtenerAccionesDisponiblesAsync()
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerAccionesDisponibles();
 
-                    SELECT DISTINCT AA.Nombre
-                    FROM AuditoriaAccion AA
-                    ORDER BY AA.Nombre;
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
 
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                var resultado = await conexion.QueryAsync<string>(consulta);
-                return resultado.ToList();
+                return retorno.Resultado<string>();
             }
         }
 
@@ -295,20 +247,16 @@ namespace Datos
         /// </summary>
         public async Task<List<string>> ObtenerCategoriasDisponiblesAsync()
         {
-            using (MySqlConnection conexion = ObtenerConexionLectura())
+            using (var bd = new BD(_aurora.Lectura, _aurora.Escritura))
             {
-                const string consulta = @"
-                    SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+                Retorno retorno = await bd.Auditoria().ObtenerCategoriasDisponibles();
 
-                    SELECT DISTINCT AC.Nombre
-                    FROM AuditoriaCategoria AC
-                    ORDER BY AC.Nombre;
+                if (!retorno.Correcto)
+                {
+                    throw new Exception(retorno.Mensaje);
+                }
 
-                    SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-                ";
-
-                var resultado = await conexion.QueryAsync<string>(consulta);
-                return resultado.ToList();
+                return retorno.Resultado<string>();
             }
         }
     }

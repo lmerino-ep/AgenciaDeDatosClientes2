@@ -1,10 +1,11 @@
-using Utils.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Modelos.DTO.Metricas;
 using Modelos.InyeccionDeDependencias;
 using Negocio;
+using Utils.Authorization;
 
 namespace Pages.Metricas
 {
@@ -14,8 +15,9 @@ namespace Pages.Metricas
     {
         private readonly IServicioMetricas _servicioMetricas;
         private readonly ILogger<KPIsModel> _logger;
+        private readonly UserManager<Modelos.Autenticacion.Usuario> _userManager;
 
-        public KPIsModel(IServicioMetricas servicioMetricas, ILogger<KPIsModel> logger)
+        public KPIsModel(IServicioMetricas servicioMetricas, ILogger<KPIsModel> logger, UserManager<Modelos.Autenticacion.Usuario> userManager)
         {
             _servicioMetricas = servicioMetricas;
             _logger = logger;
@@ -90,18 +92,28 @@ namespace Pages.Metricas
         {
             try
             {
-                var parametros = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(parametrosJson)
-                    ?? new Dictionary<string, object>();
+                if(User.IsInRole("Dashboard - Exportación de Métricas"))
+                {
+                    var parametros = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(parametrosJson)
+                        ?? new Dictionary<string, object>();
 
-                var resultado = await _servicioMetricas.ExportarKpiAsync(kpiId, parametros, "json");
+                    var resultado = await _servicioMetricas.ExportarKpiAsync(kpiId, parametros, "json");
 
-                var nombreArchivo = $"kpi_{kpiId}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
+                    var nombreArchivo = $"kpi_{kpiId}_{DateTime.Now:yyyyMMdd_HHmmss}.json";
 
-                return File(
-                    System.Text.Encoding.UTF8.GetBytes(resultado.ToJson()),
-                    "application/json",
-                    nombreArchivo
-                );
+                    return File(
+                        System.Text.Encoding.UTF8.GetBytes(resultado.ToJson()),
+                        "application/json",
+                        nombreArchivo
+                    );
+                }
+                else
+                {
+                    int iFK_Usuario = Convert.ToInt32(_userManager.GetUserId(HttpContext.User));
+                    _logger.LogInformation($"El usuario {iFK_Usuario} no tiene permisos para exportar la métrica {kpiId} a JSON", kpiId);
+                    TempData["Error"] = "ERROR: No tienes permisos para exportar métricas";
+                    return RedirectToPage(new { kpiSeleccionado = kpiId });
+                }
             }
             catch (Exception ex)
             {

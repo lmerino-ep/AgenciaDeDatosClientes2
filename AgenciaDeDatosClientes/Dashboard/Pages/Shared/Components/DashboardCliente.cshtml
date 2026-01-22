@@ -1,0 +1,48 @@
+﻿@model IndexModel
+
+<!-- Acciones Rápidas -->
+@if (Model.OpcionesAccionesRapidas != null && Model.OpcionesAccionesRapidas.Any())
+{
+    <section class="seccion-acciones-rapidas">
+        <h2 class="titulo-seccion">Funcionalidades disponibles</h2>
+        <div class="matriz-opciones">
+            @foreach (var opcion in Model.OpcionesAccionesRapidas)
+            {
+                <div class="cuadro-opcion">
+                    <div class="cuadro-opcion-contenido">
+                        <div class="icono">
+                            <i class="@opcion.Icono"></i>
+                        </div>
+                        <h2 class="titulo-opcion">@opcion.Texto</h2>
+                        <p class="descripcion-opcion">@opcion.Descripcion</p>
+                        <a asp-page="@opcion.Pagina" class="btn-ir">Ir a @opcion.Texto</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<!-- Información del Sistema -->
+<section class="seccion-info">
+    <div class="card-ayuda">
+        <h2 class="titulo-seccion">
+            Ayuda
+        </h2>
+
+        <p class="descripcion">¿Necesitas ayuda con el dashboard?</p>
+
+        <ul class="listado-enlaces">
+            <li class="item">
+                <a href="https://www.epdata.es" target="_blank" class="enlace">
+                    <span>Visitar EpData.es</span>
+                </a>
+            </li>
+            <li class="item">
+                <a href="mailto:soporte@epdata.es" class="enlace">
+                    <span>Contactar Soporte</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</section>

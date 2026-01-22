@@ -1,10 +1,14 @@
-using Negocio;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Modelos.DTO.Tokens;
+using Negocio;
+using Utils.Authorization;
 
 namespace Pages.Usuarios
 {
+    [Authorize(Policy = PoliticasAutorizacion.Politicas.GestionTokens)]
+    [ResponseCache(CacheProfileName = "NoCache")]
     public class TokensModel : PageModel
     {
         private readonly IServicioTokens _servicioTokens;

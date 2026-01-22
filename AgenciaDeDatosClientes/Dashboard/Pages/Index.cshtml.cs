@@ -1,16 +1,17 @@
 using AutoLogin.Token;
 using AutoLogin.Verification.Interfaces;
-using Utils.Filters;
-using Utils.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using Modelos.InyeccionDeDependencias;
+using Negocio;
 using Nuget.Helper;
 using NugetPortable.Cache;
 using NugetPortable.Herramientas.CDN;
 using NugetPortable.SQS;
-using Negocio;
+using System.Security.Claims;
+using Utils.Filters;
+using Utils.Logging;
 
 namespace Pages
 {
@@ -26,6 +27,10 @@ namespace Pages
         public int ActividadMensual { get; set; }
         public int AccionesHoy { get; set; }
         public int TotalUsuarios { get; set; }
+
+        //Tipo de usuario
+        public bool EsUsuarioAdmin { get; set; }
+        public bool TieneAccesoAPI { get; set; }
 
         // Datos para gráficos
         public Dictionary<string, int> ActividadMensualUltimos6Meses { get; set; } = new Dictionary<string, int>();
@@ -65,7 +70,7 @@ namespace Pages
             _logger = logger;
             _servicioMetricas = servicioMetricas;
             _servicioAuditoria = servicioAuditoria;
-            
+
             HelperS3 amazonS3 = new HelperS3(
                 s3.Bucket,
                 s3.AccessKeyId,
@@ -89,6 +94,11 @@ namespace Pages
                 var tareaActividadMensual6Meses = Task.FromResult<Dictionary<string, int>>(new Dictionary<string, int>());
                 var tareaAccionesPorModulo = Task.FromResult<Dictionary<string, int>>(new Dictionary<string, int>());
                 var tareaActividadDiaria7Dias = Task.FromResult<Dictionary<string, int>>(new Dictionary<string, int>());
+
+                EsUsuarioAdmin = User.FindFirstValue("FK_UsuarioTipo") != "1" && User.FindFirstValue("FK_UsuarioTipo") != "2";
+                TieneAccesoAPI = User.IsInRole("API - Acceso a maestros") || User.IsInRole("API - Acceso a metadatos") ||
+                                 User.IsInRole("API - Acceso total a datos") || User.IsInRole("API - Acceso a datos de estadísticas") ||
+                                 User.IsInRole("API - Acceso a isla de datos") || User.IsInRole("API - Carga de datos");
 
                 if (User.IsInRole("Dashboard - Consulta de Métricas") ||
                     User.IsInRole("Dashboard - Auditoría") ||
@@ -145,66 +155,115 @@ namespace Pages
                 return;
             }
 
-            // Usuarios (siempre visible para usuarios autenticados)
-            OpcionesAccionesRapidas.Add(new OpcionAccionRapida
-            {
-                Texto = "Usuarios",
-                Icono = "gestion-de-usuarios",
-                Pagina = "/usuarios/listado",
-                Descripcion = "Gestiona usuarios del sistema, sus roles y permisos"
-            });
+            var usuarioTipo = User.FindFirstValue("FK_UsuarioTipo");
+            var esUsuarioCliente = usuarioTipo == "1" || usuarioTipo == "2";
+            var tienePermisosGestion = User.IsInRole("Dashboard - Gestión de Usuarios") || User.IsInRole("Dashboard - Consulta de Usuarios")
+                || User.IsInRole("Dashboard - Gestión de Roles") || User.IsInRole("Dashboard - Gestión de Tokens")
+                || User.IsInRole("Dashboard - Consulta de Métricas") || User.IsInRole("Dashboard - Exportación de Métricas")
+                || User.IsInRole("Dashboard - Gestión de Documentación") || User.IsInRole("Dashboard - Auditoría")
+                || User.IsInRole("Dashboard - Acceso total");
 
-            // Roles
-            if (User.IsInRole("Dashboard - Gestión de Roles") ||
-                User.IsInRole("Dashboard - Acceso total"))
+            if (esUsuarioCliente && !tienePermisosGestion)
             {
+                // Opciones para usuarios tipo 1 (Usuario autenticado) y 2 (Abonado)
+
+                // Gestión de suscripciones
                 OpcionesAccionesRapidas.Add(new OpcionAccionRapida
                 {
-                    Texto = "Roles",
-                    Icono = "gestion-listados",
-                    Pagina = "/roles/listado",
-                    Descripcion = "Visualiza y gestiona los roles del sistema"
+                    Texto = "Gestión de Suscripciones",
+                    Icono = "gestion-suscripciones",
+                    Pagina = "/clientes/suscripciones",
+                    Descripcion = "Gestiona tus suscripciones, consulta facturas y realiza pagos"
                 });
+
+                // Historial de acciones
+                OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                {
+                    Texto = "Historial de Acciones",
+                    Icono = "historial-acciones",
+                    Pagina = "/clientes/historial",
+                    Descripcion = "Consulta tu historial de descargas de series, datos y gráficos"
+                });
+
+                // Consumo de API (solo si tiene acceso a API)
+                if (TieneAccesoAPI)
+                {
+                    OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                    {
+                        Texto = "Consumo de API",
+                        Icono = "consumo-api",
+                        Pagina = "/clientes/consumoApi",
+                        Descripcion = "Consulta los movimientos que has realizado en la API"
+                    });
+                }
             }
-
-            // Métricas y KPIs
-            if (User.IsInRole("Dashboard - Consulta de Métricas") ||
-                User.IsInRole("Dashboard - Exportación de Métricas") ||
-                User.IsInRole("Dashboard - Acceso total"))
+            else
             {
-                OpcionesAccionesRapidas.Add(new OpcionAccionRapida
-                {
-                    Texto = "Métricas y KPIs",
-                    Icono = "mis-graficas",
-                    Pagina = "/metricas/kpis",
-                    Descripcion = "Consulta métricas y KPIs del sistema con gráficos interactivos"
-                });
-            }
+                // Opciones para usuarios administradores
 
-            // Auditoría
-            if (User.IsInRole("Dashboard - Auditoría") ||
-                User.IsInRole("Dashboard - Acceso total"))
-            {
-                OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                if (User.IsInRole("Dashboard - Consulta de Usuarios") || User.IsInRole("Dashboard - Gestión de Usuarios") || User.IsInRole("Dashboard - Acceso total"))
                 {
-                    Texto = "Auditoría",
-                    Icono = "gestion-solicitudes",
-                    Pagina = "/Auditoria/Auditoria",
-                    Descripcion = "Consulta el registro de acciones administrativas del sistema"
-                });
-            }
+                    OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                    {
+                        Texto = "Usuarios",
+                        Icono = "gestion-de-usuarios",
+                        Pagina = "/usuarios/listado",
+                        Descripcion = "Gestiona usuarios del sistema, sus roles y permisos"
+                    });
+                }
 
-            // Documentación
-            if (User.IsInRole("Dashboard - Gestión de Documentación") ||
-                User.IsInRole("Dashboard - Acceso total"))
-            {
-                OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                // Roles
+                if (User.IsInRole("Dashboard - Gestión de Roles") ||
+                    User.IsInRole("Dashboard - Acceso total"))
                 {
-                    Texto = "Documentación",
-                    Icono = "documentacion",
-                    Pagina = "/documentacion/listado",
-                    Descripcion = "Gestiona documentos almacenados"
-                });
+                    OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                    {
+                        Texto = "Roles",
+                        Icono = "gestion-listados",
+                        Pagina = "/roles/listado",
+                        Descripcion = "Visualiza y gestiona los roles del sistema"
+                    });
+                }
+
+                // Métricas y KPIs
+                if (User.IsInRole("Dashboard - Consulta de Métricas") ||
+                    User.IsInRole("Dashboard - Exportación de Métricas") ||
+                    User.IsInRole("Dashboard - Acceso total"))
+                {
+                    OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                    {
+                        Texto = "Métricas y KPIs",
+                        Icono = "mis-graficas",
+                        Pagina = "/metricas/kpis",
+                        Descripcion = "Consulta métricas y KPIs del sistema con gráficos interactivos"
+                    });
+                }
+
+                // Auditoría
+                if (User.IsInRole("Dashboard - Auditoría") ||
+                    User.IsInRole("Dashboard - Acceso total"))
+                {
+                    OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                    {
+                        Texto = "Auditoría",
+                        Icono = "gestion-solicitudes",
+                        Pagina = "/auditoria/auditoria",
+                        Descripcion = "Consulta el registro de acciones administrativas del sistema"
+                    });
+                }
+
+                // Documentación
+                if (User.IsInRole("Dashboard - Gestión de Documentación") ||
+                    User.IsInRole("Dashboard - Acceso total"))
+                {
+                    OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                    {
+                        Texto = "Documentación",
+                        Icono = "documentacion",
+                        Pagina = "/documentacion/listado",
+                        Descripcion = "Gestiona documentos almacenados"
+                    });
+                }
             }
         }
     }

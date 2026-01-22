@@ -17,10 +17,10 @@
     <script type="application/json" id="datos-graficos" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
             actividadMensual = Model.ActividadMensualUltimos6Meses,
-            accionesPorModulo = Model.AccionesPorModuloHoy,
-            actividadDiaria = Model.ActividadDiariaUltimos7Dias
+                accionesPorModulo = Model.AccionesPorModuloHoy,
+                actividadDiaria = Model.ActividadDiariaUltimos7Dias
         }))
-    </script>
+</script>
 }
 
 <!-- Page Header -->
@@ -45,190 +45,16 @@
         </div>
     </section>
 }
-<!-- Estadísticas Rápidas -->
-@if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
-     User.IsInRole("Dashboard - Gestión de Usuarios") ||
-     User.IsInRole("Dashboard - Consulta de Métricas") ||
-     User.IsInRole("Dashboard - Auditoría") ||
-     User.IsInRole("Dashboard - Acceso total"))
+else
 {
-    <section class="seccion-estadisticas">
-        @if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
-            User.IsInRole("Dashboard - Gestión de Usuarios") ||
-            User.IsInRole("Dashboard - Acceso total"))
+    <div class="dashboard-contenedor">
+        @if (Model.EsUsuarioAdmin)
         {
-            <div class="tarjeta-estadistica">
-                <div class="contenido">
-                    <div class="info">
-                        <div class="titulo">Usuarios con Actividad</div>
-                        <div class="valor">@Model.UsuariosActivos.ToString("N0")</div>
-                        <div class="cambio neutro">Únicos en últimos 30 días</div>
-                    </div>
-                </div>
-            </div>
+            @await Html.PartialAsync("Shared/Components/DashboardAdmin", Model);
         }
-
-        @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
-            User.IsInRole("Dashboard - Exportación de Métricas") ||
-            User.IsInRole("Dashboard - Acceso total"))
+        else
         {
-            <div class="tarjeta-estadistica">
-                <div class="contenido">
-                    <div class="info">
-                        <div class="titulo">Actividad Mensual</div>
-                        <div class="valor">@Model.ActividadMensual.ToString("N0")</div>
-                        <div class="cambio neutro">Mes actual</div>
-                    </div>
-                </div>
-            </div>
+            @await Html.PartialAsync("Shared/Components/DashboardCliente", Model);
         }
-
-        @if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
-            User.IsInRole("Dashboard - Gestión de Usuarios") ||
-            User.IsInRole("Dashboard - Acceso total"))
-        {
-            <div class="tarjeta-estadistica">
-                <div class="contenido">
-                    <div class="info">
-                        <div class="titulo">Total de Usuarios</div>
-                        <div class="valor">@Model.TotalUsuarios.ToString("N0")</div>
-                        <div class="cambio neutro">Usuarios activos</div>
-                    </div>
-                </div>
-            </div>
-        }
-
-        @if (User.IsInRole("Dashboard - Auditoría") || User.IsInRole("Dashboard - Acceso total"))
-        {
-            <div class="tarjeta-estadistica">
-                <div class="contenido">
-                    <div class="info">
-                        <div class="titulo">Total de Acciones</div>
-                        <div class="valor">@Model.AccionesHoy.ToString("N0")</div>
-                        <div class="cambio neutro">Realizadas hoy</div>
-                    </div>
-                </div>
-            </div>
-        }
-    </section>
-}
-
-<!-- Gráficos de Resumen -->
-@if (User.IsInRole("Dashboard - Consulta de Métricas") ||
-     User.IsInRole("Dashboard - Auditoría") ||
-     User.IsInRole("Dashboard - Acceso total"))
-{
-    <section class="seccion-graficos">
-        <h2 class="titulo-seccion">Gráficos de Resumen</h2>
-
-        <div class="grid-graficos">
-            @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
-                    User.IsInRole("Dashboard - Acceso total"))
-            {
-                <div class="card-grafico">
-                    <h3 class="titulo-grafico">Actividad Mensual (Últimos 6 Meses)</h3>
-                    <canvas id="graficoActividadMensual"></canvas>
-                </div>
-            }
-
-            @if (User.IsInRole("Dashboard - Consulta de Métricas") ||
-                    User.IsInRole("Dashboard - Acceso total"))
-            {
-                <div class="card-grafico">
-                    <h3 class="titulo-grafico">Actividad Diaria (Últimos 7 Días)</h3>
-                    <canvas id="graficoActividadDiaria"></canvas>
-                </div>
-            }
-
-            @if (User.IsInRole("Dashboard - Auditoría") ||
-                    User.IsInRole("Dashboard - Acceso total"))
-            {
-                <div class="card-grafico">
-                    <h3 class="titulo-grafico">Acciones por Módulo (Hoy)</h3>
-                    <canvas id="graficoAccionesPorModulo"></canvas>
-                </div>
-            }
-        </div>
-    </section>
-}
-
-<!-- Acciones Rápidas -->
-@if (Model.OpcionesAccionesRapidas != null && Model.OpcionesAccionesRapidas.Any())
-{
-    <section class="seccion-acciones-rapidas">
-        <h2 class="titulo-seccion">Funcionalidades disponibles</h2>
-        <div class="matriz-opciones">
-            @foreach (var opcion in Model.OpcionesAccionesRapidas)
-            {
-                <div class="cuadro-opcion">
-                    <div class="cuadro-opcion-contenido">
-                        <div class="icono">
-                            <i class="@opcion.Icono"></i>
-                        </div>
-                        <h2 class="titulo-opcion">@opcion.Texto</h2>
-                        <p class="descripcion-opcion">@opcion.Descripcion</p>
-                        <a asp-page="@opcion.Pagina" class="btn-ir">Ir a @opcion.Texto</a>
-                    </div>
-                </div>
-            }
-        </div>
-    </section>
-}
-
-<!-- Información del Sistema -->
-<section class="seccion-info">
-    <div class="card-info">
-        <h2 class="titulo-seccion">
-            Información del Sistema
-        </h2>
-
-        <div class="info-item">
-            <div class="contenido">
-                <div class="etiqueta">Versión del Dashboard</div>
-                <div class="valor">1.0.0</div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <div class="contenido">
-                <div class="etiqueta">Última actualización</div>
-                <div class="valor">@DateTime.Now.ToString("dd/MM/yyyy")</div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <div class="contenido">
-                <div class="etiqueta">Estado del Sistema</div>
-                <div class="valor">Operativo</div>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <div class="contenido">
-                <div class="etiqueta">Base de Datos</div>
-                <div class="valor">Aurora MySQL</div>
-            </div>
-        </div>
     </div>
-
-    <div class="card-ayuda">
-        <h2 class="titulo-seccion">
-            Ayuda
-        </h2>
-
-        <p class="descripcion">¿Necesitas ayuda con el dashboard?</p>
-
-        <ul class="listado-enlaces">
-            <li class="item">
-                <a href="https://www.epdata.es" target="_blank" class="enlace">
-                    <span>Visitar EpData.es</span>
-                </a>
-            </li>
-            <li class="item">
-                <a href="mailto:soporte@epdata.es" class="enlace">
-                    <span>Contactar Soporte</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-</section>
+}
