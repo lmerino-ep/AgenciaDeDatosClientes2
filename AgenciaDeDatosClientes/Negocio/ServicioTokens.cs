@@ -1,6 +1,7 @@
 using Datos;
 using Microsoft.Extensions.Logging;
 using Modelos.DTO.Tokens;
+using NugetPortable.Helper;
 // using NugetPortable.Helper; // TODO: Habilitar cuando NugetPortable.Helper esté disponible
 
 namespace Negocio
@@ -69,7 +70,7 @@ namespace Negocio
                 if (enviarPorEmail)
                 {
                     TokensUsuario datosUsuario = await _repositorio.ObtenerTokensUsuarioAsync(idUsuario);
-                    bool emailEnviado = await EnviarTokensPorEmailAsync(datosUsuario.Email, nuevoToken, null);
+                    bool emailEnviado = await EnviarTokensPorEmailAsync(datosUsuario.Nombre, datosUsuario.Email, nuevoToken, null);
                     resultado.EmailEnviado = emailEnviado;
                 }
 
@@ -106,7 +107,7 @@ namespace Negocio
                 if (enviarPorEmail)
                 {
                     TokensUsuario datosUsuario = await _repositorio.ObtenerTokensUsuarioAsync(idUsuario);
-                    bool emailEnviado = await EnviarTokensPorEmailAsync(datosUsuario.Email, null, nuevoToken);
+                    bool emailEnviado = await EnviarTokensPorEmailAsync(datosUsuario.Nombre, datosUsuario.Email, null, nuevoToken);
                     resultado.EmailEnviado = emailEnviado;
                 }
 
@@ -145,7 +146,7 @@ namespace Negocio
                 if (enviarPorEmail)
                 {
                     TokensUsuario datosUsuario = await _repositorio.ObtenerTokensUsuarioAsync(idUsuario);
-                    bool emailEnviado = await EnviarTokensPorEmailAsync(datosUsuario.Email, token1, token2);
+                    bool emailEnviado = await EnviarTokensPorEmailAsync(datosUsuario.Nombre, datosUsuario.Email, token1, token2);
                     resultado.EmailEnviado = emailEnviado;
                 }
 
@@ -184,10 +185,8 @@ namespace Negocio
         /// Envía tokens por email al usuario
         /// TODO: Implementar cuando NugetPortable.Helper esté disponible
         /// </summary>
-        private async Task<bool> EnviarTokensPorEmailAsync(string emailDestino, string refreshToken1, string refreshToken2)
+        private async Task<bool> EnviarTokensPorEmailAsync(string nombreUsuario, string emailDestino, string refreshToken1, string refreshToken2)
         {
-            // TODO: Descomentar cuando NugetPortable.Helper esté disponible
-            /*
             try
             {
                 string tokensHtml = "";
@@ -208,13 +207,13 @@ namespace Negocio
                 string cuerpoHtml = $@"
                     <html>
                     <body>
-                        <h2>Tokens de Acceso a la API de EpData</h2>
-                        <p>Estimado usuario,</p>
-                        <p>Se han generado nuevos tokens de acceso para su cuenta:</p>
+                        <h2>Tokens de Acceso a la <a href=""https://api.epdata.es/"">API de EpData</a></h2>
+                        <p>Estimado/a {nombreUsuario},</p>
+                        <p><br>Se han generado nuevos tokens de acceso para su cuenta:</p>
                         {tokensHtml}
-                        <p><strong>IMPORTANTE:</strong> Guarde estos tokens de forma segura. No los comparta con nadie. Estos tokens le permiten acceder a la API de EpData.</p>
-                        <p>Para más información sobre cómo usar estos tokens, consulte la documentación de la API.</p>
-                        <p>Atentamente,<br/>El equipo de EpData</p>
+                        <p><br><strong>IMPORTANTE:</strong> Guarde estos tokens de forma segura. No los comparta con nadie. Estos tokens le permiten acceder a la API de EpData.</p>
+                        <p><br>Para más información sobre cómo usar estos tokens, consulte la <a href=""https://api.epdata.es/documentacion-api"">documentación de la API</a>.</p>
+                        <p><br>Atentamente,<br/>El equipo de EpData</p>
                     </body>
                     </html>
                 ";
@@ -242,7 +241,7 @@ namespace Negocio
                     cuerpoHtml: cuerpoHtml,
                     cuerpoTexto: cuerpoTexto,
                     adjuntos: null,
-                    nombreOrigen: "EpData Dashboard",
+                    nombreOrigen: "EpData",
                     emailOrigen: "noreply@epdata.es",
                     destinatarios: new List<string> { emailDestino },
                     destinatariosCC: null,
@@ -257,15 +256,6 @@ namespace Negocio
                 _logger.LogError(ex, "Error al enviar email con tokens a {Email}", emailDestino);
                 return false;
             }
-            */
-
-            // Implementación temporal: solo registrar en log
-            _logger.LogWarning("Envío de email deshabilitado. Tokens solicitados para {Email}", emailDestino);
-            _logger.LogInformation("RefreshToken1: {Token1}", refreshToken1 ?? "null");
-            _logger.LogInformation("RefreshToken2: {Token2}", refreshToken2 ?? "null");
-
-            await Task.CompletedTask; // Para evitar warning de async
-            return false; // Indicar que el email no se envió
         }
     }
 }
