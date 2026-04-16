@@ -75,6 +75,7 @@ var googleConfig = builder.Configuration.GetSection("Google").Get<Modelos.Inyecc
 var s3Config = builder.Configuration.GetSection("S3").Get<Modelos.InyeccionDeDependencias.S3>();
 var aplicacionConfig = builder.Configuration.GetSection("Configuracion").Get<Configuracion>();
 var cdnConfig = builder.Configuration.GetSection("CDN").Get<Modelos.InyeccionDeDependencias.Cdn>();
+var stripeConfig = builder.Configuration.GetSection("Stripe").Get<Modelos.InyeccionDeDependencias.Stripe>();
 
 // Registrar configuraciones en el ServiceProvider temporal
 tempServices.AddSingleton(redisConfig);
@@ -88,6 +89,7 @@ tempServices.AddSingleton(autoLoginConfig);
 tempServices.AddSingleton(s3Config);
 tempServices.AddSingleton(aplicacionConfig);
 tempServices.AddSingleton(cdnConfig);
+tempServices.AddSingleton(stripeConfig);
 tempServices.AddSingleton<Utils.Secretos.ISecretos, Utils.Secretos.Secretos>();
 
 // Agregar servicios AWS necesarios para la inicialización
@@ -134,6 +136,7 @@ var initializationService = new Utils.Servicios.InfrastructureInitializationServ
     autoLoginConfig,
     s3Config,
     cdnConfig,
+    stripeConfig,
     tempServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Utils.Servicios.InfrastructureInitializationService>>(),
     tempServiceProvider,
     tempServices);

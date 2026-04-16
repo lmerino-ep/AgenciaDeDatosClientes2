@@ -19,6 +19,49 @@
     </environment>
 }
 
+@section scripts {
+    <!-- Datos de KPIs para metricas-kpis.js (plantilla inerte, no script ejecutable) -->
+    <template id="kpis-data">
+        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.KpisDisponibles.Select(k => new {
+                id = k.Id,
+                nombre = k.Nombre,
+                descripcion = k.Descripcion,
+                categoria = k.Categoria,
+                parametros = k.Parametros.Select(p => new {
+                    nombre = p.Nombre,
+                    tipo = p.Tipo,
+                    requerido = p.Requerido,
+                    valorPorDefecto = p.ValorPorDefecto,
+                    descripcion = p.Descripcion
+                })
+            })
+        ))
+    </template>
+
+    @if (Model.Resultado != null && Model.Resultado.Datos.Count > 0)
+    {
+        <template id="resultado-datos">
+            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Datos))
+        </template>
+        <span id="nombre-kpi" hidden>@Model.Resultado.Nombre</span>
+        <span id="kpi-id" hidden>@Model.Resultado.KpiId</span>
+        
+        <!-- Chart.js y plugin de datalabels solo se cargan si el KPI debe generar gráfico -->
+        <script src="~/js/libs/chart.umd.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script src="~/js/libs/chartjs-plugin-datalabels.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    }
+
+    <environment include="Development">
+        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
+
 <div class="page-header">
     <h1 class="page-title">Consulta de Métricas y KPIs</h1>
     <div class="breadcrumb">
@@ -197,47 +240,3 @@
         </div>
     }
 </div>
-
-@section scripts {
-    <!-- Datos de KPIs para JavaScript -->
-    <script type="application/json" id="kpis-data" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
-        @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-            Model.KpisDisponibles.Select(k => new {
-                id = k.Id,
-                nombre = k.Nombre,
-                descripcion = k.Descripcion,
-                categoria = k.Categoria,
-                parametros = k.Parametros.Select(p => new {
-                    nombre = p.Nombre,
-                    tipo = p.Tipo,
-                    requerido = p.Requerido,
-                    valorPorDefecto = p.ValorPorDefecto,
-                    descripcion = p.Descripcion
-                })
-            })
-        ))
-    </script>
-
-    @if (Model.Resultado != null && Model.Resultado.Datos.Count > 0)
-    {
-        <!-- Datos del resultado para el gráfico -->
-        <script type="application/json" id="resultado-datos" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
-            @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Datos))
-        </script>
-        <script type="text/plain" id="nombre-kpi" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">@Model.Resultado.Nombre</script>
-        <script type="text/plain" id="kpi-id" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">@Model.Resultado.KpiId</script>
-        
-        <!-- Chart.js y plugin de datalabels solo se cargan si el KPI debe generar gráfico -->
-        <script src="~/js/libs/chart.umd.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-        <script src="~/js/libs/chartjs-plugin-datalabels.min.js" asp-append-version="true" defer nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-    }
-
-    <environment include="Development">
-        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-        <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-    </environment>
-    <environment include="Staging,Production">
-        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-        <script defer src="~/js/main/metricas-kpis.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-    </environment>
-}

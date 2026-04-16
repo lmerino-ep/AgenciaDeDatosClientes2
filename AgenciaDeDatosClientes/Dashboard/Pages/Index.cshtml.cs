@@ -21,6 +21,7 @@ namespace Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IServicioMetricas _servicioMetricas;
         private readonly IServicioAuditoria _servicioAuditoria;
+        private readonly IServicioSuscripciones _servicioSuscripciones;
 
         // Propiedades para las métricas del dashboard
         public int UsuariosActivos { get; set; }
@@ -30,7 +31,8 @@ namespace Pages
 
         //Tipo de usuario
         public bool EsUsuarioAdmin { get; set; }
-        public bool TieneAccesoAPI { get; set; }
+        public bool EsTrabajadorEuropaPress { get; set; }
+        public bool TieneSuscripcionActiva { get; set; }
 
         // Datos para gráficos
         public Dictionary<string, int> ActividadMensualUltimos6Meses { get; set; } = new Dictionary<string, int>();
@@ -39,6 +41,15 @@ namespace Pages
 
         // Opciones de acciones rápidas
         public List<OpcionAccionRapida> OpcionesAccionesRapidas { get; set; } = new List<OpcionAccionRapida>();
+
+        /// <summary>Título de la pestaña del navegador (ViewData Title).</summary>
+        public string TituloPaginaDashboard { get; set; } = "Dashboard";
+
+        /// <summary>Título principal bajo la cabecera del sitio.</summary>
+        public string TituloBienvenida { get; set; } = "Bienvenido";
+
+        /// <summary>Subtítulo o descripción bajo el título principal.</summary>
+        public string DescripcionBienvenida { get; set; } = string.Empty;
 
         public class OpcionAccionRapida
         {
@@ -64,12 +75,14 @@ namespace Pages
             ISqs sqs,
             Modelos.InyeccionDeDependencias.Sqs sqsConfig,
             IServicioMetricas servicioMetricas,
-            IServicioAuditoria servicioAuditoria
+            IServicioAuditoria servicioAuditoria,
+            IServicioSuscripciones servicioSuscripciones
         )
         {
             _logger = logger;
             _servicioMetricas = servicioMetricas;
             _servicioAuditoria = servicioAuditoria;
+            _servicioSuscripciones = servicioSuscripciones;
 
             HelperS3 amazonS3 = new HelperS3(
                 s3.Bucket,
@@ -95,10 +108,17 @@ namespace Pages
                 var tareaAccionesPorModulo = Task.FromResult<Dictionary<string, int>>(new Dictionary<string, int>());
                 var tareaActividadDiaria7Dias = Task.FromResult<Dictionary<string, int>>(new Dictionary<string, int>());
 
-                EsUsuarioAdmin = User.FindFirstValue("FK_UsuarioTipo") != "1" && User.FindFirstValue("FK_UsuarioTipo") != "2";
-                TieneAccesoAPI = User.IsInRole("API - Acceso a maestros") || User.IsInRole("API - Acceso a metadatos") ||
-                                 User.IsInRole("API - Acceso total a datos") || User.IsInRole("API - Acceso a datos de estadísticas") ||
-                                 User.IsInRole("API - Acceso a isla de datos") || User.IsInRole("API - Carga de datos");
+                var usuarioTipo = User.FindFirstValue("FK_UsuarioTipo") ?? string.Empty;
+                EsUsuarioAdmin = usuarioTipo != "1" && usuarioTipo != "2";
+                EsTrabajadorEuropaPress = usuarioTipo is "2" or "3" or "4" or "5" or "6";
+
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdString, out var fkUsuario))
+                {
+                    var contextoTarifa = await _servicioSuscripciones.ObtenerContextoTarifaAsync(fkUsuario, usuarioTipo);
+                    EsTrabajadorEuropaPress = contextoTarifa.EsTrabajadorEuropaPress;
+                    TieneSuscripcionActiva = contextoTarifa.TieneSuscripcionActiva;
+                }
 
                 if (User.IsInRole("Dashboard - Consulta de Métricas") ||
                     User.IsInRole("Dashboard - Auditoría") ||
@@ -134,6 +154,7 @@ namespace Pages
 
                 // Cargar opciones de acciones rápidas basadas en permisos del usuario
                 CargarOpcionesAccionesRapidas();
+                AplicarTextosBienvenida();
             }
             catch (Exception ex)
             {
@@ -143,6 +164,41 @@ namespace Pages
                 ActividadMensual = 0;
                 AccionesHoy = 0;
                 TotalUsuarios = 0;
+                AplicarTextosBienvenida();
+            }
+        }
+
+        private void AplicarTextosBienvenida()
+        {
+            if (!(User?.Identity?.IsAuthenticated ?? false))
+            {
+                TituloPaginaDashboard = "EpData · Acceso";
+                TituloBienvenida = "Bienvenido";
+                DescripcionBienvenida = "Inicia sesión para acceder a tu cuenta y a las funciones de EpData.";
+                return;
+            }
+
+            if (EsTrabajadorEuropaPress)
+            {
+                TituloPaginaDashboard = "Dashboard de Gestión";
+                TituloBienvenida = "Bienvenido al Dashboard de Gestión";
+                DescripcionBienvenida =
+                    "Panel de control administrativo para la gestión de usuarios, métricas y documentación de EpData.";
+                return;
+            }
+
+            TituloPaginaDashboard = "Mi cuenta EpData";
+            if (TieneSuscripcionActiva)
+            {
+                TituloBienvenida = "Bienvenido a tu espacio en EpData";
+                DescripcionBienvenida =
+                    "Consulta tu plan, descargas, historial y opciones de cuenta desde un solo lugar.";
+            }
+            else
+            {
+                TituloBienvenida = "Bienvenido a tu cuenta EpData";
+                DescripcionBienvenida =
+                    "Gestiona tu suscripción, revisa tu actividad y elige el plan que mejor se adapte a ti.";
             }
         }
 
@@ -184,18 +240,6 @@ namespace Pages
                     Pagina = "/clientes/historial",
                     Descripcion = "Consulta tu historial de descargas de series, datos y gráficos"
                 });
-
-                // Consumo de API (solo si tiene acceso a API)
-                if (TieneAccesoAPI)
-                {
-                    OpcionesAccionesRapidas.Add(new OpcionAccionRapida
-                    {
-                        Texto = "Consumo de API",
-                        Icono = "consumo-api",
-                        Pagina = "/clientes/consumoApi",
-                        Descripcion = "Consulta los movimientos que has realizado en la API"
-                    });
-                }
             }
             else
             {

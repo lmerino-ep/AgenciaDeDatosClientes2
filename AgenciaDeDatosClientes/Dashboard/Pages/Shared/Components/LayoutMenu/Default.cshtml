@@ -42,19 +42,25 @@
     <div class="enlaces oculto-en-xs">
         <!-- Enlaces simplificados - solo logo y mi cuenta -->
     </div>
-    <div>
-        <details class="desplegable" name="navegacion" onclick="fOpcionesMiCuenta()">
-            <summary class="desplegador icono-cierre-menu-lateral-derecho">
-                <span class="icono">
-                    <i class="icono-usuario"></i>
-                </span>
-                <span class="texto-enlace oculto-en-xs">Mi Cuenta</span>
-            </summary>
-        </details>
-        <div class="contenedor-desplegable menu-lateral-derecho">
-            <div class="contenido-desplegable">
-                <div class="menu" id="contenido-opciones-mi-cuenta">
-                    <span class="texto">Cargando...</span>
+    <div class="cabecera-derecha">
+        @if (!string.IsNullOrEmpty(Model.NombrePlanActivoCabecera))
+        {
+            <a href="/clientes/suscripciones" class="cabecera-plan-activo">@Model.NombrePlanActivoCabecera</a>
+        }
+        <div class="cabecera-mi-cuenta">
+            <details class="desplegable" name="navegacion" onclick="fOpcionesMiCuenta()">
+                <summary class="desplegador icono-cierre-menu-lateral-derecho">
+                    <span class="icono">
+                        <i class="icono-usuario"></i>
+                    </span>
+                    <span class="texto-enlace oculto-en-xs">Mi Cuenta</span>
+                </summary>
+            </details>
+            <div class="contenedor-desplegable menu-lateral-derecho">
+                <div class="contenido-desplegable">
+                    <div class="menu" id="contenido-opciones-mi-cuenta">
+                        <span class="texto">Cargando...</span>
+                    </div>
                 </div>
             </div>
         </div>

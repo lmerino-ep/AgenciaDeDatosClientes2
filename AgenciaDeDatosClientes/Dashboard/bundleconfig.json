@@ -109,5 +109,35 @@
       "enabled": true,
       "renameLocals": false
     }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/suscripciones-landing.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/suscripciones-landing.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/main/clientes-historial-descargas.min.js",
+    "inputFiles": [
+      "wwwroot/js/main/clientes-historial-descargas.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/include/layout-menu-cuenta.min.js",
+    "inputFiles": [
+      "wwwroot/js/include/layout-menu-cuenta.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
   }
 ]

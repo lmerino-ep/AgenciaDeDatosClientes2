@@ -1,7 +1,7 @@
 @page
 @model IndexModel
 @{
-    ViewData["Title"] = "Dashboard de Gestión";
+    ViewData["Title"] = Model.TituloPaginaDashboard;
 }
 
 @section scripts {
@@ -23,38 +23,40 @@
 </script>
 }
 
-<!-- Page Header -->
-<div class="page-header">
-    <h1 class="page-title">Bienvenido al Dashboard de Gestión</h1>
-    <p class="page-description">
-        Panel de control administrativo para la gestión de usuarios, métricas y documentación de EpData.
-    </p>
-</div>
-
-@if (!(User?.Identity?.IsAuthenticated ?? false))
-
-{
-
-    <!-- Mensaje para usuarios no autenticados -->
-    <section class="seccion-mensaje-no-autenticado">
-        <div class="card-mensaje">
-            <p class="mensaje-texto">
-                Este es un dashboard interno de gestión de EpData. Debes iniciar sesión para acceder a sus funciones.
-            </p>
-            <a asp-page="/login" class="btn-iniciar-sesion">Iniciar sesión</a>
-        </div>
-    </section>
-}
-else
-{
-    <div class="dashboard-contenedor">
-        @if (Model.EsUsuarioAdmin)
-        {
-            @await Html.PartialAsync("Shared/Components/DashboardAdmin", Model);
-        }
-        else
-        {
-            @await Html.PartialAsync("Shared/Components/DashboardCliente", Model);
-        }
+<div class="dashboard-hilo-principal">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title">@Model.TituloBienvenida</h1>
+        <p class="page-description">@Model.DescripcionBienvenida</p>
     </div>
-}
+
+    @if (!(User?.Identity?.IsAuthenticated ?? false))
+    {
+        <!-- Mensaje para usuarios no autenticados -->
+        <section class="seccion-mensaje-no-autenticado">
+            <div class="card-mensaje">
+                <p class="mensaje-texto">
+                    Este es un dashboard interno de gestión de EpData. Debes iniciar sesión para acceder a sus funciones.
+                </p>
+                <a asp-page="/login" class="btn-iniciar-sesion">Iniciar sesión</a>
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="dashboard-contenedor">
+            @if (Model.EsTrabajadorEuropaPress)
+            {
+                @await Html.PartialAsync("Shared/Components/DashboardAdmin", Model);
+            }
+            else if (Model.TieneSuscripcionActiva)
+            {
+                @await Html.PartialAsync("Shared/Components/DashboardClienteSuscripcionActiva", Model);
+            }
+            else
+            {
+                @await Html.PartialAsync("Shared/Components/DashboardClientePlanFree", Model);
+            }
+        </div>
+    }
+</div>

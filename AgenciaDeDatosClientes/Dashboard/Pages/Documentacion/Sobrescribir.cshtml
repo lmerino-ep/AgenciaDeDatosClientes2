@@ -20,6 +20,17 @@
     </environment>
 }
 
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-sobrescribir.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        <script defer src="~/js/main/documentacion-sobrescribir.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
+
 <div class="page-header">
     <h1 class="page-title">Subir Nueva Versión</h1>
     <div class="breadcrumb">
@@ -106,15 +117,4 @@
         <a href="/documentacion/listado@(!string.IsNullOrEmpty(Model.CarpetaRuta) ? $"?CarpetaRuta={Uri.EscapeDataString(Model.CarpetaRuta)}" : "")" class="boton boton-secundario">Cancelar</a>
     </div>
 </form>
-
-@section scripts {
-    <environment include="Development">
-        <script defer src="~/js/plugins/modalcargando.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-        <script defer src="~/js/main/documentacion-sobrescribir.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-    </environment>
-    <environment include="Staging,Production">
-        <script defer src="~/js/plugins/modalcargando.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-        <script defer src="~/js/main/documentacion-sobrescribir.min.js" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-    </environment>
-}
 

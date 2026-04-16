@@ -871,10 +871,13 @@
     background-color: rgba(0, 0, 0, 0.5);
     align-items: center;
     justify-content: center;
-    
-    &[style*="flex"],
+
     &.visible {
-        display: flex !important;
+        display: flex;
+    }
+
+    &[style*="flex"] {
+        display: flex;
     }
 }
 

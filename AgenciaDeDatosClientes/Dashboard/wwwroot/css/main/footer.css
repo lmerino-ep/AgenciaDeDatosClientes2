@@ -1,6 +1,6 @@
 ﻿/************************************ sticky.ini ***********************************/
 .pie-de-pagina {
-  background: linear-gradient(#ffffff, #a4f1fa);
+  background: linear-gradient(#f9f9f9, #a4f1fa);
   display: flex;
   justify-content: end;
   align-content: center;
@@ -862,6 +862,51 @@
   border-bottom: 2px solid;
   right: -1px;
   top: -1px;
+}
+.icono .gestion-suscripciones {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid;
+  border-top: 4px solid;
+  border-radius: 3px;
+  bottom: 4px;
+}
+.icono .gestion-suscripciones::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  background: currentColor;
+  height: 4px;
+  width: 4px;
+  border-radius: 2px;
+  right: 2px;
+  bottom: 2px;
+}
+.icono .historial-acciones {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 100%;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 2px currentColor;
+}
+.icono .historial-acciones::after {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-left: 2px solid;
+  border-bottom: 2px solid;
+  top: 1px;
+  left: 5px;
 }
 .seccion-tabla .icono .carpeta {
   display: inline-block;

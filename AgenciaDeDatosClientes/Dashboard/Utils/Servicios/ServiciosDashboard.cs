@@ -19,6 +19,7 @@ namespace Utils.Servicios
             services.AddScoped<RepositorioRoles>();
             services.AddScoped<RepositorioTokens>();
             services.AddScoped<IRepositorioMetricas, RepositorioMetricas>();
+            services.AddScoped<IRepositorioSuscripciones, RepositorioSuscripciones>();
 
             return services;
         }
@@ -34,6 +35,7 @@ namespace Utils.Servicios
             services.AddScoped<IServicioTokens, ServicioTokens>();
             services.AddScoped<IServicioMetricas, ServicioMetricas>();
             services.AddScoped<IServicioDocumentacionS3, ServicioDocumentacionS3>();
+            services.AddScoped<IServicioSuscripciones, ServicioSuscripciones>();
 
             // HttpContextAccessor para acceder al contexto HTTP en servicios
             services.AddHttpContextAccessor();

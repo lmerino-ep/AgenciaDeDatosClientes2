@@ -1,0 +1,37 @@
+@page "/clientes/suscripciones"
+@using Modelos.Actividad.Suscripciones
+@model Pages.Clientes.SuscripcionesModel
+@{
+    ViewData["Title"] = "Suscripciones";
+}
+
+@section estilos {
+    <link href="~/css/main/suscripciones-landing.css" rel="stylesheet" asp-append-version="true" />
+}
+
+@section scripts {
+    @if (Model.EstadoVista == GestionSuscripcionesEstado.SinSuscripcionActiva)
+    {
+        <environment include="Development">
+            <script defer src="~/js/main/suscripciones-landing.js" asp-append-version="true" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        </environment>
+        <environment include="Staging,Production">
+            <script defer src="~/js/main/suscripciones-landing.min.js" asp-append-version="true" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+        </environment>
+    }
+}
+
+<div class="suscripciones-pagina" id="suscripciones-pagina">
+    @switch (Model.EstadoVista)
+    {
+        case GestionSuscripcionesEstado.SinSuscripcionActiva:
+            <partial name="Components/Suscripciones/LandingSinSuscripcion" model="Model" />
+            break;
+        case GestionSuscripcionesEstado.ConSuscripcionStripe:
+            <partial name="Components/Suscripciones/LandingGestionSuscripcion" model="Model" />
+            break;
+        case GestionSuscripcionesEstado.CuentaInternaEuropaPress:
+            <partial name="Components/Suscripciones/LandingCuentaInternaEuropaPress" />
+            break;
+    }
+</div>

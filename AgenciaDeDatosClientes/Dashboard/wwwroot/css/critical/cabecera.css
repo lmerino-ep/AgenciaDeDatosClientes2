@@ -106,6 +106,31 @@ body {
   color: #05576B;
   margin: auto 20px;
 }
+.layout-header .cabecera .cabecera-derecha {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(10px, 2vw, 22px);
+  flex-shrink: 0;
+}
+.layout-header .cabecera .cabecera-plan-activo {
+  font-size: 17px;
+  font-weight: 600;
+  color: #05576B;
+  text-decoration: none;
+  white-space: nowrap;
+  max-width: min(200px, 32vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.layout-header .cabecera .cabecera-plan-activo:hover {
+  text-decoration: underline;
+}
+.layout-header .cabecera .cabecera-mi-cuenta {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
 .layout-header .cabecera .desplegable {
   cursor: pointer;
 }

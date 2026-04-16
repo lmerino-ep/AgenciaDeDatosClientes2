@@ -71,15 +71,12 @@ namespace Controllers
                     {
                         Texto = "Dashboard",
                         Icono = "home",
-                        Pagina = "/index"
+                        Pagina = "/"
                     });
 
                     // Verificar tipo de usuario
                     var usuarioTipo = User.FindFirstValue("FK_UsuarioTipo");
                     var esUsuarioCliente = usuarioTipo == "1" || usuarioTipo == "2";
-                    var tieneAccesoAPI = User.IsInRole("API - Acceso a maestros") || User.IsInRole("API - Acceso a metadatos")
-                        || User.IsInRole("API - Acceso total a datos")   || User.IsInRole("API - Acceso a datos de estadísticas")
-                        || User.IsInRole("API - Acceso a isla de datos") || User.IsInRole("API - Carga de datos");
 
                     var tienePermisosGestion = User.IsInRole("Dashboard - Gestión de Usuarios")
                         || User.IsInRole("Dashboard - Consulta de Usuarios") || User.IsInRole("Dashboard - Gestión de Roles")
@@ -106,17 +103,6 @@ namespace Controllers
                             Icono = "historial-acciones",
                             Pagina = "/clientes/historial"
                         });
-
-                        // Consumo de API (solo si tiene acceso a API)
-                        if (tieneAccesoAPI)
-                        {
-                            opciones.Add(new OpcionMiCuenta
-                            {
-                                Texto = "Consumo de API",
-                                Icono = "consumo-api",
-                                Pagina = "/clientes/consumo-api"
-                            });
-                        }
                     }
                     else
                     {

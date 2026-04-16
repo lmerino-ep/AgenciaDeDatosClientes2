@@ -1,4 +1,4 @@
-﻿@model IndexModel
+@model IndexModel
 
 <!-- Acciones Rápidas -->
 @if (Model.OpcionesAccionesRapidas != null && Model.OpcionesAccionesRapidas.Any())
@@ -23,26 +23,19 @@
     </section>
 }
 
-<!-- Información del Sistema -->
-<section class="seccion-info">
-    <div class="card-ayuda">
-        <h2 class="titulo-seccion">
-            Ayuda
-        </h2>
-
-        <p class="descripcion">¿Necesitas ayuda con el dashboard?</p>
-
-        <ul class="listado-enlaces">
-            <li class="item">
-                <a href="https://www.epdata.es" target="_blank" class="enlace">
-                    <span>Visitar EpData.es</span>
-                </a>
-            </li>
-            <li class="item">
-                <a href="mailto:soporte@epdata.es" class="enlace">
-                    <span>Contactar Soporte</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+<section class="seccion-ayuda-dashboard" aria-labelledby="dashboard-ayuda-titulo-cliente">
+    <h2 class="titulo-seccion" id="dashboard-ayuda-titulo-cliente">Ayuda</h2>
+    <p class="descripcion">¿Necesitas ayuda con el dashboard?</p>
+    <ul class="listado-enlaces">
+        <li class="item">
+            <a href="https://www.epdata.es" target="_blank" class="enlace" rel="noopener noreferrer">
+                <span>Visitar EpData.es</span>
+            </a>
+        </li>
+        <li class="item">
+            <a href="mailto:contacto@epdata.es" class="enlace">
+                <span>Contactar con soporte</span>
+            </a>
+        </li>
+    </ul>
 </section>

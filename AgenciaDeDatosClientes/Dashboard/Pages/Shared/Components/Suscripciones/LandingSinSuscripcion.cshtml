@@ -1,0 +1,30 @@
+@model Pages.Clientes.SuscripcionesModel
+
+@if (Model.MostrarAvisoLimiteDescargas)
+{
+    <section class="seccion-info suscripcion-aviso-descarga-limite" role="alert" aria-live="polite">
+        <div class="suscripcion-aviso-descarga-limite-banner">
+            <span class="suscripcion-aviso-descarga-limite-icono" aria-hidden="true">!</span>
+            <div class="suscripcion-aviso-descarga-limite-contenido">
+                <strong class="suscripcion-aviso-descarga-limite-titulo">Límite de descargas del plan Free agotado</strong>
+                <p class="suscripcion-aviso-descarga-limite-mensaje">
+                    Has sido redirigido a esta página porque has agotado el límite de descargas de tu plan Free en este periodo.
+                    Contrata un plan de pago para seguir descargando datos en EpData.
+                </p>
+            </div>
+        </div>
+    </section>
+}
+
+<div class="page-header">
+    <h1 class="page-title">Nuestros planes</h1>
+    <p class="page-description">
+        Siempre podrás cambiar de plan. Los datos que descargues son tuyos para siempre.
+    </p>
+</div>
+
+<partial name="Components/Suscripciones/SelectorIntervaloFacturacionSuscripciones" />
+<partial name="Components/Suscripciones/PlanesNuestros" model="Model" />
+<partial name="Components/Suscripciones/TablaComparativaSuscripciones" />
+<partial name="Components/Suscripciones/PreguntasFrecuentesSuscripciones" />
+<partial name="Components/Suscripciones/CtaSuscripciones" />

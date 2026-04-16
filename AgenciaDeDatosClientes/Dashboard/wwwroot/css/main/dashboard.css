@@ -2,10 +2,18 @@
 .layout-body {
   min-height: calc(100vh - 70px - 80px);
   background-color: #f9f9f9;
-  padding: 40px;
+  padding: 40px 40px 56px 40px;
+}
+.layout-body .dashboard-hilo-principal {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 .layout-body .page-header {
   margin-bottom: 40px;
+  text-align: center;
 }
 .layout-body .page-header .page-title {
   font-size: 2rem;
@@ -103,6 +111,7 @@
   font-weight: 600;
   color: #383838;
   margin-bottom: 20px;
+  text-align: center;
 }
 .layout-body .seccion-graficos .grid-graficos {
   display: grid;
@@ -193,6 +202,7 @@
   background-color: #077f9c;
 }
 .layout-body .seccion-acciones-rapidas {
+  margin-top: 40px;
   margin-bottom: 40px;
 }
 .layout-body .seccion-acciones-rapidas .titulo-seccion {
@@ -200,6 +210,7 @@
   font-weight: 600;
   color: #383838;
   margin-bottom: 20px;
+  text-align: center;
 }
 .layout-body .seccion-acciones-rapidas .matriz-opciones {
   display: flex;
@@ -344,6 +355,126 @@
   flex-wrap: wrap;
   gap: 20px;
 }
+.layout-body .seccion-info.dashboard-banner-mejorar-plan {
+  display: flex;
+  flex: 1 1 100%;
+  width: 100%;
+  max-width: 100%;
+  justify-content: center;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-inner {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 36px;
+  border: 1px solid rgba(5, 87, 107, 0.12);
+  border-left: 4px solid #05576B;
+  background: #fff;
+  box-sizing: border-box;
+  text-align: left;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-titulo {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #05576B;
+  margin: 0 0 16px 0;
+  line-height: 1.25;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-separador {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 0 0 20px 0;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-texto {
+  margin: 0 0 24px 0;
+  color: #595959;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-btn {
+  display: inline-block;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  border-radius: 6px;
+  box-sizing: border-box;
+  text-align: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-btn-primario {
+  display: inline-block;
+  padding: 8px 16px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid white;
+  border-radius: 4px;
+  background-color: #05576B;
+  color: white;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  border-color: #05576B;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-btn-primario:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-btn-primario:hover {
+  background-color: #077792;
+  border-color: #077792;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-btn-secundario {
+  background: #fff;
+  color: #595959;
+  border: 1px solid #d0d0d0;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-btn-secundario:hover {
+  border-color: #05576B;
+  color: #05576B;
+}
+.layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-pie {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #595959;
+}
+@media (max-width: 767px) {
+  .layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-inner {
+    padding: 24px 20px;
+    max-width: 100%;
+  }
+  .layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-titulo {
+    font-size: 1.4rem;
+  }
+  .layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .layout-body .seccion-info.dashboard-banner-mejorar-plan .dashboard-banner-mejorar-plan-btn {
+    width: 100%;
+  }
+}
 .layout-body .seccion-info .card-info {
   background: white;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
@@ -469,6 +600,514 @@
 .layout-body .seccion-info .card-ayuda .listado-enlaces .item .enlace .icono {
   font-size: 16px;
 }
+.layout-body .seccion-info .historial-descargas {
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
+  background: #fff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 30px;
+  max-width: 100%;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-cabecera h3 {
+  margin: 0;
+  color: #05576B;
+  font-size: 1.5rem;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 550px;
+  width: 100%;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  margin-bottom: 0;
+  table-layout: auto;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table thead {
+  background-color: #05576B;
+  color: white;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table thead th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table thead th.historial-descargas-col-tipo {
+  text-align: center;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table tbody tr {
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.2s ease;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table tbody tr:hover {
+  background-color: #f5f5f5;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table tbody tr:last-child {
+  border-bottom: none;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table tbody td {
+  padding: 12px 15px;
+  font-size: 0.95rem;
+  color: #333;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-tabla-scroll table tbody td.historial-descargas-col-tipo {
+  text-align: center;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-resumen {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-resumen p {
+  margin: 0;
+  color: #05576B;
+  font-weight: bold;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-resumen p strong {
+  color: #05576B;
+}
+.layout-body .seccion-info .historial-descargas .enlace-representacion {
+  color: #05576B;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.layout-body .seccion-info .historial-descargas .enlace-representacion:hover {
+  color: #0D7F91;
+}
+.layout-body .seccion-info .historial-descargas .texto-sin-dato {
+  color: #999;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-col-tipo {
+  width: 1%;
+  white-space: nowrap;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-check {
+  display: inline-block;
+  min-width: 1.5em;
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-check-ok {
+  color: #398917;
+}
+.layout-body .seccion-info .historial-descargas .historial-descargas-check-no {
+  color: #cd0000;
+  font-weight: 600;
+}
+.layout-body .seccion-ayuda-dashboard {
+  background: #fff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-top: 24px;
+  margin-bottom: 0;
+  padding: 28px 32px 40px;
+  border: 1px solid rgba(5, 87, 107, 0.12);
+}
+.layout-body .seccion-ayuda-dashboard .titulo-seccion {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #383838;
+  margin-bottom: 12px;
+}
+.layout-body .seccion-ayuda-dashboard .descripcion {
+  margin-bottom: 16px;
+  color: #595959;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.layout-body .seccion-ayuda-dashboard .listado-enlaces {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item {
+  margin-bottom: 10px;
+}
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item:last-child {
+  margin-bottom: 0;
+}
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item .enlace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item .enlace,
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item .enlace:visited,
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item .enlace:focus,
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item .enlace:active,
+.layout-body .seccion-ayuda-dashboard .listado-enlaces .item .enlace:hover {
+  color: #05576B;
+  text-decoration: none;
+}
+.layout-body .suscripcion-flujo-gracias {
+  max-width: 920px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-hero {
+  position: relative;
+  text-align: center;
+  padding: 40px 36px 44px;
+  margin-bottom: 32px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(5, 87, 107, 0.1), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  background: linear-gradient(145deg, #fff8ee 0%, #f0fafc 38%, #dff5f7 72%, #fffef6 100%);
+  border: 1px solid rgba(5, 87, 107, 0.1);
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-hero::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -15%;
+  width: 55%;
+  height: 120%;
+  background: radial-gradient(ellipse at center, rgba(255, 222, 5, 0.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-medalla {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-medalla .suscripcion-flujo-gracias-icono-check {
+  width: 88px;
+  height: 88px;
+  color: #05576B;
+  filter: drop-shadow(0 6px 14px rgba(5, 87, 107, 0.2));
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-titulo {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.65rem, 4vw, 2.15rem);
+  font-weight: 700;
+  color: #05576B;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-lead {
+  position: relative;
+  z-index: 1;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: #383838;
+  margin: 0 auto 14px;
+  max-width: 38em;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-meta {
+  position: relative;
+  z-index: 1;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: #595959;
+  margin: 0 auto;
+  max-width: 36em;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-refuerzo {
+  margin-bottom: 28px;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-seccion-titulo {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #383838;
+  text-align: center;
+  margin: 0 0 22px 0;
+  line-height: 1.3;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjetas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjeta {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px 20px 24px;
+  margin: 0;
+  background: #fff;
+  border: 1px solid rgba(5, 87, 107, 0.1);
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjeta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(5, 87, 107, 0.12);
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjeta-icono {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #9de8fa, #fffadb);
+  color: #05576B;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjeta-icono svg {
+  width: 24px;
+  height: 24px;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjeta-texto {
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: #383838;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjeta-texto strong {
+  color: #05576B;
+  font-weight: 700;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-cta {
+  background: #fff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  text-align: center;
+  padding: 32px 28px 36px;
+  margin-bottom: 24px;
+  border-radius: 14px;
+  border: 1px solid rgba(5, 87, 107, 0.12);
+  background: linear-gradient(180deg, #fff 0%, #fafcfb 100%);
+  box-sizing: border-box;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-cta-titulo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #05576B;
+  margin: 0 0 10px 0;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-cta-texto {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #595959;
+  margin: 0 auto 22px;
+  max-width: 32em;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px 18px;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-primario {
+  padding: 8px 16px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid white;
+  border-radius: 4px;
+  background-color: #05576B;
+  color: white;
+  display: inline-block;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(5, 87, 107, 0.25);
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-primario:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-primario:hover {
+  background-color: #066f88;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario {
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 20px;
+  border: 2px solid #05576B;
+  border-radius: 8px;
+  text-decoration: none;
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario:visited,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario:focus,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario:active,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario:hover {
+  color: #05576B;
+  text-decoration: none;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario:hover {
+  background: rgba(5, 87, 107, 0.08);
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-pie {
+  text-align: center;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #595959;
+  margin: 0;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-enlace-pie {
+  font-weight: 600;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-enlace-pie,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-enlace-pie:visited,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-enlace-pie:focus,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-enlace-pie:active,
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-enlace-pie:hover {
+  color: #05576B;
+  text-decoration: none;
+}
+.layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-pie-sep {
+  margin: 0 0.35em;
+  color: #999999;
+}
+.layout-body .suscripcion-flujo-cancelada {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+.layout-body .suscripcion-flujo-cancelada .page-header {
+  margin-bottom: 28px;
+}
+.layout-body .suscripcion-flujo-cancelada .page-header .page-title {
+  color: #05576B;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-recuperacion {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 28px 32px 32px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(5, 87, 107, 0.12);
+  border-left: 4px solid #05576B;
+  background: #fff;
+  box-sizing: border-box;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-recuperacion-titulo {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #05576B;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-beneficios {
+  margin: 0 0 24px 0;
+  padding-left: 1.25rem;
+  color: #383838;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-beneficios li {
+  margin-bottom: 8px;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-beneficios li:last-child {
+  margin-bottom: 0;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-acciones-primarias {
+  margin-bottom: 16px;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-btn-primario {
+  padding: 8px 16px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border: 1px solid white;
+  border-radius: 4px;
+  background-color: #05576B;
+  color: white;
+  display: inline-block;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 14px 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(5, 87, 107, 0.22);
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-btn-primario:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-btn-primario:hover {
+  background-color: #066f88;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-pista {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #595959;
+  line-height: 1.55;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-secundaria {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  font-size: 0.98rem;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-enlace-secundario {
+  font-weight: 600;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-enlace-secundario,
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-enlace-secundario:visited,
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-enlace-secundario:focus,
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-enlace-secundario:active,
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-enlace-secundario:hover {
+  color: #05576B;
+  text-decoration: none;
+}
+.layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-separador {
+  color: #595959;
+  user-select: none;
+}
 @media (max-width: 1199px) {
   .layout-body .seccion-estadisticas .tarjeta-estadistica {
     flex: 1 1 auto;
@@ -481,7 +1120,7 @@
 }
 @media (max-width: 767px) {
   .layout-body {
-    padding: 20px;
+    padding: 20px 20px 48px 20px;
   }
   .layout-body .page-header {
     margin-bottom: 20px;
@@ -504,5 +1143,47 @@
   .layout-body .seccion-info .card-info,
   .layout-body .seccion-info .card-ayuda {
     width: 100%;
+  }
+  .layout-body .seccion-ayuda-dashboard {
+    padding: 24px 20px 32px;
+  }
+  .layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-recuperacion {
+    padding: 22px 20px 26px;
+  }
+  .layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-recuperacion-titulo {
+    font-size: 1.2rem;
+  }
+  .layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-btn-primario {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .layout-body .suscripcion-flujo-cancelada .suscripcion-flujo-cancelada-secundaria {
+    flex-direction: column;
+    text-align: center;
+  }
+  .layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-hero {
+    padding: 28px 20px 32px;
+  }
+  .layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-medalla .suscripcion-flujo-gracias-icono-check {
+    width: 72px;
+    height: 72px;
+  }
+  .layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-tarjetas {
+    grid-template-columns: 1fr;
+  }
+  .layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-cta {
+    padding: 26px 20px 30px;
+  }
+  .layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-primario,
+  .layout-body .suscripcion-flujo-gracias .suscripcion-flujo-gracias-btn-secundario {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: center;
   }
 }

@@ -1,0 +1,93 @@
+@model Pages.Clientes.SuscripcionesModel
+
+<div class="page-header">
+    <h1 class="page-title">Tu suscripción</h1>
+    <p class="page-description">
+        Gestiona el cobro, descarga facturas y cambia de plan desde el portal seguro de Stripe.
+    </p>
+</div>
+
+<section class="seccion-info suscripciones-gestion-activa">
+    <div class="card-ayuda">
+        <h2 class="titulo-seccion">Estado</h2>
+        @if (Model.SuscripcionActiva?.TieneCancelacionProgramada == true)
+        {
+            <p class="suscripciones-aviso-cancelacion-programada" role="status">
+                Has solicitado la cancelación. Sigues teniendo acceso a tu plan hasta el
+                <strong>@Model.SuscripcionActiva!.FechaFin!.Value.ToString("yyyy-MM-dd")</strong> (fecha de fin de periodo en Stripe).
+                El estado en Stripe puede seguir mostrándose como «active» hasta entonces.
+            </p>
+        }
+        <ul class="listado-enlaces">
+            <li class="item"><span><strong>Plan:</strong> @(Model.SuscripcionActiva?.PlanNombre ?? "—")</span></li>
+            <li class="item"><span><strong>Estado en Stripe:</strong> @(Model.SuscripcionActiva?.Estado ?? "—")</span></li>
+            <li class="item"><span><strong>Inicio:</strong> @(Model.SuscripcionActiva?.FechaInicio.ToString("yyyy-MM-dd") ?? "—")</span></li>
+            @if (Model.SuscripcionActiva?.FechaFin != null)
+            {
+                <li class="item"><span><strong>Fin previsto:</strong> @Model.SuscripcionActiva.FechaFin.Value.ToString("yyyy-MM-dd")</span></li>
+            }
+        </ul>
+        <p class="descripcion">
+            Para <strong>pausar, cancelar o cambiar de plan</strong>, abre el portal de cliente de Stripe (misma cuenta con la que pagas).
+        </p>
+        @if (!string.IsNullOrWhiteSpace(Model.SuscripcionActiva?.StripeCustomerId))
+        {
+            <p>
+                <a href="/stripe/portal" class="btn-iniciar-sesion">Gestionar suscripción y método de pago</a>
+            </p>
+        }
+        else
+        {
+            <p class="descripcion">No se encontró el identificante de cliente de Stripe en tu cuenta. Si necesitas gestionar el cobro, escribe a <a href="mailto:contacto@epdata.es">contacto@epdata.es</a>.</p>
+        }
+    </div>
+</section>
+
+<section class="seccion-info suscripciones-gestion-activa">
+    <div class="card-ayuda">
+        <h2 class="titulo-seccion">Facturas recientes</h2>
+        @if (Model.FacturasRecientes.Count == 0)
+        {
+            <p>No hay facturas disponibles todavía.</p>
+        }
+        else
+        {
+            <div class="suscripciones-tabla-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Número</th>
+                            <th scope="col">Fecha</th>
+                            <th scope="col">Importe</th>
+                            <th scope="col">Enlace</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var f in Model.FacturasRecientes)
+                        {
+                            <tr>
+                                <td>@(f.Numero ?? f.Id)</td>
+                                <td>@f.Fecha.ToString("yyyy-MM-dd")</td>
+                                <td>@f.ImporteTexto</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(f.UrlHostedInvoice))
+                                    {
+                                        <a href="@f.UrlHostedInvoice" target="_blank" rel="noopener noreferrer">Ver factura</a>
+                                    }
+                                    else if (!string.IsNullOrWhiteSpace(f.UrlPdf))
+                                    {
+                                        <a href="@f.UrlPdf" target="_blank" rel="noopener noreferrer">PDF</a>
+                                    }
+                                    else
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>

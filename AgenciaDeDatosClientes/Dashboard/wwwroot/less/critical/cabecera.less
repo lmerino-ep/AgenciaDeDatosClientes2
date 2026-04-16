@@ -1,4 +1,4 @@
-﻿
+
 @import "../helper.less";
 
 @ZIndexCabecera: 1060;
@@ -110,6 +110,35 @@ html, body {
                     margin: auto 20px;
                 }
             }
+        }
+
+        .cabecera-derecha {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: clamp(10px, 2vw, 22px);
+            flex-shrink: 0;
+        }
+
+        .cabecera-plan-activo {
+            font-size: @TamTexto;
+            font-weight: 600;
+            color: @ColorEpDataComplementario;
+            text-decoration: none;
+            white-space: nowrap;
+            max-width: min(200px, 32vw);
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        .cabecera-mi-cuenta {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
         }
 
         .desplegable {

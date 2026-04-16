@@ -581,7 +581,6 @@
   font-size: 0.9rem;
   color: #6c757d;
 }
-/* Password Input Wrapper with Toggle */
 .seccion-formulario .card .form-group .input-group {
   display: flex;
   gap: 10px;
@@ -764,9 +763,11 @@
   align-items: center;
   justify-content: center;
 }
-.modal-confirmacion[style*="flex"],
 .modal-confirmacion.visible {
-  display: flex !important;
+  display: flex;
+}
+.modal-confirmacion[style*="flex"] {
+  display: flex;
 }
 .modal-confirmacion-contenido {
   background-color: white;

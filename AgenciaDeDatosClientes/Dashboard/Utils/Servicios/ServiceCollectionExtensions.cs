@@ -478,6 +478,7 @@ namespace Utils.Servicios
             services.AddSingleton(tempServiceProvider.GetRequiredService<Configuracion>());
             //services.AddSingleton(tempServiceProvider.GetRequiredService<Modelos.InyeccionDeDependencias.Api>());
             services.AddSingleton(tempServiceProvider.GetRequiredService<Modelos.InyeccionDeDependencias.Cdn>());
+            services.AddSingleton(tempServiceProvider.GetRequiredService<Modelos.InyeccionDeDependencias.Stripe>());
 
             // ===== REGISTRAR SERVICIOS AWS NUEVAMENTE =====
             // CRÍTICO: NO transferir IAmazonSQS,IAmazonSecretsManager,IAmazonCloudWatchLogs desde tempServiceProvider 

@@ -1,0 +1,110 @@
+@page "/clientes/historial"
+@model Pages.Clientes.HistorialModel
+@{
+    ViewData["Title"] = "Historial de acciones";
+}
+
+@section scripts {
+    <environment include="Development">
+        <script defer src="~/js/main/clientes-historial-descargas.js" asp-append-version="true" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+    <environment include="Staging,Production">
+        <script defer src="~/js/main/clientes-historial-descargas.min.js" asp-append-version="true" fetchpriority="low" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    </environment>
+}
+
+<div class="page-header">
+    <h1 class="page-title">Historial de descargas</h1>
+    <p class="page-description">
+        Por cada representación: CSV, JSON e imagen descargados (marca verde si ya lo has descargado al menos una vez).
+    </p>
+</div>
+
+<section class="seccion-info">
+    @if (Model.Descargas.Count == 0)
+    {
+        <div class="card-ayuda">
+            <p>Todavía no hay descargas registradas para tu cuenta.</p>
+        </div>
+    }
+    else
+    {
+        <div class="historial-descargas">
+            <div class="historial-descargas-cabecera">
+                <h3>Descargas</h3>
+            </div>
+            <div class="historial-descargas-tabla-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Representación</th>
+                            <th scope="col" class="historial-descargas-col-tipo">CSV</th>
+                            <th scope="col" class="historial-descargas-col-tipo">JSON</th>
+                            <th scope="col" class="historial-descargas-col-tipo">Imagen</th>
+                            <th scope="col">Última actividad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Descargas)
+                        {
+                            var urlRep = Model.UrlPublicaRepresentacion(item);
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(item.RepresentacionTitulo))
+                                    {
+                                        if (urlRep is not null)
+                                        {
+                                            <a href="@urlRep" target="_blank" rel="noopener noreferrer" class="enlace-representacion">@item.RepresentacionTitulo</a>
+                                        }
+                                        else
+                                        {
+                                            @item.RepresentacionTitulo
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="texto-sin-dato">—</span>
+                                    }
+                                </td>
+                                <td class="historial-descargas-col-tipo">
+                                    @if (item.FechaUltimaDescargaCsv.HasValue)
+                                    {
+                                        <span class="historial-descargas-check historial-descargas-check-ok historial-fecha-en-titulo" data-fecha-utc="@Model.FormatoInstanteUtcIso(item.FechaUltimaDescargaCsv.Value)">✓</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="historial-descargas-check historial-descargas-check-no" title="Sin descargas CSV">X</span>
+                                    }
+                                </td>
+                                <td class="historial-descargas-col-tipo">
+                                    @if (item.FechaUltimaDescargaJson.HasValue)
+                                    {
+                                        <span class="historial-descargas-check historial-descargas-check-ok historial-fecha-en-titulo" data-fecha-utc="@Model.FormatoInstanteUtcIso(item.FechaUltimaDescargaJson.Value)">✓</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="historial-descargas-check historial-descargas-check-no" title="Sin descargas JSON">X</span>
+                                    }
+                                </td>
+                                <td class="historial-descargas-col-tipo">
+                                    @if (item.FechaUltimaDescargaImagen.HasValue)
+                                    {
+                                        <span class="historial-descargas-check historial-descargas-check-ok historial-fecha-en-titulo" data-fecha-utc="@Model.FormatoInstanteUtcIso(item.FechaUltimaDescargaImagen.Value)">✓</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="historial-descargas-check historial-descargas-check-no" title="Sin descargas de imagen">X</span>
+                                    }
+                                </td>
+                                <td><span class="historial-fecha-en-celda" data-fecha-utc="@Model.FormatoInstanteUtcIso(item.FechaUltimaActividad)"></span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="historial-descargas-resumen">
+                <p>Total de representaciones: <strong>@Model.Descargas.Count</strong></p>
+            </div>
+        </div>
+    }
+</section>

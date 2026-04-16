@@ -5,7 +5,10 @@ let kpisData = [];
 function inicializarKpisData() {
     const dataElement = document.getElementById('kpis-data');
     if (dataElement) {
-        kpisData = JSON.parse(dataElement.textContent);
+        const raw = (dataElement.textContent || '').trim();
+        if (raw) {
+            kpisData = JSON.parse(raw);
+        }
     }
 }
 
@@ -642,9 +645,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const nombreKpiElement = document.getElementById('nombre-kpi');
     const kpiIdElement = document.getElementById('kpi-id');
     if (resultadoDataElement && nombreKpiElement) {
-        const resultadoDatos = JSON.parse(resultadoDataElement.textContent);
-        const nombreKpi = decodificarEntidadesHTML(nombreKpiElement.textContent);
-        const kpiId = kpiIdElement ? kpiIdElement.textContent : null;
+        const resultadoDatos = JSON.parse((resultadoDataElement.textContent || '').trim());
+        const nombreKpi = decodificarEntidadesHTML((nombreKpiElement.textContent || '').trim());
+        const kpiId = kpiIdElement ? (kpiIdElement.textContent || '').trim() : null;
         if (resultadoDatos && resultadoDatos.length > 0) {
             // Función para intentar inicializar el gráfico
             function intentarInicializarGrafico() {

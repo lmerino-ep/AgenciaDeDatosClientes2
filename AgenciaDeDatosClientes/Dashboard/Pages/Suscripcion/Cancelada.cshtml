@@ -1,0 +1,38 @@
+@page "/suscripcion/cancelada"
+@model Pages.Suscripcion.CanceladaModel
+@{
+    ViewData["Title"] = "Pago no completado";
+}
+
+<div class="suscripcion-flujo-cancelada">
+    <div class="page-header">
+        <h1 class="page-title">No hemos completado tu suscripción</h1>
+        <p class="page-description">
+            Has salido del proceso de pago antes de finalizar. <strong>No se ha realizado ningún cargo</strong> en tu tarjeta.
+            Cuando quieras puedes volver a elegir plan y completar el alta en unos clics.
+        </p>
+    </div>
+
+    <section class="suscripcion-flujo-cancelada-recuperacion" aria-labelledby="suscripcion-cancelada-recuperacion-titulo">
+        <h2 class="suscripcion-flujo-cancelada-recuperacion-titulo" id="suscripcion-cancelada-recuperacion-titulo">
+            Si sigue teniendo sentido para ti conseguir:
+        </h2>
+        <ul class="suscripcion-flujo-cancelada-beneficios">
+            <li>Descargas ilimitadas y formatos avanzados con el plan Profesional</li>
+            <li>Mismo precio fundador si lo activas desde aquí</li>
+            <li>Pago seguro con Stripe; cambias o cancelas cuando quieras</li>
+        </ul>
+        <div class="suscripcion-flujo-cancelada-acciones-primarias">
+            <a href="/clientes/suscripciones" class="suscripcion-flujo-cancelada-btn-primario">Ver planes y completar la suscripción</a>
+        </div>
+        <p class="suscripcion-flujo-cancelada-pista">
+            Te llevamos a la página de planes para que elijas facturación mensual o anual y retomes el checkout.
+        </p>
+    </section>
+
+    <section class="suscripcion-flujo-cancelada-secundaria" aria-label="Otras opciones">
+        <a href="/" class="suscripcion-flujo-cancelada-enlace-secundario">Volver al dashboard</a>
+        <span class="suscripcion-flujo-cancelada-separador" aria-hidden="true">·</span>
+        <a href="mailto:contacto@epdata.es" class="suscripcion-flujo-cancelada-enlace-secundario">¿Dudas? Escríbenos</a>
+    </section>
+</div>

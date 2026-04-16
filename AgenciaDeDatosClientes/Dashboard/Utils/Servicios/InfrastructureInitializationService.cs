@@ -29,6 +29,7 @@ namespace Utils.Servicios
         private readonly Modelos.InyeccionDeDependencias.AutoLogin _autoLoginConfig;
         private readonly Modelos.InyeccionDeDependencias.S3 _s3Config;
         private readonly Modelos.InyeccionDeDependencias.Cdn _cdnConfig;
+        private readonly Modelos.InyeccionDeDependencias.Stripe _stripeConfig;
         private readonly ILogger<InfrastructureInitializationService> _logger;
         private readonly IServiceProvider _serviceProviderTemporal;
         private readonly IServiceCollection _serviceCollection;
@@ -48,6 +49,7 @@ namespace Utils.Servicios
             Modelos.InyeccionDeDependencias.AutoLogin autoLoginConfig,
             Modelos.InyeccionDeDependencias.S3 s3Config,
             Modelos.InyeccionDeDependencias.Cdn cdnConfig,
+            Modelos.InyeccionDeDependencias.Stripe stripeConfig,
             ILogger<InfrastructureInitializationService> logger,
             IServiceProvider serviceProviderTemporal,
             IServiceCollection serviceCollection)
@@ -64,6 +66,7 @@ namespace Utils.Servicios
             _autoLoginConfig = autoLoginConfig;
             _s3Config = s3Config;
             _cdnConfig = cdnConfig;
+            _stripeConfig = stripeConfig;
             _logger = logger;
             _serviceProviderTemporal = serviceProviderTemporal;
             _serviceCollection = serviceCollection;
@@ -127,6 +130,7 @@ namespace Utils.Servicios
                 var autoLoginTask = InitializeAutoLoginAsync(cts.Token);
                 var s3Task = InitializeS3Async(cts.Token);
                 var cdnTask = InitializeCdnAsync(cts.Token);
+                var stripeTask = InitializeStripeAsync(cts.Token);
 
                 await Task.WhenAll(
                     redisTask, 
@@ -138,7 +142,8 @@ namespace Utils.Servicios
                     googleTask, 
                     autoLoginTask, 
                     s3Task, 
-                    cdnTask
+                    cdnTask,
+                    stripeTask
                 );
 
                 _logger.LogInformation("Toda la infraestructura inicializada correctamente");
@@ -982,6 +987,64 @@ namespace Utils.Servicios
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error inicializando CDN");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Inicializa Stripe resolviendo claves desde Secrets Manager si es necesario.
+        /// </summary>
+        private async Task InitializeStripeAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Inicializando Stripe...");
+
+                if (_stripeConfig.UseSecretsManager && !string.IsNullOrEmpty(_stripeConfig.NombreDelSecreto))
+                {
+                    var secretosLogger = _serviceProviderTemporal.GetRequiredService<ILogger<Secretos.Secretos>>();
+                    var secretos = new Secretos.Secretos(_secretsManager, secretosLogger);
+                    var secretString = await secretos.GetSecretAsync(_stripeConfig.NombreDelSecreto, cancellationToken);
+
+                    if (!string.IsNullOrEmpty(_stripeConfig.SecretoClaveSecretKey))
+                    {
+                        var secretKey = secretos.GetSecretValue(secretString, _stripeConfig.SecretoClaveSecretKey);
+                        if (!string.IsNullOrEmpty(secretKey))
+                        {
+                            _stripeConfig.SecretKey = secretKey;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(_stripeConfig.SecretoClavePublishableKey))
+                    {
+                        var publishableKey = secretos.GetSecretValue(secretString, _stripeConfig.SecretoClavePublishableKey);
+                        if (!string.IsNullOrEmpty(publishableKey))
+                        {
+                            _stripeConfig.PublishableKey = publishableKey;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(_stripeConfig.SecretoClaveWebhookSecret))
+                    {
+                        if (!string.IsNullOrWhiteSpace(_stripeConfig.WebhookSecret))
+                        {
+                            _logger.LogInformation(
+                                "Stripe WebhookSecret ya definido en configuración (p. ej. Stripe CLI); no se sobrescribe desde Secrets Manager.");
+                        }
+                        else
+                        {
+                            var webhookSecret = secretos.GetSecretValue(secretString, _stripeConfig.SecretoClaveWebhookSecret);
+                            if (!string.IsNullOrEmpty(webhookSecret))
+                            {
+                                _stripeConfig.WebhookSecret = webhookSecret;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inicializando Stripe");
                 throw;
             }
         }

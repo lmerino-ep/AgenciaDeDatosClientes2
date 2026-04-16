@@ -13,6 +13,11 @@
     <link href="~/css/main/usuarios.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
 }
 
+@section scripts {
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
+}
+
 <div class="page-header">
     <h1 class="page-title">Editar Rol</h1>
     <div class="breadcrumb">
@@ -73,10 +78,5 @@ else
     <div class="alerta alerta-error">
         <p>No se pudo cargar la información del rol.</p>
     </div>
-}
-
-@section scripts {
-    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()"></script>
 }
 

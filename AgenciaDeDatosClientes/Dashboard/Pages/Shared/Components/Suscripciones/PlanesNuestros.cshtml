@@ -1,0 +1,75 @@
+@model Pages.Clientes.SuscripcionesModel
+@{
+    var idAnual = Model.PlanProfesionalAnual?.Id;
+    var idMensual = Model.PlanProfesionalMensual?.Id;
+    var idCheckoutInicial = idAnual ?? idMensual;
+    var puedeContratarProfesional = idCheckoutInicial.HasValue && idCheckoutInicial.Value > 0;
+}
+
+<section class="seccion-info suscripciones-planes">
+    <div class="suscripciones-planes-grid">
+        <article class="suscripcion-plan-tarjeta">
+            <h2 class="suscripcion-plan-titulo">Explorador / Free</h2>
+            <p class="suscripcion-plan-precio">Gratis</p>
+            <p class="suscripcion-plan-periodo">Para siempre</p>
+            <ul class="suscripcion-plan-lista">
+                <li><span class="suscripcion-plan-si">✓</span> Consulta ilimitada de datos</li>
+                <li><span class="suscripcion-plan-si">✓</span> Hasta 3 descargas/mes</li>
+                <li><span class="suscripcion-plan-si">✓</span> Visualizaciones básicas</li>
+                <li><span class="suscripcion-plan-si">✓</span> Exportaciones en formatos estándar (CSV, JSON)</li>
+                <li><span class="suscripcion-plan-no">X</span> Sin acceso API</li>
+                <li><span class="suscripcion-plan-no">X</span> Sin soporte prioritario</li>
+            </ul>
+        </article>
+
+        <article class="suscripcion-plan-tarjeta suscripcion-plan-tarjeta-recomendada"
+                 id="suscripcion-plan-profesional"
+                 data-checkout-anual-id="@(idAnual?.ToString() ?? "")"
+                 data-checkout-mensual-id="@(idMensual?.ToString() ?? "")"
+                 data-texto-precio-anual="12 €/año"
+                 data-texto-periodo-anual="Precio fundador — solo 1 €/mes"
+                 data-texto-precio-mensual="1 €/mes"
+                 data-texto-periodo-mensual="Precio fundador — solo 12 €/año">
+            <p class="suscripcion-plan-badge">Recomendado</p>
+            <h2 class="suscripcion-plan-titulo">Profesional</h2>
+            <p class="suscripcion-plan-precio" id="suscripcion-plan-profesional-precio">12 €/año</p>
+            <p class="suscripcion-plan-periodo" id="suscripcion-plan-profesional-periodo">Precio fundador — solo 1 €/mes</p>
+            <ul class="suscripcion-plan-lista">
+                <li><span class="suscripcion-plan-si">✓</span> Todo lo del plan Explorador</li>
+                <li><span class="suscripcion-plan-si">✓</span> Descargas ilimitadas</li>
+                <li><span class="suscripcion-plan-si">✓</span> Exportación en todos los formatos</li>
+                <li><span class="suscripcion-plan-si">✓</span> Visualizaciones avanzadas</li>
+                <li><span class="suscripcion-plan-si">✓</span> Alertas de actualización de datos</li>
+            </ul>
+            @if (puedeContratarProfesional)
+            {
+                <form id="suscripcion-plan-profesional-form"
+                      method="post"
+                      action="/stripe/checkout/@idCheckoutInicial"
+                      class="suscripcion-plan-form">
+                    <button type="submit" class="btn-iniciar-sesion">Contratar Plan Profesional</button>
+                </form>
+            }
+            else
+            {
+                <p class="suscripcion-plan-aviso">Plan en configuración. Contacta con soporte.</p>
+            }
+        </article>
+
+        <article class="suscripcion-plan-tarjeta">
+            <h2 class="suscripcion-plan-titulo">Corporativo</h2>
+            <p class="suscripcion-plan-precio">A medida</p>
+            <p class="suscripcion-plan-periodo">Desde 200 €/mes</p>
+            <ul class="suscripcion-plan-lista">
+                <li><span class="suscripcion-plan-si">✓</span> Todo lo del plan Profesional</li>
+                <li><span class="suscripcion-plan-si">✓</span> Acceso API completo (token + endpoints)</li>
+                <li><span class="suscripcion-plan-si">✓</span> SLA y soporte técnico dedicado</li>
+                <li><span class="suscripcion-plan-si">✓</span> Integración en CMS / dashboards</li>
+                <li><span class="suscripcion-plan-si">✓</span> Descargas masivas y entorno de prueba</li>
+            </ul>
+            <p class="suscripcion-plan-form">
+                <a href="mailto:contacto@epdata.es" class="btn-iniciar-sesion">Contactar con un agente</a>
+            </p>
+        </article>
+    </div>
+</section>

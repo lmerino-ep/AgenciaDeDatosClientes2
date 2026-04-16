@@ -1,0 +1,768 @@
+@import "../helper.less";
+
+@SuscripcionAnchoMax: 1200px;
+@SuscripcionCtaBleedLayoutBody: 40px;
+@SuscripcionCtaBleedLayoutBodyXs: 20px;
+
+.suscripciones-pagina {
+    width: 100%;
+    box-sizing: border-box;
+
+    .seccion-info.suscripcion-aviso-descarga-limite {
+        display: block;
+        width: 100%;
+        max-width: @SuscripcionAnchoMax;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 28px;
+        box-sizing: border-box;
+    }
+
+    .suscripcion-aviso-descarga-limite-banner {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 18px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 22px 26px 24px;
+        border-radius: 12px;
+        border: 2px solid darken(@ColorNaranjaAdvertencia, 8%);
+        background: lighten(@ColorNaranjaAdvertencia, 30%);
+    }
+
+    .suscripcion-aviso-descarga-limite-icono {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 1.45rem;
+        font-weight: 800;
+        line-height: 1;
+        color: #fff;
+        background: darken(@ColorNaranjaAdvertencia, 18%);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .suscripcion-aviso-descarga-limite-contenido {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .suscripcion-aviso-descarga-limite-titulo {
+        display: block;
+        font-size: 1.2rem;
+        font-weight: 800;
+        line-height: 1.35;
+        color: darken(@ColorNaranjaAdvertencia, 38%);
+        margin: 0 0 10px 0;
+        letter-spacing: 0.01em;
+    }
+
+    .suscripcion-aviso-descarga-limite-mensaje {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.55;
+        font-weight: 500;
+        color: @ColorNegro;
+    }
+
+    .page-header,
+    .suscripciones-intervalo,
+    .seccion-info:not(.suscripciones-cta) {
+        max-width: @SuscripcionAnchoMax;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .page-header {
+        margin-bottom: 32px;
+        text-align: center;
+
+        .page-title {
+            color: @ColorEpDataComplementario;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .page-description {
+            color: @ColorGrisClaro;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin: 0 auto;
+        }
+    }
+
+    .suscripciones-intervalo {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 28px;
+
+        .suscripciones-intervalo-pista {
+            position: relative;
+            display: inline-flex;
+            align-items: stretch;
+            background: #ebebeb;
+            border-radius: 999px;
+            padding: 4px;
+            gap: 0;
+        }
+
+        .suscripciones-intervalo-indicador {
+            position: absolute;
+            z-index: 0;
+            top: 4px;
+            bottom: 4px;
+            left: 4px;
+            width: calc((100% - 8px) / 2);
+            background: #111;
+            border-radius: 999px;
+            transition: transform 0.28s ease;
+            pointer-events: none;
+        }
+
+        .suscripciones-intervalo-pista--mensual .suscripciones-intervalo-indicador {
+            transform: translateX(100%);
+        }
+
+        .suscripciones-intervalo-opcion {
+            position: relative;
+            z-index: 1;
+            flex: 1 1 50%;
+            min-width: 112px;
+            padding: 10px 22px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #111;
+            border-radius: 999px;
+            transition: color 0.2s ease;
+
+            &:focus-visible {
+                outline: 2px solid @ColorEpDataComplementario;
+                outline-offset: 2px;
+            }
+
+            &.is-active {
+                color: #fff;
+            }
+        }
+    }
+
+    .seccion-info {
+        margin-bottom: 40px;
+    }
+
+    .seccion-info.suscripciones-gestion-activa {
+        display: block;
+        width: 100%;
+        max-width: @SuscripcionAnchoMax;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+
+        .card-ayuda {
+            flex: none;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+    }
+
+    .suscripciones-aviso-cancelacion-programada {
+        margin: 0 0 16px 0;
+        padding: 14px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(207, 151, 37, 0.45);
+        background: lighten(@ColorNaranjaAdvertencia, 42%);
+        color: @ColorNegro;
+        font-size: 0.98rem;
+        line-height: 1.55;
+    }
+
+    .seccion-info.suscripciones-comparativa,
+    .seccion-info.suscripciones-faq,
+    .seccion-info.suscripciones-cta {
+        display: block;
+    }
+
+    .suscripciones-planes {
+        display: block;
+        padding-right: 20px;
+        padding-left: 20px;
+
+        .suscripciones-planes-grid {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        #suscripcion-plan-profesional {
+            scroll-margin-top: 88px;
+        }
+
+        .suscripcion-plan-tarjeta {
+            .estilos-caja();
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 28px 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.25s ease, transform 0.2s ease;
+
+            &:hover {
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            }
+
+            &.suscripcion-plan-tarjeta-recomendada {
+                border-color: @ColorEpDataComplementarioClaro;
+                box-shadow: 0 4px 20px rgba(5, 87, 107, 0.15);
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, @ColorEpDataComplementario, @ColorEpDataComplementarioClaro);
+                    border-radius: 4px 4px 0 0;
+                }
+            }
+        }
+
+        .suscripcion-plan-badge {
+            display: inline-block;
+            align-self: flex-start;
+            background-color: @ColorEpDataComplementario;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .suscripcion-plan-titulo {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: @ColorNegro;
+            margin: 0 0 8px 0;
+            line-height: 1.25;
+        }
+
+        .suscripcion-plan-precio {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: @ColorEpDataComplementario;
+            margin: 0 0 6px 0;
+        }
+
+        .suscripcion-plan-periodo {
+            font-size: 0.95rem;
+            color: @ColorGrisClaro;
+            margin: 0 0 20px 0;
+            line-height: 1.4;
+        }
+
+        .suscripcion-plan-lista {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px 0;
+            flex: 1 1 auto;
+
+            li {
+                font-size: 0.95rem;
+                color: @ColorNegro;
+                line-height: 1.5;
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+            }
+        }
+
+        .suscripcion-plan-si {
+            color: @ColorExito;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .suscripcion-plan-no {
+            color: @ColorError;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .suscripcion-plan-form {
+            margin-top: auto;
+            padding-top: 8px;
+
+            .btn-iniciar-sesion {
+                .boton(@ColorEpDataComplementario, white);
+                width: 100%;
+                font-size: 1rem;
+                font-weight: 600;
+                padding: 12px 20px;
+                border: none;
+                text-decoration: none;
+                box-sizing: border-box;
+
+                &:hover {
+                    background-color: lighten(@ColorEpDataComplementario, 8%);
+                }
+            }
+        }
+
+        .suscripcion-plan-aviso {
+            font-size: 0.9rem;
+            color: @ColorAdvertencia;
+            margin: 0;
+            text-align: center;
+        }
+    }
+
+    .suscripciones-comparativa {
+        .page-title {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        &-escritorio {
+            display: block;
+
+            .suscripciones-tabla-scroll {
+                overflow-x: auto;
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            }
+
+            .suscripciones-tabla-comparativa tbody tr:nth-child(even) td {
+                background: #fafafa;
+            }
+        }
+
+        &-movil {
+            display: none;
+
+            .suscripciones-comparativa-bloque {
+                border-radius: 4px;
+                overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+                border: 1px solid rgba(0, 0, 0, 0.06);
+
+                .suscripciones-tabla-scroll {
+                    overflow-x: auto;
+                    border-radius: 0;
+                    box-shadow: none;
+                }
+            }
+
+            .suscripciones-comparativa-pista {
+                position: relative;
+                display: flex;
+                align-items: stretch;
+                flex-wrap: nowrap;
+                background: #ebebeb;
+                padding: 4px;
+                gap: 0;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+                .suscripciones-comparativa-indicador {
+                    position: absolute;
+                    z-index: 0;
+                    top: 4px;
+                    bottom: 4px;
+                    left: 4px;
+                    width: calc((100% - 8px) / 3);
+                    background: #111;
+                    border-radius: 6px;
+                    transition: transform 0.28s ease;
+                    pointer-events: none;
+                }
+
+                &.suscripciones-comparativa-pista--plan-1 .suscripciones-comparativa-indicador {
+                    transform: translateX(100%);
+                }
+
+                &.suscripciones-comparativa-pista--plan-2 .suscripciones-comparativa-indicador {
+                    transform: translateX(200%);
+                }
+
+                .suscripciones-comparativa-opcion {
+                    position: relative;
+                    z-index: 1;
+                    flex: 1 1 33.333%;
+                    min-width: 0;
+                    padding: 10px 8px;
+                    border: none;
+                    background: transparent;
+                    cursor: pointer;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    letter-spacing: 0.04em;
+                    text-transform: uppercase;
+                    color: #111;
+                    border-radius: 6px;
+                    transition: color 0.2s ease;
+
+                    &:focus-visible {
+                        outline: 2px solid @ColorEpDataComplementario;
+                        outline-offset: 2px;
+                    }
+
+                    &.is-active {
+                        color: #fff;
+                    }
+                }
+            }
+
+            .suscripciones-tabla-comparativa tbody tr:nth-child(even) td:not([hidden]) {
+                background: #fafafa;
+            }
+        }
+
+        .suscripciones-tabla-comparativa {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            font-size: 0.95rem;
+
+            thead {
+                background-color: @ColorEpDataComplementario;
+                color: #fff;
+
+                th {
+                    padding: 14px 16px;
+                    text-align: center;
+                    font-weight: 600;
+                    white-space: nowrap;
+
+                    &:first-child {
+                        text-align: left;
+                    }
+                }
+            }
+
+            tbody {
+                th[scope="row"] {
+                    text-align: left;
+                    font-weight: 600;
+                    color: @ColorEpDataComplementario;
+                    background: @ColorEpDataClaro;
+                    padding: 12px 16px;
+                    border-bottom: 1px solid #e0e0e0;
+                }
+
+                td {
+                    padding: 12px 16px;
+                    text-align: center;
+                    color: @ColorNegro;
+                    border-bottom: 1px solid #eee;
+                    vertical-align: middle;
+                }
+
+                tr:last-child td,
+                tr:last-child th {
+                    border-bottom: none;
+                }
+            }
+        }
+
+        .suscripcion-tabla-si {
+            color: @ColorExito;
+            font-weight: 700;
+        }
+
+        .suscripcion-tabla-no {
+            color: @ColorError;
+            font-weight: 700;
+        }
+    }
+
+    .suscripciones-faq {
+        .page-title {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .acordeon-secciones {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .acordeon-item {
+            margin-bottom: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #fff;
+
+            &:nth-child(even) {
+                background-color: @ColorEpDataClaro;
+            }
+        }
+
+        .acordeon-titulo {
+            width: 100%;
+            padding: 18px 22px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            color: @ColorEpDataComplementario;
+            font-weight: 700;
+            text-align: left;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background-color: rgba(5, 87, 107, 0.04);
+            }
+
+            .acordeon-texto {
+                flex: 1;
+                padding-right: 12px;
+            }
+
+            .acordeon-icono {
+                font-size: 1.4rem;
+                font-weight: 400;
+                color: @ColorEpDataOscuro;
+                flex-shrink: 0;
+                width: 1.5rem;
+                text-align: center;
+            }
+        }
+
+        .acordeon-contenido {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+
+            .contenido-seccion {
+                padding: 10px 22px 22px 22px;
+            }
+
+            .texto-seccion {
+                font-size: 1rem;
+                color: @ColorGrisClaro;
+                line-height: 1.65;
+                margin: 0;
+                text-align: left;
+            }
+        }
+    }
+
+    .suscripciones-cta {
+        display: block;
+        text-align: center;
+        box-sizing: border-box;
+        margin-left: -@SuscripcionCtaBleedLayoutBody;
+        margin-right: -@SuscripcionCtaBleedLayoutBody;
+        width: calc(100% + 2 * @SuscripcionCtaBleedLayoutBody);
+        max-width: none;
+        padding: 48px calc(24px + @SuscripcionCtaBleedLayoutBody);
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        background: @ColorEpDataClaro;
+
+        .page-title {
+            color: @ColorEpDataComplementario;
+            margin-bottom: 16px;
+        }
+
+        .page-description {
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 12px;
+        }
+
+        .suscripciones-cta-botones {
+            margin: 24px 0;
+
+            .btn-iniciar-sesion {
+                .boton(@ColorEpDataComplementario, white);
+                font-size: 1.1rem;
+                padding: 14px 36px;
+                text-decoration: none;
+                border: none;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(5, 87, 107, 0.25);
+
+                &:hover {
+                    background-color: lighten(@ColorEpDataComplementario, 6%);
+                }
+            }
+        }
+
+        a[href^="mailto:"] {
+            color: @ColorEpDataEnlace;
+            font-weight: 600;
+        }
+    }
+
+    .card-ayuda {
+        .titulo-seccion {
+            color: @ColorEpDataComplementario;
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+        }
+
+        .listado-enlaces .item span {
+            font-size: 0.98rem;
+            line-height: 1.5;
+        }
+
+        .descripcion {
+            color: @ColorGrisClaro;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .btn-iniciar-sesion {
+            .boton(@ColorEpDataComplementario, white);
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            padding: 12px 24px;
+            border: none;
+
+            &:hover {
+                background-color: lighten(@ColorEpDataComplementario, 6%);
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+
+            thead {
+                background: @ColorEpDataComplementario;
+                color: #fff;
+
+                th {
+                    padding: 12px 14px;
+                    text-align: left;
+                    font-weight: 600;
+                }
+            }
+
+            tbody td {
+                padding: 10px 14px;
+                border-bottom: 1px solid #eee;
+            }
+
+            tbody tr:hover {
+                background: #f9f9f9;
+            }
+
+            a {
+                color: @ColorEpDataComplementario;
+                font-weight: 600;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Tablet (≤991px)
+    // -------------------------------------------------------------------------
+    @media (max-width: 991px) {
+        .suscripciones-planes .suscripciones-planes-grid {
+            flex-wrap: wrap;
+        }
+
+        .suscripciones-planes .suscripcion-plan-tarjeta {
+            min-width: 240px;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Móvil (≤767px)
+    // -------------------------------------------------------------------------
+    @media (max-width: 767px) {
+        .suscripciones-planes .suscripciones-planes-grid {
+            flex-direction: column;
+            flex-wrap: nowrap;
+        }
+
+        .suscripciones-planes .suscripcion-plan-tarjeta {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .suscripciones-comparativa-escritorio {
+            display: none;
+        }
+
+        .suscripciones-comparativa-movil {
+            display: block;
+
+            .suscripciones-comparativa-pista .suscripciones-comparativa-opcion {
+                font-size: 0.62rem;
+                padding: 8px 4px;
+            }
+        }
+
+        .suscripciones-comparativa .suscripciones-tabla-comparativa {
+            font-size: 0.85rem;
+
+            th,
+            td {
+                padding: 8px 10px;
+            }
+        }
+
+        .suscripciones-cta {
+            margin-left: -@SuscripcionCtaBleedLayoutBodyXs;
+            margin-right: -@SuscripcionCtaBleedLayoutBodyXs;
+            width: calc(100% + 2 * @SuscripcionCtaBleedLayoutBodyXs);
+            padding-left: calc(24px + @SuscripcionCtaBleedLayoutBodyXs);
+            padding-right: calc(24px + @SuscripcionCtaBleedLayoutBodyXs);
+        }
+
+        .suscripcion-aviso-descarga-limite-banner {
+            align-items: stretch;
+            padding: 18px 18px 20px;
+        }
+
+        .suscripcion-aviso-descarga-limite-icono {
+            align-self: center;
+            width: 20px;
+            height: 20px;
+            font-size: 0.9rem;
+        }
+
+        .suscripcion-aviso-descarga-limite-titulo {
+            font-size: 1.08rem;
+        }
+
+        .suscripcion-aviso-descarga-limite-mensaje {
+            font-size: 0.98rem;
+        }
+    }
+}

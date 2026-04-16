@@ -1,0 +1,34 @@
+@model IndexModel
+
+
+
+<section class="seccion-info dashboard-banner-mejorar-plan" role="region" aria-labelledby="dashboard-banner-mejorar-plan-titulo">
+
+    <div class="dashboard-banner-mejorar-plan-inner">
+
+        <h2 class="dashboard-banner-mejorar-plan-titulo" id="dashboard-banner-mejorar-plan-titulo">Aún no tienes un plan de pago activo</h2>
+
+        <hr class="dashboard-banner-mejorar-plan-separador" />
+
+        <p class="dashboard-banner-mejorar-plan-texto">
+
+            Activa un plan para pasar de 3 descargas al mes a descargas ilimitadas, exportar en más formatos (incluido XLSX) y usar visualizaciones y alertas avanzadas. Puedes hacerlo en menos de dos minutos.
+
+        </p>
+
+        <div class="dashboard-banner-mejorar-plan-acciones">
+
+            <a href="/clientes/suscripciones" class="dashboard-banner-mejorar-plan-btn dashboard-banner-mejorar-plan-btn-primario">Ver planes</a>
+
+        </div>
+
+        <p class="dashboard-banner-mejorar-plan-pie">Puedes revisar opciones y cambiar de plan cuando quieras.</p>
+
+    </div>
+
+</section>
+
+
+
+@await Html.PartialAsync("Shared/Components/DashboardCliente", Model)
+

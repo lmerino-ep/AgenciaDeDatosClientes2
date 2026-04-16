@@ -1,4 +1,4 @@
-﻿@model IndexModel
+@model IndexModel
 <!-- Estadísticas Rápidas -->
 @if (User.IsInRole("Dashboard - Consulta de Usuarios") ||
      User.IsInRole("Dashboard - Gestión de Usuarios")  ||
@@ -164,25 +164,21 @@
             </div>
         </div>
     </div>
+</section>
 
-    <div class="card-ayuda">
-        <h2 class="titulo-seccion">
-            Ayuda
-        </h2>
-
-        <p class="descripcion">¿Necesitas ayuda con el dashboard?</p>
-
-        <ul class="listado-enlaces">
-            <li class="item">
-                <a href="https://www.epdata.es" target="_blank" class="enlace">
-                    <span>Visitar EpData.es</span>
-                </a>
-            </li>
-            <li class="item">
-                <a href="mailto:soporte@epdata.es" class="enlace">
-                    <span>Contactar Soporte</span>
-                </a>
-            </li>
-        </ul>
-    </div>
+<section class="seccion-ayuda-dashboard" aria-labelledby="dashboard-ayuda-titulo-admin">
+    <h2 class="titulo-seccion" id="dashboard-ayuda-titulo-admin">Ayuda</h2>
+    <p class="descripcion">¿Necesitas ayuda con el dashboard?</p>
+    <ul class="listado-enlaces">
+        <li class="item">
+            <a href="https://www.epdata.es" target="_blank" class="enlace" rel="noopener noreferrer">
+                <span>Visitar EpData.es</span>
+            </a>
+        </li>
+        <li class="item">
+            <a href="mailto:soporte@epdata.es" class="enlace">
+                <span>Contactar Soporte</span>
+            </a>
+        </li>
+    </ul>
 </section>

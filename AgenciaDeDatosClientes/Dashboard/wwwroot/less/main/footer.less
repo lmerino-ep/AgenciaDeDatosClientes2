@@ -5,7 +5,8 @@
     @paddingBottom: 30px;
     @paddingTop: 80px;
 
-    background: linear-gradient(#ffffff, @ColorEpData);
+    // Mismo tono que .layout-body para no dibujar una franja blanca entre zona gris y pie
+    background: linear-gradient(@ColorGrisSuperClaro, @ColorEpData);
     display: flex;
     justify-content: end;
     align-content: center;
@@ -251,6 +252,14 @@
 
     .documentacion {
         .icono-documento();
+    }
+
+    .gestion-suscripciones {
+        .icono-calendario();
+    }
+
+    .historial-acciones {
+        .icono-hora();
     }
 }
 //Iconos de men mi-cuenta cargados asncronamente.fin

@@ -12,5 +12,7 @@ namespace Modelos.InyeccionDeDependencias
         public int SegundosETagParaSitemap { get; set; }
         public int LimiteUrlsPorArchivoDeSitemap { get; set; }
         public int LimiteSeriesParaRealizarCargaAsincrona { get; set; }
+
+        public string UrlBasePublicacionEpData { get; set; } = "https://www.epdata.es";
     }
 }

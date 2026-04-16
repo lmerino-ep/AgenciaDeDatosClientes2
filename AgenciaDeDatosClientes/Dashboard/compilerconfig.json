@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "outputFile": "wwwroot/css/plugins/dropdownfiltrable.css",
     "inputFile": "wwwroot/less/plugins/dropdownfiltrable.less"
@@ -34,5 +34,9 @@
   {
     "outputFile": "wwwroot/css/main/auditoria.css",
     "inputFile": "wwwroot/less/main/auditoria.less"
+  },
+  {
+    "outputFile": "wwwroot/css/main/suscripciones-landing.css",
+    "inputFile": "wwwroot/less/main/suscripciones-landing.less"
   }
 ]
