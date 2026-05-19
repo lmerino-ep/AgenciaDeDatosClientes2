@@ -1,0 +1,151 @@
+# Pipeline piloto: build & deploy epdata-clientes a AWS ECS Fargate.
+# Autenticacion: OIDC Workload Identity Federation (sin claves AWS en ADO).
+# Pre-requisito: Service Connection AWS llamada 'aws-deploy-epdata-clientes'
+# apuntando al role IAM arn:aws:iam::442500115196:role/ado-deploy-epdata-clientes
+
+trigger:
+  branches:
+    include:
+      - master
+      - main
+
+pr: none
+
+variables:
+  awsServiceConnection: 'aws-deploy-epdata-clientes'
+  awsRegion: 'eu-west-1'
+  ecrRegistry: '442500115196.dkr.ecr.eu-west-1.amazonaws.com'
+  ecrRepository: 'epdata/clientes'
+  ecsCluster: 'epdata-cluster'
+  ecsService: 'epdata-clientes-service-production'
+  taskDefinitionFamily: 'epdata-clientes-production'
+  dockerContextPath: 'AgenciaDeDatosClientes/Dashboard'
+  dotnetProject: 'AgenciaDeDatosClientes/Dashboard/Dashboard.csproj'
+
+name: $(Date:yyyy.MM.dd).$(Rev:rrr)
+
+stages:
+  - stage: Build
+    displayName: 'Build & test'
+    jobs:
+      - job: BuildJob
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: '9.0.x'
+
+          - script: dotnet restore $(dotnetProject)
+            displayName: 'dotnet restore'
+
+          - script: dotnet build $(dotnetProject) -c Release --no-restore
+            displayName: 'dotnet build (Release)'
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish compiled bin/ as artifact'
+            inputs:
+              targetPath: '$(dockerContextPath)/bin'
+              artifact: 'dashboard-bin'
+
+  - stage: PushImage
+    displayName: 'Build Docker image & push to ECR'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: DockerJob
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download compiled bin/'
+            inputs:
+              artifact: 'dashboard-bin'
+              path: '$(dockerContextPath)/bin'
+
+          - task: AWSShellScript@1
+            displayName: 'Docker build & push to ECR'
+            inputs:
+              awsCredentials: $(awsServiceConnection)
+              regionName: $(awsRegion)
+              scriptType: 'inline'
+              inlineScript: |
+                set -euo pipefail
+                IMAGE_TAG="$(Build.BuildNumber)"
+                IMAGE_URI="$(ecrRegistry)/$(ecrRepository):${IMAGE_TAG}"
+
+                aws ecr get-login-password --region $(awsRegion) \
+                  | docker login --username AWS --password-stdin $(ecrRegistry)
+
+                docker build -t "${IMAGE_URI}" "$(dockerContextPath)"
+                docker push "${IMAGE_URI}"
+
+                echo "##vso[task.setvariable variable=imageUri;isOutput=true]${IMAGE_URI}"
+            name: dockerPush
+
+  - stage: Deploy
+    displayName: 'Deploy to ECS (new task def revision + force redeploy)'
+    dependsOn: PushImage
+    condition: succeeded()
+    jobs:
+      - job: DeployJob
+        pool:
+          vmImage: 'ubuntu-latest'
+        variables:
+          imageUri: $[ stageDependencies.PushImage.DockerJob.outputs['dockerPush.imageUri'] ]
+        steps:
+          - task: AWSShellScript@1
+            displayName: 'Register new task definition revision'
+            inputs:
+              awsCredentials: $(awsServiceConnection)
+              regionName: $(awsRegion)
+              scriptType: 'inline'
+              inlineScript: |
+                set -euo pipefail
+                # Coger la revision activa y reemplazar solo la image URI del unico container.
+                aws ecs describe-task-definition \
+                  --task-definition $(taskDefinitionFamily) \
+                  --region $(awsRegion) \
+                  --query 'taskDefinition' \
+                  --output json > current-td.json
+
+                jq --arg img "$(imageUri)" '
+                  .containerDefinitions[0].image = $img
+                  | del(.taskDefinitionArn, .revision, .status, .requiresAttributes,
+                        .compatibilities, .registeredAt, .registeredBy)
+                ' current-td.json > new-td.json
+
+                NEW_TD_ARN=$(aws ecs register-task-definition \
+                  --cli-input-json file://new-td.json \
+                  --region $(awsRegion) \
+                  --query 'taskDefinition.taskDefinitionArn' \
+                  --output text)
+
+                echo "Registered: ${NEW_TD_ARN}"
+                echo "##vso[task.setvariable variable=newTaskDefArn]${NEW_TD_ARN}"
+
+          - task: AWSShellScript@1
+            displayName: 'Update ECS service & wait for stability'
+            inputs:
+              awsCredentials: $(awsServiceConnection)
+              regionName: $(awsRegion)
+              scriptType: 'inline'
+              inlineScript: |
+                set -euo pipefail
+                aws ecs update-service \
+                  --cluster $(ecsCluster) \
+                  --service $(ecsService) \
+                  --task-definition "$(newTaskDefArn)" \
+                  --force-new-deployment \
+                  --region $(awsRegion) \
+                  --output json > /dev/null
+
+                echo "Waiting for service to stabilize..."
+                aws ecs wait services-stable \
+                  --cluster $(ecsCluster) \
+                  --services $(ecsService) \
+                  --region $(awsRegion)
+                echo "Service stable."
