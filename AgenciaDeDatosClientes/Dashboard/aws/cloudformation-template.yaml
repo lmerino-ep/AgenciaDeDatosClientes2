@@ -119,6 +119,7 @@ Resources:
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-zilliz*'
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-openai*'
                   - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-anthropic*'
+                  - !Sub 'arn:aws:secretsmanager:eu-west-1:${AccountId}:secret:epdata-stripe*'
               - Effect: Allow
                 Action:
                   - sqs:GetQueueUrl
