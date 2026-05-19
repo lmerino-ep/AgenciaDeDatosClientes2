@@ -20,8 +20,8 @@
 }
 
 @section scripts {
-    <!-- Datos de KPIs para metricas-kpis.js (plantilla inerte, no script ejecutable) -->
-    <template id="kpis-data">
+    <!-- Datos embebidos (mismo patrón que Index/dashboard: script application/json) -->
+    <script type="application/json" id="kpis-data" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
             Model.KpisDisponibles.Select(k => new {
                 id = k.Id,
@@ -37,13 +37,13 @@
                 })
             })
         ))
-    </template>
+    </script>
 
     @if (Model.Resultado != null && Model.Resultado.Datos.Count > 0)
     {
-        <template id="resultado-datos">
+        <script type="application/json" id="resultado-datos" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
             @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Datos))
-        </template>
+        </script>
         <span id="nombre-kpi" hidden>@Model.Resultado.Nombre</span>
         <span id="kpi-id" hidden>@Model.Resultado.KpiId</span>
         

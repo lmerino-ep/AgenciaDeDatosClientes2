@@ -1,14 +1,39 @@
 // Datos de KPIs (se inicializan desde la página)
 let kpisData = [];
 
+/**
+ * Lee JSON embebido en script[type=application/json] o, en compatibilidad, en template.content.
+ */
+function leerJsonEmbebido(element) {
+    if (!element) {
+        return null;
+    }
+
+    let raw = '';
+    if (element.tagName === 'TEMPLATE' && element.content) {
+        raw = (element.content.textContent || '').trim();
+    } else {
+        raw = (element.textContent || '').trim();
+    }
+
+    if (!raw) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(raw);
+    } catch (error) {
+        console.error('Error al parsear JSON embebido:', error);
+        return null;
+    }
+}
+
 // Inicializar datos desde el atributo data
 function inicializarKpisData() {
     const dataElement = document.getElementById('kpis-data');
-    if (dataElement) {
-        const raw = (dataElement.textContent || '').trim();
-        if (raw) {
-            kpisData = JSON.parse(raw);
-        }
+    const datos = leerJsonEmbebido(dataElement);
+    if (datos) {
+        kpisData = datos;
     }
 }
 
@@ -645,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const nombreKpiElement = document.getElementById('nombre-kpi');
     const kpiIdElement = document.getElementById('kpi-id');
     if (resultadoDataElement && nombreKpiElement) {
-        const resultadoDatos = JSON.parse((resultadoDataElement.textContent || '').trim());
+        const resultadoDatos = leerJsonEmbebido(resultadoDataElement);
         const nombreKpi = decodificarEntidadesHTML((nombreKpiElement.textContent || '').trim());
         const kpiId = kpiIdElement ? (kpiIdElement.textContent || '').trim() : null;
         if (resultadoDatos && resultadoDatos.length > 0) {

@@ -198,6 +198,80 @@ namespace Datos
                     }
                 },
 
+                // ===== CATEGORÍA: SUSCRIPCIONES =====
+                new Kpi
+                {
+                    Id = "suscripciones-usuarios-vigentes",
+                    Nombre = "Usuarios con suscripción vigente",
+                    Descripcion = "Usuarios activos con al menos una suscripción vigente (active o trialing)",
+                    Categoria = "Suscripciones",
+                    Parametros = new List<ParametroKpi>()
+                },
+                new Kpi
+                {
+                    Id = "suscripciones-por-estado",
+                    Nombre = "Suscripciones por estado",
+                    Descripcion = "Histórico de filas en Suscripcion agrupadas por estado de negocio",
+                    Categoria = "Suscripciones",
+                    Parametros = new List<ParametroKpi>
+                    {
+                        new ParametroKpi { Nombre = "fecha_inicio", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de inicio (FechaInicio de la suscripción)" },
+                        new ParametroKpi { Nombre = "fecha_fin", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de fin (FechaInicio de la suscripción)" }
+                    }
+                },
+                new Kpi
+                {
+                    Id = "suscripciones-por-plan",
+                    Nombre = "Suscripciones por plan",
+                    Descripcion = "Distribución de filas de suscripción por tipo de plan (SuscripcionTipo.Id)",
+                    Categoria = "Suscripciones",
+                    Parametros = new List<ParametroKpi>
+                    {
+                        new ParametroKpi { Nombre = "fecha_inicio", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de inicio (FechaInicio de la suscripción)" },
+                        new ParametroKpi { Nombre = "fecha_fin", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de fin (FechaInicio de la suscripción)" }
+                    }
+                },
+                new Kpi
+                {
+                    Id = "suscripciones-altas-por-mes",
+                    Nombre = "Altas de suscripción por mes",
+                    Descripcion = "Nuevas suscripciones por mes según FechaInicio",
+                    Categoria = "Suscripciones",
+                    Parametros = new List<ParametroKpi>
+                    {
+                        new ParametroKpi { Nombre = "fecha_inicio", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de inicio (por defecto: hace 12 meses)" },
+                        new ParametroKpi { Nombre = "fecha_fin", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de fin (por defecto: hoy)" }
+                    }
+                },
+                new Kpi
+                {
+                    Id = "suscripciones-bajas-por-mes",
+                    Nombre = "Bajas de suscripción por mes",
+                    Descripcion = "Suscripciones con FechaFin por mes",
+                    Categoria = "Suscripciones",
+                    Parametros = new List<ParametroKpi>
+                    {
+                        new ParametroKpi { Nombre = "fecha_inicio", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de inicio (por defecto: hace 12 meses)" },
+                        new ParametroKpi { Nombre = "fecha_fin", Tipo = "fecha", Requerido = false, Descripcion = "Fecha de fin (por defecto: hoy)" }
+                    }
+                },
+                new Kpi
+                {
+                    Id = "suscripciones-vigentes-con-fin-programado",
+                    Nombre = "Vigentes con cancelación programada",
+                    Descripcion = "Suscripciones vigentes con FechaFin futura (baja programada)",
+                    Categoria = "Suscripciones",
+                    Parametros = new List<ParametroKpi>()
+                },
+                new Kpi
+                {
+                    Id = "suscripciones-usuarios-por-origen-acceso",
+                    Nombre = "Usuarios por origen de acceso",
+                    Descripcion = "Usuarios activos con historial de suscripción: interna EP, pago Stripe vigente o sin suscripción activa",
+                    Categoria = "Suscripciones",
+                    Parametros = new List<ParametroKpi>()
+                },
+
                 // ===== CATEGORÍA: API Y ERRORES =====
                 new Kpi
                 {
@@ -268,6 +342,15 @@ namespace Datos
                     "representaciones-estadisticas" => await RepresentacionesEstadisticas(),
                     "plantillas-estadisticas" => await PlantillasEstadisticas(),
                     "representaciones-mas-vistas" => await RepresentacionesMasVistas(parametros),
+
+                    // Suscripciones
+                    "suscripciones-usuarios-vigentes" => await SuscripcionesUsuariosVigentes(),
+                    "suscripciones-por-estado" => await SuscripcionesPorEstado(parametros),
+                    "suscripciones-por-plan" => await SuscripcionesPorPlan(parametros),
+                    "suscripciones-altas-por-mes" => await SuscripcionesAltasPorMes(parametros),
+                    "suscripciones-bajas-por-mes" => await SuscripcionesBajasPorMes(parametros),
+                    "suscripciones-vigentes-con-fin-programado" => await SuscripcionesVigentesConFinProgramado(),
+                    "suscripciones-usuarios-por-origen-acceso" => await SuscripcionesUsuariosPorOrigenAcceso(),
 
                     // API y Errores
                     "actividad-api-usuario" => await ActividadApiUsuario(parametros),
@@ -703,6 +786,203 @@ namespace Datos
                 var resultado = await db.QueryAsync(sql, new { Limite = limite, FechaInicio = fechaInicio, FechaFin = fechaFin });
                 return resultado.Select(r => ((IDictionary<string, object>)r).ToDictionary(k => k.Key, v => v.Value ?? (object)DBNull.Value)).ToList();
             }
+        }
+
+        #endregion
+
+        #region Suscripciones
+
+        private const string SqlEstadoAgrupado = @"
+                CASE
+                    WHEN S.Estado = 'active' THEN 'Activa'
+                    WHEN S.Estado = 'trialing' THEN 'En prueba'
+                    WHEN S.Estado IN ('canceled', 'incomplete_expired') THEN 'Cancelada'
+                    WHEN S.Estado IN ('past_due', 'unpaid') THEN 'Impago'
+                    ELSE 'Otra'
+                END";
+
+        private const string SqlSuscripcionVigente = @"
+                S.Estado IN ('active', 'trialing')
+                AND (S.FechaFin IS NULL OR S.FechaFin >= UTC_TIMESTAMP())";
+
+        private static (DateTime? FechaInicio, DateTime? FechaFin) ResolverRangoFechasOpcional(Dictionary<string, object> parametros)
+        {
+            DateTime? fechaInicio = parametros.ContainsKey("fecha_inicio") && parametros["fecha_inicio"] != null
+                ? Convert.ToDateTime(parametros["fecha_inicio"])
+                : null;
+            DateTime? fechaFin = parametros.ContainsKey("fecha_fin") && parametros["fecha_fin"] != null
+                ? Convert.ToDateTime(parametros["fecha_fin"])
+                : null;
+            return (fechaInicio, fechaFin);
+        }
+
+        private static (DateTime FechaInicio, DateTime FechaFin) ResolverRangoFechasUltimos12Meses(Dictionary<string, object> parametros)
+        {
+            var fechaFin = parametros.ContainsKey("fecha_fin") && parametros["fecha_fin"] != null
+                ? Convert.ToDateTime(parametros["fecha_fin"])
+                : DateTime.Now;
+            var fechaInicio = parametros.ContainsKey("fecha_inicio") && parametros["fecha_inicio"] != null
+                ? Convert.ToDateTime(parametros["fecha_inicio"])
+                : fechaFin.AddMonths(-12);
+            return (fechaInicio, fechaFin);
+        }
+
+        private static List<Dictionary<string, object>> MapearFilas(IEnumerable<dynamic> filas)
+        {
+            return filas
+                .Select(r => ((IDictionary<string, object>)r).ToDictionary(k => k.Key, v => v.Value ?? (object)DBNull.Value))
+                .ToList();
+        }
+
+        private async Task<List<Dictionary<string, object>>> SuscripcionesUsuariosVigentes()
+        {
+            string sql = $@"
+                SELECT COUNT(DISTINCT S.FK_Usuario) AS Total
+                FROM Suscripcion S
+                INNER JOIN Usuario U ON U.Id = S.FK_Usuario AND U.Activo = 1
+                WHERE {SqlSuscripcionVigente}";
+
+            using IDbConnection db = ObtenerConexionLectura();
+            var total = await db.QueryFirstOrDefaultAsync<long?>(sql);
+            return
+            [
+                new Dictionary<string, object> { ["Total"] = total ?? 0L }
+            ];
+        }
+
+        private async Task<List<Dictionary<string, object>>> SuscripcionesPorEstado(Dictionary<string, object> parametros)
+        {
+            var (fechaInicio, fechaFin) = ResolverRangoFechasOpcional(parametros);
+
+            string sql = $@"
+                SELECT
+                    {SqlEstadoAgrupado} AS EstadoAgrupado,
+                    COUNT(*) AS Total
+                FROM Suscripcion S
+                INNER JOIN Usuario U ON U.Id = S.FK_Usuario AND U.Activo = 1
+                WHERE (@FechaInicio IS NULL OR S.FechaInicio >= @FechaInicio)
+                  AND (@FechaFin IS NULL OR S.FechaInicio <= @FechaFin)
+                GROUP BY EstadoAgrupado
+                ORDER BY Total DESC";
+
+            using IDbConnection db = ObtenerConexionLectura();
+            var resultado = await db.QueryAsync(sql, new { FechaInicio = fechaInicio, FechaFin = fechaFin });
+            return MapearFilas(resultado);
+        }
+
+        private async Task<List<Dictionary<string, object>>> SuscripcionesPorPlan(Dictionary<string, object> parametros)
+        {
+            var (fechaInicio, fechaFin) = ResolverRangoFechasOpcional(parametros);
+
+            string sql = @"
+                SELECT
+                    ST.Id AS PlanId,
+                    ST.Nombre AS PlanNombre,
+                    COUNT(*) AS Total
+                FROM Suscripcion S
+                INNER JOIN Usuario U ON U.Id = S.FK_Usuario AND U.Activo = 1
+                INNER JOIN SuscripcionTipo ST ON ST.Id = S.FK_SuscripcionTipo
+                WHERE (@FechaInicio IS NULL OR S.FechaInicio >= @FechaInicio)
+                  AND (@FechaFin IS NULL OR S.FechaInicio <= @FechaFin)
+                GROUP BY ST.Id, ST.Nombre
+                ORDER BY Total DESC, PlanId ASC";
+
+            using IDbConnection db = ObtenerConexionLectura();
+            var resultado = await db.QueryAsync(sql, new { FechaInicio = fechaInicio, FechaFin = fechaFin });
+            return MapearFilas(resultado);
+        }
+
+        private async Task<List<Dictionary<string, object>>> SuscripcionesAltasPorMes(Dictionary<string, object> parametros)
+        {
+            var (fechaInicio, fechaFin) = ResolverRangoFechasUltimos12Meses(parametros);
+
+            string sql = @"
+                SELECT
+                    DATE_FORMAT(S.FechaInicio, '%Y-%m') AS Mes,
+                    COUNT(*) AS Total
+                FROM Suscripcion S
+                INNER JOIN Usuario U ON U.Id = S.FK_Usuario AND U.Activo = 1
+                WHERE S.FechaInicio >= @FechaInicio
+                  AND S.FechaInicio <= @FechaFin
+                GROUP BY DATE_FORMAT(S.FechaInicio, '%Y-%m')
+                ORDER BY Mes ASC";
+
+            using IDbConnection db = ObtenerConexionLectura();
+            var resultado = await db.QueryAsync(sql, new { FechaInicio = fechaInicio, FechaFin = fechaFin });
+            return MapearFilas(resultado);
+        }
+
+        private async Task<List<Dictionary<string, object>>> SuscripcionesBajasPorMes(Dictionary<string, object> parametros)
+        {
+            var (fechaInicio, fechaFin) = ResolverRangoFechasUltimos12Meses(parametros);
+
+            string sql = @"
+                SELECT
+                    DATE_FORMAT(S.FechaFin, '%Y-%m') AS Mes,
+                    COUNT(*) AS Total
+                FROM Suscripcion S
+                INNER JOIN Usuario U ON U.Id = S.FK_Usuario AND U.Activo = 1
+                WHERE S.FechaFin IS NOT NULL
+                  AND S.FechaFin >= @FechaInicio
+                  AND S.FechaFin <= @FechaFin
+                GROUP BY DATE_FORMAT(S.FechaFin, '%Y-%m')
+                ORDER BY Mes ASC";
+
+            using IDbConnection db = ObtenerConexionLectura();
+            var resultado = await db.QueryAsync(sql, new { FechaInicio = fechaInicio, FechaFin = fechaFin });
+            return MapearFilas(resultado);
+        }
+
+        private async Task<List<Dictionary<string, object>>> SuscripcionesVigentesConFinProgramado()
+        {
+            string sql = $@"
+                SELECT COUNT(*) AS Total
+                FROM Suscripcion S
+                INNER JOIN Usuario U ON U.Id = S.FK_Usuario AND U.Activo = 1
+                WHERE {SqlSuscripcionVigente}
+                  AND S.FechaFin IS NOT NULL
+                  AND S.FechaFin > UTC_TIMESTAMP()";
+
+            using IDbConnection db = ObtenerConexionLectura();
+            var total = await db.QueryFirstOrDefaultAsync<long?>(sql);
+            return
+            [
+                new Dictionary<string, object> { ["Total"] = total ?? 0L }
+            ];
+        }
+
+        private async Task<List<Dictionary<string, object>>> SuscripcionesUsuariosPorOrigenAcceso()
+        {
+            string sql = $@"
+                SELECT
+                    Clasificados.OrigenAcceso,
+                    COUNT(*) AS Total
+                FROM (
+                    SELECT
+                        CASE
+                            WHEN U.FK_UsuarioTipo IN (2, 3, 4, 5, 6) THEN 'Interna'
+                            WHEN EXISTS (
+                                SELECT 1
+                                FROM Suscripcion S
+                                WHERE S.FK_Usuario = U.Id
+                                  AND {SqlSuscripcionVigente}
+                            ) THEN 'Pago'
+                            ELSE 'Sin suscripción activa'
+                        END AS OrigenAcceso
+                    FROM Usuario U
+                    WHERE U.Activo = 1
+                      AND EXISTS (
+                          SELECT 1
+                          FROM Suscripcion S0
+                          WHERE S0.FK_Usuario = U.Id
+                      )
+                ) AS Clasificados
+                GROUP BY Clasificados.OrigenAcceso
+                ORDER BY Total DESC";
+
+            using IDbConnection db = ObtenerConexionLectura();
+            var resultado = await db.QueryAsync(sql);
+            return MapearFilas(resultado);
         }
 
         #endregion
