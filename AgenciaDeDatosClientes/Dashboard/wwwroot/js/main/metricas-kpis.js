@@ -87,6 +87,13 @@ function actualizarFormularioParametros() {
                 html += `<input type="number" class="form-control" name="${paramName}" id="${paramId}" value="${defaultValue}" ${requiredAttr}>`;
             } else if (param.tipo === 'booleano') {
                 html += `<input type="checkbox" name="${paramName}" id="${paramId}" value="true">`;
+            } else if (param.tipo === 'seleccion' && param.opciones && param.opciones.length > 0) {
+                html += `<select class="form-control" name="${paramName}" id="${paramId}" ${requiredAttr}>`;
+                param.opciones.forEach(opcion => {
+                    const selected = opcion === defaultValue ? ' selected' : '';
+                    html += `<option value="${opcion}"${selected}>${opcion}</option>`;
+                });
+                html += '</select>';
             } else {
                 html += `<input type="text" class="form-control" name="${paramName}" id="${paramId}" value="${defaultValue}" ${requiredAttr}>`;
             }
@@ -170,7 +177,10 @@ function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
     const kpisSinGrafico = [
         'tokens-activos',
         'total-datos',
-        'fuentes-totales'
+        'fuentes-totales',
+        'proveedor-resumen',
+        'proveedor-volumen-datos',
+        'proveedor-series-en-fuente'
     ];
 
     if (kpiId && kpisSinGrafico.includes(kpiId)) {
@@ -214,11 +224,22 @@ function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
         if (nombreLower === 'actividad') {
             return false;
         }
-        // Patrones de columnas descriptivas que no deben usarse en gráficos
+        // Métricas agregadas (no son datos personales)
+        if (nombreLower === 'usuariosunicos' || nombreLower.endsWith('unicos')) {
+            return false;
+        }
+        if (nombreLower === 'referencia' || nombreLower === 'formato' || nombreLower === 'mes' || nombreLower === 'titulo') {
+            return false;
+        }
+        if (nombreLower === 'url') {
+            return true;
+        }
+
+        // Solo columnas con datos personales identificables
         const patronesDescriptivos = [
-            'nombre', 'email', 'usuario', 'descripcion', 'descripción',
+            'nombre', 'apellido', 'email', 'correo', 'descripcion', 'descripción',
             'ultima', 'última', 'fechaalta', 'fechacreacion',
-            'id', 'codigo', 'código', 'empresa', 'apellidos', 'foto', 'gmailid', 'token',
+            'empresa', 'foto', 'gmailid', 'token',
             'password', 'restablecer', 'solicitud', 'nacimiento'
         ];
         return patronesDescriptivos.some(patron => nombreLower.includes(patron));
@@ -273,14 +294,15 @@ function inicializarGrafico(resultadoDatos, nombreKpi, kpiId) {
         return true;
     });
 
-    // Si hay columna "Fecha", usar gráfico de líneas
+    // Si la columna principal es temporal, siempre líneas (nunca pastel)
     if (columnaFecha) {
         tipoGrafico = 'line';
-    }
-
-    // Si solo hay 2 columnas y una contiene "Total" o "Cantidad", puede ser pastel
-    if (columnas.length === 2 && resultadoDatos.length <= 10 && columnaValor) {
-        tipoGrafico = 'pie';
+    } else if (columnas.length === 2 && resultadoDatos.length <= 10 && columnaValor) {
+        // Pastel solo sin eje temporal y sin etiquetas por título
+        const tieneTituloComoEtiqueta = columnas.some(c => c.toLowerCase() === 'titulo');
+        if (!tieneTituloComoEtiqueta) {
+            tipoGrafico = 'pie';
+        }
     }
 
     // Preparar datos para Chart.js
@@ -665,12 +687,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return textarea.value;
     }
 
-    // Inicializar gráfico si hay datos
+    // Inicializar gráfico si hay datos (tabla y gráfico pueden usar conjuntos distintos)
     const resultadoDataElement = document.getElementById('resultado-datos');
+    const resultadoGraficoElement = document.getElementById('resultado-datos-grafico');
     const nombreKpiElement = document.getElementById('nombre-kpi');
     const kpiIdElement = document.getElementById('kpi-id');
     if (resultadoDataElement && nombreKpiElement) {
-        const resultadoDatos = leerJsonEmbebido(resultadoDataElement);
+        const datosTabla = leerJsonEmbebido(resultadoDataElement);
+        const datosGrafico = leerJsonEmbebido(resultadoGraficoElement);
+        const resultadoDatos = (datosGrafico && datosGrafico.length > 0) ? datosGrafico : datosTabla;
         const nombreKpi = decodificarEntidadesHTML((nombreKpiElement.textContent || '').trim());
         const kpiId = kpiIdElement ? (kpiIdElement.textContent || '').trim() : null;
         if (resultadoDatos && resultadoDatos.length > 0) {

@@ -16,9 +16,11 @@
 
     <script type="application/json" id="datos-graficos" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
-            actividadMensual = Model.ActividadMensualUltimos6Meses,
-                accionesPorModulo = Model.AccionesPorModuloHoy,
-                actividadDiaria = Model.ActividadDiariaUltimos7Dias
+            esProveedor = Model.EsProveedor,
+            actividadMensual = Model.EsProveedor ? Model.ProveedorActividadMensual : Model.ActividadMensualUltimos6Meses,
+            accionesPorModulo = Model.AccionesPorModuloHoy,
+            actividadDiaria = Model.EsProveedor ? Model.ProveedorActividadDiaria : Model.ActividadDiariaUltimos7Dias,
+            descargasPorFormato = Model.ProveedorDescargasPorFormato
         }))
 </script>
 }
@@ -48,6 +50,10 @@
             @if (Model.EsTrabajadorEuropaPress)
             {
                 @await Html.PartialAsync("Shared/Components/DashboardAdmin", Model);
+            }
+            else if (Model.EsProveedor)
+            {
+                @await Html.PartialAsync("Shared/Components/DashboardProveedor", Model);
             }
             else if (Model.TieneSuscripcionActiva)
             {

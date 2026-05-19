@@ -13,6 +13,10 @@ namespace Modelos.DTO.Metricas
         public DateTime TimestampGeneracion { get; set; }
         public int TotalRegistros { get; set; }
         public List<Dictionary<string, object>> Datos { get; set; } = new List<Dictionary<string, object>>();
+        /// <summary>
+        /// Datos solo para el gráfico cuando difieren de la tabla (p. ej. serie temporal vs. top por representación).
+        /// </summary>
+        public List<Dictionary<string, object>>? DatosGrafico { get; set; }
         public bool DesdCache { get; set; }
         public int DuracionMs { get; set; }
 

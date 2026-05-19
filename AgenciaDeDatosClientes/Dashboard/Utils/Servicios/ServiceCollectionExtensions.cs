@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Amazon.KinesisFirehose;
 using Datos;
 using Negocio;
+using Utils.Authorization;
 
 namespace Utils.Servicios
 {
@@ -215,6 +216,8 @@ namespace Utils.Servicios
         /// </summary>
         public static IServiceCollection AddAuthorizationPolicies(this IServiceCollection services)
         {
+            services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, ConsultaMetricasOProveedorHandler>();
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("EditarUsuarios", policy => policy.RequireRole("Alta/Baja/Modificación de usuarios"));
@@ -264,6 +267,9 @@ namespace Utils.Servicios
                 // Métricas
                 options.AddPolicy("Dashboard.ConsultaMetricas", policy =>
                     policy.RequireRole("Dashboard - Consulta de Métricas", "Dashboard - Exportación de Métricas", "Dashboard - Acceso total"));
+
+                options.AddPolicy(PoliticasAutorizacion.Politicas.ConsultaMetricasOProveedor, policy =>
+                    policy.Requirements.Add(new ConsultaMetricasOProveedorRequirement()));
 
                 options.AddPolicy("Dashboard.ExportacionMetricas", policy =>
                     policy.RequireRole("Dashboard - Exportación de Métricas", "Dashboard - Acceso total"));

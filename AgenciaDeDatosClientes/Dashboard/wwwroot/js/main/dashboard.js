@@ -30,16 +30,113 @@ function cargarDatosGraficos() {
 }
 
 function inicializarGraficos() {
-    if (typeof Chart !== 'undefined') {
-        inicializarGraficoActividadMensual();
-        inicializarGraficoActividadDiaria();
-        inicializarGraficoAccionesPorModulo();
+    if (typeof Chart === 'undefined') {
+        return;
     }
+
+    if (datosGraficos.esProveedor) {
+        inicializarGraficoProveedorActividadMensual();
+        inicializarGraficoProveedorActividadDiaria();
+        inicializarGraficoProveedorDescargasFormato();
+        return;
+    }
+
+    inicializarGraficoActividadMensual();
+    inicializarGraficoActividadDiaria();
+    inicializarGraficoAccionesPorModulo();
 }
 
 /**
  * Inicializa el gráfico de actividad mensual (últimos 6 meses)
  */
+function inicializarGraficoProveedorActividadMensual() {
+    const canvas = document.getElementById('graficoProveedorActividadMensual');
+    if (!canvas) {
+        return;
+    }
+
+    crearGraficoLinea(canvas, datosGraficos.actividadMensual || {}, 'rgb(75, 192, 192)', 'Actividades');
+}
+
+function inicializarGraficoProveedorActividadDiaria() {
+    const canvas = document.getElementById('graficoProveedorActividadDiaria');
+    if (!canvas) {
+        return;
+    }
+
+    crearGraficoLinea(canvas, datosGraficos.actividadDiaria || {}, 'rgb(54, 162, 235)', 'Actividades');
+}
+
+function inicializarGraficoProveedorDescargasFormato() {
+    const canvas = document.getElementById('graficoProveedorDescargasFormato');
+    if (!canvas) {
+        return;
+    }
+
+    const datos = datosGraficos.descargasPorFormato || {};
+    const etiquetas = Object.keys(datos);
+    const valores = etiquetas.map(etiqueta => datos[etiqueta] || 0);
+
+    new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: etiquetas,
+            datasets: [{
+                data: valores,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true
+        }
+    });
+}
+
+function crearGraficoLinea(canvas, datos, colorLinea, etiquetaDataset) {
+    const fechas = Object.keys(datos).sort();
+    const valores = fechas.map(fecha => datos[fecha] || 0);
+    const fechasFormateadas = fechas.map(fecha => {
+        if (fecha.includes('-') && fecha.length === 10) {
+            const partes = fecha.split('-');
+            return `${partes[2]}/${partes[1]}`;
+        }
+
+        const partes = fecha.split('-');
+        return partes.length >= 2 ? `${partes[1]}/${partes[0]}` : fecha;
+    });
+
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: fechasFormateadas,
+            datasets: [{
+                label: etiquetaDataset,
+                data: valores,
+                borderColor: colorLinea,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
+}
+
 function inicializarGraficoActividadMensual() {
     const canvas = document.getElementById('graficoActividadMensual');
     if (!canvas) return;

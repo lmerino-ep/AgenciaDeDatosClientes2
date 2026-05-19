@@ -20,6 +20,7 @@ namespace Utils.Authorization
 
             // Métricas
             public const string ConsultaMetricas = "Dashboard.ConsultaMetricas";
+            public const string ConsultaMetricasOProveedor = "Dashboard.ConsultaMetricasOProveedor";
             public const string ExportacionMetricas = "Dashboard.ExportacionMetricas";
 
             // Documentación

@@ -3,6 +3,7 @@ using AutoLogin.Verification.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
+using Modelos.Dashboard;
 using Modelos.InyeccionDeDependencias;
 using Negocio;
 using Nuget.Helper;
@@ -22,6 +23,7 @@ namespace Pages
         private readonly IServicioMetricas _servicioMetricas;
         private readonly IServicioAuditoria _servicioAuditoria;
         private readonly IServicioSuscripciones _servicioSuscripciones;
+        private readonly IServicioContextoDashboard _servicioContextoDashboard;
 
         // Propiedades para las métricas del dashboard
         public int UsuariosActivos { get; set; }
@@ -33,6 +35,25 @@ namespace Pages
         public bool EsUsuarioAdmin { get; set; }
         public bool EsTrabajadorEuropaPress { get; set; }
         public bool TieneSuscripcionActiva { get; set; }
+
+        public bool EsProveedor { get; set; }
+
+        public ContextoDashboardUsuario? ContextoDashboard { get; set; }
+
+        public int? FkFuenteActiva { get; set; }
+
+        public string? NombreFuenteActiva { get; set; }
+
+        public ResumenDashboardProveedor ResumenProveedor { get; set; } = new ResumenDashboardProveedor();
+
+        public Dictionary<string, int> ProveedorActividadMensual { get; set; } = new Dictionary<string, int>();
+
+        public Dictionary<string, int> ProveedorActividadDiaria { get; set; } = new Dictionary<string, int>();
+
+        public Dictionary<string, int> ProveedorDescargasPorFormato { get; set; } = new Dictionary<string, int>();
+
+        [BindProperty(SupportsGet = true)]
+        public int? FkFuenteProveedor { get; set; }
 
         // Datos para gráficos
         public Dictionary<string, int> ActividadMensualUltimos6Meses { get; set; } = new Dictionary<string, int>();
@@ -76,13 +97,15 @@ namespace Pages
             Modelos.InyeccionDeDependencias.Sqs sqsConfig,
             IServicioMetricas servicioMetricas,
             IServicioAuditoria servicioAuditoria,
-            IServicioSuscripciones servicioSuscripciones
+            IServicioSuscripciones servicioSuscripciones,
+            IServicioContextoDashboard servicioContextoDashboard
         )
         {
             _logger = logger;
             _servicioMetricas = servicioMetricas;
             _servicioAuditoria = servicioAuditoria;
             _servicioSuscripciones = servicioSuscripciones;
+            _servicioContextoDashboard = servicioContextoDashboard;
 
             HelperS3 amazonS3 = new HelperS3(
                 s3.Bucket,
@@ -97,6 +120,21 @@ namespace Pages
         {
             try
             {
+                ContextoDashboard = await _servicioContextoDashboard.ObtenerContextoAsync();
+                EsProveedor = ContextoDashboard.Perfil == PerfilDashboard.Proveedor;
+
+                if (EsProveedor)
+                {
+                    var fuente = _servicioContextoDashboard.ResolverFuenteProveedor(ContextoDashboard, FkFuenteProveedor);
+                    FkFuenteActiva = fuente.FkFuente;
+                    NombreFuenteActiva = fuente.NombreFuente;
+
+                    await CargarDashboardProveedorAsync(fuente.FkFuente);
+                    CargarOpcionesAccionesRapidas();
+                    AplicarTextosBienvenida();
+                    return;
+                }
+
                 // Obtener métricas en paralelo para mejor rendimiento
                 var tareaUsuariosActivos = _servicioMetricas.ObtenerUsuariosActivosAsync();
                 var tareaActividadMensual = _servicioMetricas.ObtenerActividadMensualAsync();
@@ -168,6 +206,21 @@ namespace Pages
             }
         }
 
+        private async Task CargarDashboardProveedorAsync(int fkFuente)
+        {
+            var tareaResumen = _servicioMetricas.ObtenerResumenDashboardProveedorAsync(fkFuente);
+            var tareaMensual = _servicioMetricas.ObtenerActividadMensualProveedorAsync(fkFuente);
+            var tareaDiaria = _servicioMetricas.ObtenerActividadDiariaProveedorAsync(fkFuente);
+            var tareaFormatos = _servicioMetricas.ObtenerDescargasPorFormatoProveedorAsync(fkFuente);
+
+            await Task.WhenAll(tareaResumen, tareaMensual, tareaDiaria, tareaFormatos);
+
+            ResumenProveedor = await tareaResumen;
+            ProveedorActividadMensual = await tareaMensual;
+            ProveedorActividadDiaria = await tareaDiaria;
+            ProveedorDescargasPorFormato = await tareaFormatos;
+        }
+
         private void AplicarTextosBienvenida()
         {
             if (!(User?.Identity?.IsAuthenticated ?? false))
@@ -175,6 +228,16 @@ namespace Pages
                 TituloPaginaDashboard = "EpData · Acceso";
                 TituloBienvenida = "Bienvenido";
                 DescripcionBienvenida = "Inicia sesión para acceder a tu cuenta y a las funciones de EpData.";
+                return;
+            }
+
+            if (EsProveedor)
+            {
+                var nombreFuente = NombreFuenteActiva ?? "su fuente";
+                TituloPaginaDashboard = $"EpData · {nombreFuente}";
+                TituloBienvenida = $"Panel de {nombreFuente}";
+                DescripcionBienvenida =
+                    "Consulte el uso agregado y anonimizado de los datos que su organización aporta a EpData.";
                 return;
             }
 
@@ -208,6 +271,19 @@ namespace Pages
 
             if (!(User?.Identity?.IsAuthenticated ?? false))
             {
+                return;
+            }
+
+            if (EsProveedor)
+            {
+                var nombreFuente = NombreFuenteActiva ?? "su fuente";
+                OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                {
+                    Texto = "Métricas de mi fuente",
+                    Icono = "mis-graficas",
+                    Pagina = "/metricas/kpis",
+                    Descripcion = $"KPIs anonimizados del uso de los datos de {nombreFuente}"
+                });
                 return;
             }
 

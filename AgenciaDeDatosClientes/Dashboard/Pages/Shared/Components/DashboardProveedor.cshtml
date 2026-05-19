@@ -1,0 +1,127 @@
+@model IndexModel
+
+<section class="seccion-selector-fuente-proveedor">
+    <h2 class="titulo-seccion">Fuente de datos</h2>
+    @if (Model.ContextoDashboard?.FuentesVinculadas.Count > 1)
+    {
+        <div class="contenedor-selector-fuente">
+            <form method="get" asp-page="/Index" class="form-selector-fuente">
+                <label class="etiqueta-selector-fuente" for="fkFuenteProveedor">Seleccione la fuente</label>
+                <select name="fkFuenteProveedor" id="fkFuenteProveedor" class="selector-fuente-proveedor" onchange="this.form.submit()">
+                    @foreach (var fuente in Model.ContextoDashboard.FuentesVinculadas)
+                    {
+                        if (Model.FkFuenteActiva == fuente.FkFuente)
+                        {
+                            <option value="@fuente.FkFuente" selected>@fuente.NombreFuente</option>
+                        }
+                        else
+                        {
+                            <option value="@fuente.FkFuente">@fuente.NombreFuente</option>
+                        }
+                    }
+                </select>
+            </form>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(Model.NombreFuenteActiva))
+    {
+        <p class="descripcion-fuente-unica">@Model.NombreFuenteActiva</p>
+    }
+</section>
+
+<section class="seccion-estadisticas">
+    <div class="tarjeta-estadistica">
+        <div class="contenido">
+            <div class="info">
+                <div class="titulo">Descargas (30 días)</div>
+                <div class="valor">@Model.ResumenProveedor.DescargasUltimos30Dias.ToString("N0")</div>
+                <div class="cambio neutro">CSV, JSON e imagen</div>
+            </div>
+        </div>
+    </div>
+    <div class="tarjeta-estadistica">
+        <div class="contenido">
+            <div class="info">
+                <div class="titulo">Actividad del mes</div>
+                <div class="valor">@Model.ResumenProveedor.ActividadMesActual.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+    <div class="tarjeta-estadistica">
+        <div class="contenido">
+            <div class="info">
+                <div class="titulo">Usuarios únicos (30 días)</div>
+                <div class="valor">@Model.ResumenProveedor.UsuariosUnicosUltimos30Dias.ToString("N0")</div>
+                <div class="cambio neutro">Conteo agregado, sin identificar personas</div>
+            </div>
+        </div>
+    </div>
+    <div class="tarjeta-estadistica">
+        <div class="contenido">
+            <div class="info">
+                <div class="titulo">Representaciones activas</div>
+                <div class="valor">@Model.ResumenProveedor.RepresentacionesActivasConDatos.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+    <div class="tarjeta-estadistica">
+        <div class="contenido">
+            <div class="info">
+                <div class="titulo">Series en la fuente</div>
+                <div class="valor">@Model.ResumenProveedor.SeriesEnFuente.ToString("N0")</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="seccion-graficos">
+    <h2 class="titulo-seccion">Uso de sus datos</h2>
+    <div class="grid-graficos grid-graficos-tres">
+        <div class="card-grafico">
+            <h3 class="titulo-grafico">Actividad mensual (6 meses)</h3>
+            <canvas id="graficoProveedorActividadMensual"></canvas>
+        </div>
+        <div class="card-grafico">
+            <h3 class="titulo-grafico">Actividad diaria (7 días)</h3>
+            <canvas id="graficoProveedorActividadDiaria"></canvas>
+        </div>
+        <div class="card-grafico">
+            <h3 class="titulo-grafico">Descargas por formato (30 días)</h3>
+            <canvas id="graficoProveedorDescargasFormato"></canvas>
+        </div>
+    </div>
+</section>
+
+@if (Model.OpcionesAccionesRapidas != null && Model.OpcionesAccionesRapidas.Any())
+{
+    <section class="seccion-acciones-rapidas">
+        <h2 class="titulo-seccion">Funcionalidades disponibles</h2>
+        <div class="matriz-opciones">
+            @foreach (var opcion in Model.OpcionesAccionesRapidas)
+            {
+                <div class="cuadro-opcion">
+                    <div class="cuadro-opcion-contenido">
+                        <div class="icono">
+                            <i class="@opcion.Icono"></i>
+                        </div>
+                        <h2 class="titulo-opcion">@opcion.Texto</h2>
+                        <p class="descripcion-opcion">@opcion.Descripcion</p>
+                        <a href="@opcion.Pagina" class="btn-ir">Ir a @opcion.Texto</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+<section class="seccion-ayuda-dashboard" aria-labelledby="dashboard-ayuda-titulo-proveedor">
+    <h2 class="titulo-seccion" id="dashboard-ayuda-titulo-proveedor">Ayuda</h2>
+    <p class="descripcion">Consultas sobre el uso de los datos de su fuente en EpData.</p>
+    <ul class="listado-enlaces">
+        <li class="item">
+            <a href="mailto:contacto@epdata.es" class="enlace">
+                <span>Contactar con soporte</span>
+            </a>
+        </li>
+    </ul>
+</section>

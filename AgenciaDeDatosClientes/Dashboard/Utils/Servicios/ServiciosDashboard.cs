@@ -19,6 +19,8 @@ namespace Utils.Servicios
             services.AddScoped<RepositorioRoles>();
             services.AddScoped<RepositorioTokens>();
             services.AddScoped<IRepositorioMetricas, RepositorioMetricas>();
+            services.AddScoped<IRepositorioMetricasProveedor, RepositorioMetricasProveedor>();
+            services.AddScoped<IRepositorioProveedores, RepositorioProveedores>();
             services.AddScoped<IRepositorioSuscripciones, RepositorioSuscripciones>();
 
             return services;
@@ -34,6 +36,7 @@ namespace Utils.Servicios
             services.AddScoped<IServicioRoles, ServicioRoles>();
             services.AddScoped<IServicioTokens, ServicioTokens>();
             services.AddScoped<IServicioMetricas, ServicioMetricas>();
+            services.AddScoped<IServicioContextoDashboard, ServicioContextoDashboard>();
             services.AddScoped<IServicioDocumentacionS3, ServicioDocumentacionS3>();
             services.AddScoped<IServicioSuscripciones, ServicioSuscripciones>();
 

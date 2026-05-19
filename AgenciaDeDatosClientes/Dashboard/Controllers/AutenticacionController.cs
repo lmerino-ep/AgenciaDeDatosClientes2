@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Modelos.Dashboard;
 using Modelos.DTO.Cabecera;
+using Negocio;
 using System.Dynamic;
 using System.Security.Claims;
 using Utils;
@@ -16,15 +18,18 @@ namespace Controllers
         private readonly ILogger<AutenticacionController> _logger;
         private readonly SignInManager<Modelos.Autenticacion.Usuario> _signInManager;
         private readonly UserManager<Modelos.Autenticacion.Usuario> _userManager;
+        private readonly IServicioContextoDashboard _servicioContextoDashboard;
 
         public AutenticacionController(
             ILogger<AutenticacionController> logger,
             SignInManager<Modelos.Autenticacion.Usuario> signInManager,
-            UserManager<Modelos.Autenticacion.Usuario> userManager)
+            UserManager<Modelos.Autenticacion.Usuario> userManager,
+            IServicioContextoDashboard servicioContextoDashboard)
         {
             _logger = logger;
             _signInManager = signInManager;
             _userManager = userManager;
+            _servicioContextoDashboard = servicioContextoDashboard;
         }
 
         /// <summary>
@@ -71,12 +76,14 @@ namespace Controllers
                     {
                         Texto = "Dashboard",
                         Icono = "home",
-                        Pagina = "/"
+                        Pagina = "/Index"
                     });
 
                     // Verificar tipo de usuario
                     var usuarioTipo = User.FindFirstValue("FK_UsuarioTipo");
                     var esUsuarioCliente = usuarioTipo == "1" || usuarioTipo == "2";
+
+                    var contextoDashboard = await _servicioContextoDashboard.ObtenerContextoAsync();
 
                     var tienePermisosGestion = User.IsInRole("Dashboard - Gestión de Usuarios")
                         || User.IsInRole("Dashboard - Consulta de Usuarios") || User.IsInRole("Dashboard - Gestión de Roles")
@@ -84,7 +91,16 @@ namespace Controllers
                         || User.IsInRole("Dashboard - Exportación de Métricas") || User.IsInRole("Dashboard - Gestión de Documentación")
                         || User.IsInRole("Dashboard - Auditoría") || User.IsInRole("Dashboard - Acceso total");
 
-                    if (esUsuarioCliente && !tienePermisosGestion)
+                    if (contextoDashboard.Perfil == PerfilDashboard.Proveedor)
+                    {
+                        opciones.Add(new OpcionMiCuenta
+                        {
+                            Texto = "Métricas de mi fuente",
+                            Icono = "mis-graficas",
+                            Pagina = "/metricas/kpis"
+                        });
+                    }
+                    else if (esUsuarioCliente && !tienePermisosGestion)
                     {
                         // === OPCIONES PARA USUARIOS TIPO 1 Y 2 (CLIENTES) ===
 

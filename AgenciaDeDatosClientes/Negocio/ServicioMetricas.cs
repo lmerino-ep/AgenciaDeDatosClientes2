@@ -1,5 +1,6 @@
 using Datos;
 using Microsoft.Extensions.Logging;
+using Modelos.Dashboard;
 using Modelos.DTO.Metricas;
 using StackExchange.Redis;
 using System.Text.Json;
@@ -9,6 +10,8 @@ namespace Negocio
     public class ServicioMetricas : IServicioMetricas
     {
         private readonly IRepositorioMetricas _repositorio;
+        private readonly IRepositorioMetricasProveedor _repositorioProveedor;
+        private readonly IServicioContextoDashboard _contextoDashboard;
         private readonly IConnectionMultiplexer _redis;
         private readonly ILogger<ServicioMetricas> _logger;
         private const int TtlCacheMinutos = 10;
@@ -26,10 +29,14 @@ namespace Negocio
 
         public ServicioMetricas(
             IRepositorioMetricas repositorio,
+            IRepositorioMetricasProveedor repositorioProveedor,
+            IServicioContextoDashboard contextoDashboard,
             IConnectionMultiplexer redis,
             ILogger<ServicioMetricas> logger)
         {
             _repositorio = repositorio;
+            _repositorioProveedor = repositorioProveedor;
+            _contextoDashboard = contextoDashboard;
             _redis = redis;
             _logger = logger;
         }
@@ -37,11 +44,28 @@ namespace Negocio
         /// <summary>
         /// Obtiene un KPI, primero intentando desde caché y si no existe ejecutando la consulta
         /// </summary>
-        public async Task<ResultadoKpi> ObtenerKpiAsync(string kpiId, Dictionary<string, object> parametros, bool forzarRecalculo = false)
+        public async Task<ResultadoKpi> ObtenerKpiAsync(
+            string kpiId,
+            Dictionary<string, object> parametros,
+            bool forzarRecalculo = false,
+            int? fkFuenteProveedor = null)
         {
-            string claveCache = GenerarClaveCache(kpiId, parametros);
+            var contexto = await _contextoDashboard.ObtenerContextoAsync();
+            if (!_contextoDashboard.EsKpiPermitidoParaContexto(contexto, kpiId))
+            {
+                throw new UnauthorizedAccessException($"No tiene permiso para ejecutar el KPI '{kpiId}'.");
+            }
 
-            // Si no se fuerza recalculo, intentar obtener de caché
+            int? fkFuente = null;
+            if (kpiId.StartsWith("proveedor-", StringComparison.Ordinal))
+            {
+                fkFuente = _contextoDashboard
+                    .ResolverFuenteProveedor(contexto, fkFuenteProveedor)
+                    .FkFuente;
+            }
+
+            string claveCache = GenerarClaveCache(kpiId, parametros, fkFuente);
+
             if (!forzarRecalculo)
             {
                 var resultadoCache = await ObtenerDeCache(claveCache);
@@ -53,36 +77,86 @@ namespace Negocio
                 }
             }
 
-            // Si no está en caché o se forzó recalculo, ejecutar consulta
             _logger.LogInformation("Ejecutando KPI {KpiId} desde base de datos", kpiId);
-            var resultado = await _repositorio.EjecutarKpiAsync(kpiId, parametros);
+            var resultado = await EjecutarKpiEnRepositorioAsync(kpiId, parametros, fkFuente);
 
-            // Guardar en caché
+            if (contexto.Perfil == PerfilDashboard.Proveedor && fkFuente.HasValue)
+            {
+                _logger.LogInformation(
+                    "KPI proveedor ejecutado: usuario={FkUsuario}, fuente={FkFuente}, kpi={KpiId}, registros={TotalRegistros}",
+                    contexto.FkUsuario,
+                    fkFuente.Value,
+                    kpiId,
+                    resultado.TotalRegistros);
+            }
+
             await GuardarEnCache(claveCache, resultado);
 
             return resultado;
         }
 
-        /// <summary>
-        /// Obtiene la lista de KPIs disponibles
-        /// </summary>
-        public List<Kpi> ObtenerKpisDisponibles()
+        public async Task<List<Kpi>> ObtenerKpisDisponiblesAsync()
         {
-            return _repositorio.ObtenerKpisDisponibles();
+            var contexto = await _contextoDashboard.ObtenerContextoAsync();
+
+            if (contexto.PuedeConsultarMetricasGlobales)
+            {
+                return _repositorio.ObtenerKpisDisponibles();
+            }
+
+            if (contexto.PuedeConsultarMetricasProveedor)
+            {
+                return _repositorioProveedor.ObtenerKpisDisponibles();
+            }
+
+            return [];
+        }
+
+        public Task<ResumenDashboardProveedor> ObtenerResumenDashboardProveedorAsync(int fkFuente) =>
+            _repositorioProveedor.ObtenerResumenDashboardAsync(fkFuente);
+
+        public Task<Dictionary<string, int>> ObtenerActividadMensualProveedorAsync(int fkFuente) =>
+            _repositorioProveedor.ObtenerActividadMensualUltimos6MesesAsync(fkFuente);
+
+        public Task<Dictionary<string, int>> ObtenerActividadDiariaProveedorAsync(int fkFuente) =>
+            _repositorioProveedor.ObtenerActividadDiariaAsync(fkFuente, 7);
+
+        public Task<Dictionary<string, int>> ObtenerDescargasPorFormatoProveedorAsync(int fkFuente) =>
+            _repositorioProveedor.ObtenerDescargasPorFormatoAsync(fkFuente);
+
+        private Task<ResultadoKpi> EjecutarKpiEnRepositorioAsync(
+            string kpiId,
+            Dictionary<string, object> parametros,
+            int? fkFuenteProveedor)
+        {
+            if (kpiId.StartsWith("proveedor-", StringComparison.Ordinal))
+            {
+                if (!fkFuenteProveedor.HasValue)
+                {
+                    throw new InvalidOperationException("No se indicó la fuente para el KPI de proveedor.");
+                }
+
+                return _repositorioProveedor.EjecutarKpiAsync(kpiId, fkFuenteProveedor.Value, parametros);
+            }
+
+            return _repositorio.EjecutarKpiAsync(kpiId, parametros);
         }
 
         /// <summary>
         /// Exporta un KPI en el formato especificado (JSON o CSV)
         /// </summary>
-        public async Task<ResultadoKpi> ExportarKpiAsync(string kpiId, Dictionary<string, object> parametros, string formato)
+        public async Task<ResultadoKpi> ExportarKpiAsync(
+            string kpiId,
+            Dictionary<string, object> parametros,
+            string formato,
+            int? fkFuenteProveedor = null)
         {
             if (formato != "json" && formato != "csv")
             {
                 throw new ArgumentException("Formato de exportación no válido. Use 'json' o 'csv'");
             }
 
-            // Obtener el resultado (con caché)
-            var resultado = await ObtenerKpiAsync(kpiId, parametros);
+            var resultado = await ObtenerKpiAsync(kpiId, parametros, fkFuenteProveedor: fkFuenteProveedor);
 
             _logger.LogInformation("Exportando KPI {KpiId} en formato {Formato}", kpiId, formato);
 
@@ -118,9 +192,8 @@ namespace Negocio
         /// <summary>
         /// Genera una clave única de caché basada en el KPI y sus parámetros
         /// </summary>
-        private string GenerarClaveCache(string kpiId, Dictionary<string, object> parametros)
+        private static string GenerarClaveCache(string kpiId, Dictionary<string, object> parametros, int? fkFuenteProveedor)
         {
-            // Serializar parámetros a JSON ordenado para consistencia
             var parametrosOrdenados = parametros
                 .OrderBy(p => p.Key)
                 .ToDictionary(p => p.Key, p => p.Value);
@@ -130,7 +203,12 @@ namespace Negocio
                 System.Security.Cryptography.SHA256.HashData(
                     System.Text.Encoding.UTF8.GetBytes(parametrosJson)
                 )
-            ).Substring(0, 16); // Primeros 16 caracteres del hash
+            ).Substring(0, 16);
+
+            if (kpiId.StartsWith("proveedor-", StringComparison.Ordinal) && fkFuenteProveedor.HasValue)
+            {
+                return $"kpi:proveedor:{fkFuenteProveedor.Value}:{kpiId}:{hash}";
+            }
 
             return $"kpi:{kpiId}:{hash}";
         }

@@ -33,7 +33,8 @@
                     tipo = p.Tipo,
                     requerido = p.Requerido,
                     valorPorDefecto = p.ValorPorDefecto,
-                    descripcion = p.Descripcion
+                    descripcion = p.Descripcion,
+                    opciones = p.Opciones
                 })
             })
         ))
@@ -44,6 +45,12 @@
         <script type="application/json" id="resultado-datos" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
             @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Datos))
         </script>
+        @if (Model.Resultado.DatosGrafico is { Count: > 0 })
+        {
+            <script type="application/json" id="resultado-datos-grafico" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()">
+                @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Resultado.DatosGrafico))
+            </script>
+        }
         <span id="nombre-kpi" hidden>@Model.Resultado.Nombre</span>
         <span id="kpi-id" hidden>@Model.Resultado.KpiId</span>
         
@@ -90,6 +97,33 @@
     <!-- Selector de KPI -->
     <div class="form-selector-kpi">
         <form method="get" id="formKpi">
+            @if (Model.EsProveedor && Model.ContextoDashboard != null)
+            {
+                @if (Model.ContextoDashboard.FuentesVinculadas.Count > 1)
+                {
+                    <div class="form-group">
+                        <label for="fkFuenteProveedor">Fuente de datos:</label>
+                        <select name="fkFuenteProveedor" id="fkFuenteProveedor" class="form-control">
+                            @foreach (var fuente in Model.ContextoDashboard.FuentesVinculadas)
+                            {
+                                if (Model.FkFuenteActiva == fuente.FkFuente)
+                                {
+                                    <option value="@fuente.FkFuente" selected>@fuente.NombreFuente</option>
+                                }
+                                else
+                                {
+                                    <option value="@fuente.FkFuente">@fuente.NombreFuente</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                }
+                else if (Model.FkFuenteActiva.HasValue)
+                {
+                    <input type="hidden" name="fkFuenteProveedor" value="@Model.FkFuenteActiva" />
+                    <p class="form-text text-muted">Métricas anonimizadas de: <strong>@Model.NombreFuenteActiva</strong></p>
+                }
+            }
             <div class="form-group">
                 <label for="kpiSeleccionado">Seleccione un KPI:</label>
                 <select name="kpiSeleccionado" id="kpiSeleccionado" class="form-control">
@@ -167,11 +201,11 @@
 
             <!-- Botones de exportación -->
             <div class="acciones-exportacion">
-                <a href="/Metricas/KPIs?handler=ExportarJson&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)"
+                <a href="/Metricas/KPIs?handler=ExportarJson&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)@(Model.FkFuenteActiva.HasValue ? $"&fkFuenteProveedor={Model.FkFuenteActiva}" : "")"
                    class="btn btn-export btn-json" id="btnExportarJson">
                     <i class="icon-download"></i> Exportar JSON
                 </a>
-                <a href="/Metricas/KPIs?handler=ExportarCsv&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)"
+                <a href="/Metricas/KPIs?handler=ExportarCsv&kpiId=@Model.Resultado.KpiId&parametrosJson=@System.Text.Json.JsonSerializer.Serialize(Model.Resultado.Parametros)@(Model.FkFuenteActiva.HasValue ? $"&fkFuenteProveedor={Model.FkFuenteActiva}" : "")"
                    class="btn btn-export btn-csv" id="btnExportarCsv">
                     <i class="icon-download"></i> Exportar CSV
                 </a>

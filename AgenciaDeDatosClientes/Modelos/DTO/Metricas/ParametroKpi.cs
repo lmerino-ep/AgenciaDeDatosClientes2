@@ -6,10 +6,11 @@ namespace Modelos.DTO.Metricas
     public class ParametroKpi
     {
         public string Nombre { get; set; } = string.Empty;
-        public string Tipo { get; set; } = string.Empty; // "fecha", "numero", "texto", "booleano"
+        public string Tipo { get; set; } = string.Empty; // "fecha", "numero", "texto", "booleano", "seleccion"
         public bool Requerido { get; set; }
         public string ValorPorDefecto { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
+        public List<string> Opciones { get; set; } = [];
     }
 }
 
