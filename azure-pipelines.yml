@@ -19,6 +19,7 @@ variables:
   ecsCluster: 'epdata-cluster'
   ecsService: 'epdata-clientes-service-production'
   taskDefinitionFamily: 'epdata-clientes-production'
+  ecsTaskDefRevisionsToKeep: 1
   dockerContextPath: 'AgenciaDeDatosClientes/Dashboard'
   dotnetProject: 'AgenciaDeDatosClientes/Dashboard/Dashboard.csproj'
 
@@ -162,3 +163,52 @@ stages:
                   --services $(ecsService) \
                   --region $(awsRegion)
                 echo "Service stable."
+
+          - task: AWSShellScript@1
+            displayName: 'Deregister old inactive ECS task definition revisions'
+            inputs:
+              awsCredentials: $(awsServiceConnection)
+              regionName: $(awsRegion)
+              scriptType: 'inline'
+              inlineScript: |
+                set -euo pipefail
+                FAMILY="$(taskDefinitionFamily)"
+                REGION="$(awsRegion)"
+                CLUSTER="$(ecsCluster)"
+                SERVICE="$(ecsService)"
+                KEEP="$(ecsTaskDefRevisionsToKeep)"
+
+                CURRENT_ARN=$(aws ecs describe-services \
+                  --cluster "${CLUSTER}" \
+                  --services "${SERVICE}" \
+                  --region "${REGION}" \
+                  --query 'services[0].taskDefinition' \
+                  --output text)
+                echo "Task definition en uso por el servicio: ${CURRENT_ARN}"
+
+                INACTIVE_JSON=$(aws ecs list-task-definitions \
+                  --family-prefix "${FAMILY}" \
+                  --status INACTIVE \
+                  --sort DESC \
+                  --region "${REGION}" \
+                  --output json)
+                INACTIVE_COUNT=$(echo "${INACTIVE_JSON}" | jq '(.taskDefinitionArns // []) | length')
+
+                if [ "${INACTIVE_COUNT}" -le "${KEEP}" ]; then
+                  echo "Sin limpieza: ${INACTIVE_COUNT} revision(es) INACTIVE (se conservan hasta ${KEEP})."
+                  exit 0
+                fi
+
+                TO_REMOVE=$((INACTIVE_COUNT - KEEP))
+                echo "Deregister de ${TO_REMOVE} revision(es) INACTIVE antiguas (conservar las ${KEEP} mas recientes)..."
+                echo "${INACTIVE_JSON}" | jq -r --argjson keep "${KEEP}" \
+                  '(.taskDefinitionArns // []) | .[$keep:][]' | while read -r arn; do
+                  if [ -z "${arn}" ]; then
+                    continue
+                  fi
+                  echo "  deregister ${arn}"
+                  aws ecs deregister-task-definition \
+                    --task-definition "${arn}" \
+                    --region "${REGION}"
+                done
+                echo "Limpieza de task definitions completada."
