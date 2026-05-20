@@ -52,6 +52,8 @@ stages:
               test -f "${PUBLISH_DIR}/wwwroot/css/main/dashboard.min.css"
               test -f "${PUBLISH_DIR}/wwwroot/css/main/footer.min.css"
               test -f "${PUBLISH_DIR}/wwwroot/js/include/carga-dinamica.js"
+              test -f "${PUBLISH_DIR}/wwwroot/js/libs/chart.umd.min.js"
+              test -f "${PUBLISH_DIR}/wwwroot/js/main/dashboard.min.js"
             displayName: 'dotnet publish (Release)'
 
           - task: PublishPipelineArtifact@1

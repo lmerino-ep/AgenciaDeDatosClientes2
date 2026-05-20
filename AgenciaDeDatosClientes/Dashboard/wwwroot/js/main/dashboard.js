@@ -2,15 +2,9 @@
  * Script para inicializar los gráficos del dashboard principal
  */
 
-// Cargar datos de los gráficos desde el elemento JSON
 let datosGraficos = {};
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', cargarDatosGraficos);
-} else {
-    cargarDatosGraficos();
-}
 
-function cargarDatosGraficos() {
+document.addEventListener('DOMContentLoaded', function () {
     const datosElement = document.getElementById('datos-graficos');
     if (datosElement) {
         try {
@@ -20,17 +14,13 @@ function cargarDatosGraficos() {
             datosGraficos = {};
         }
     }
-    
-    // Inicializar gráficos cuando el DOM esté listo
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', inicializarGraficos);
-    } else {
-        inicializarGraficos();
-    }
-}
+
+    inicializarGraficos();
+});
 
 function inicializarGraficos() {
     if (typeof Chart === 'undefined') {
+        console.warn('Chart.js no está disponible; no se pueden renderizar los gráficos del dashboard.');
         return;
     }
 
@@ -307,5 +297,4 @@ function inicializarGraficoAccionesPorModulo() {
         }
     });
 }
-
 
