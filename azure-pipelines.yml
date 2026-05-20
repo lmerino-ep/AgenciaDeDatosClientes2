@@ -199,9 +199,17 @@ stages:
                     continue
                   fi
                   echo "  deregister ${TD}"
-                  aws ecs deregister-task-definition \
+                  if ! DEREG_ERR=$(aws ecs deregister-task-definition \
                     --task-definition "${TD}" \
-                    --region "${REGION}"
+                    --region "${REGION}" 2>&1); then
+                    if echo "${DEREG_ERR}" | grep -q 'AccessDeniedException'; then
+                      echo "##vso[task.logissue type=error]Falta ecs:DeregisterTaskDefinition en el rol ado-deploy-epdata-clientes (IAM fuera de este repo)."
+                      echo "${DEREG_ERR}"
+                      exit 1
+                    fi
+                    echo "  omitido ${TD}: ${DEREG_ERR}"
+                    continue
+                  fi
                   DEREGISTERED=$((DEREGISTERED + 1))
                 done
                 echo "Limpieza completada (${DEREGISTERED} revision(es) deregistered)."
