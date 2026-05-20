@@ -138,8 +138,10 @@ stages:
                   --query 'taskDefinition.taskDefinitionArn' \
                   --output text)
 
-                echo "Registered: ${NEW_TD_ARN}"
+                NEW_REV="${NEW_TD_ARN##*:}"
+                echo "Registered: ${NEW_TD_ARN} (revision ${NEW_REV})"
                 echo "##vso[task.setvariable variable=newTaskDefArn]${NEW_TD_ARN}"
+                echo "##vso[task.setvariable variable=newTaskDefRevision]${NEW_REV}"
 
           - task: AWSShellScript@1
             displayName: 'Update ECS service & wait for stability'
@@ -174,41 +176,32 @@ stages:
                 set -euo pipefail
                 FAMILY="$(taskDefinitionFamily)"
                 REGION="$(awsRegion)"
-                CLUSTER="$(ecsCluster)"
-                SERVICE="$(ecsService)"
                 KEEP="$(ecsTaskDefRevisionsToKeep)"
+                CURRENT_REV="$(newTaskDefRevision)"
 
-                CURRENT_ARN=$(aws ecs describe-services \
-                  --cluster "${CLUSTER}" \
-                  --services "${SERVICE}" \
-                  --region "${REGION}" \
-                  --query 'services[0].taskDefinition' \
-                  --output text)
-                echo "Task definition en uso por el servicio: ${CURRENT_ARN}"
-
-                INACTIVE_JSON=$(aws ecs list-task-definitions \
-                  --family-prefix "${FAMILY}" \
-                  --status INACTIVE \
-                  --sort DESC \
-                  --region "${REGION}" \
-                  --output json)
-                INACTIVE_COUNT=$(echo "${INACTIVE_JSON}" | jq '(.taskDefinitionArns // []) | length')
-
-                if [ "${INACTIVE_COUNT}" -le "${KEEP}" ]; then
-                  echo "Sin limpieza: ${INACTIVE_COUNT} revision(es) INACTIVE (se conservan hasta ${KEEP})."
+                # Sin ecs:ListTaskDefinitions: recorremos revisiones por numero (Describe + Deregister).
+                LAST_TO_DEREGISTER=$((CURRENT_REV - KEEP - 1))
+                if [ "${LAST_TO_DEREGISTER}" -lt 1 ]; then
+                  echo "Sin limpieza: revision actual ${CURRENT_REV}, se conservan las ultimas ${KEEP}."
                   exit 0
                 fi
 
-                TO_REMOVE=$((INACTIVE_COUNT - KEEP))
-                echo "Deregister de ${TO_REMOVE} revision(es) INACTIVE antiguas (conservar las ${KEEP} mas recientes)..."
-                echo "${INACTIVE_JSON}" | jq -r --argjson keep "${KEEP}" \
-                  '(.taskDefinitionArns // []) | .[$keep:][]' | while read -r arn; do
-                  if [ -z "${arn}" ]; then
+                echo "Revision activa: ${CURRENT_REV}. Deregister INACTIVE desde :1 hasta :${LAST_TO_DEREGISTER}..."
+                DEREGISTERED=0
+                for rev in $(seq 1 "${LAST_TO_DEREGISTER}"); do
+                  TD="${FAMILY}:${rev}"
+                  STATUS=$(aws ecs describe-task-definition \
+                    --task-definition "${TD}" \
+                    --region "${REGION}" \
+                    --query 'taskDefinition.status' \
+                    --output text 2>/dev/null || echo "MISSING")
+                  if [ "${STATUS}" != "INACTIVE" ]; then
                     continue
                   fi
-                  echo "  deregister ${arn}"
+                  echo "  deregister ${TD}"
                   aws ecs deregister-task-definition \
-                    --task-definition "${arn}" \
+                    --task-definition "${TD}" \
                     --region "${REGION}"
+                  DEREGISTERED=$((DEREGISTERED + 1))
                 done
-                echo "Limpieza de task definitions completada."
+                echo "Limpieza completada (${DEREGISTERED} revision(es) deregistered)."
