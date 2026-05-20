@@ -181,6 +181,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       LogGroupName: '/aws/ecs/epdata/clientes'
+      RetentionInDays: 365
       Tags:
         - Key: Environment
           Value: !Ref Environment

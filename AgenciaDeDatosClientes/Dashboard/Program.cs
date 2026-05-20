@@ -171,7 +171,7 @@ builder.Services.AddRepositoriosDashboard(); // Repositorios del Dashboard
 builder.Services.AddServiciosDashboard(); // Servicios del Dashboard
 builder.Services.AddAuthorizationPolicies();
 builder.Services.AddCorsPolicies();
-builder.Services.AddCloudWatchLogging(builder.Configuration, builder.Environment);
+builder.Services.AddLoggingConfiguration();
 builder.Services.AddLoggingManual(builder.Configuration, builder.Environment);
 builder.Services.AddAuthenticationServices();
 builder.Services.AddSessionAndAntiforgery();

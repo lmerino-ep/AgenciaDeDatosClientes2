@@ -291,36 +291,16 @@ namespace Utils.Servicios
         }
 
         /// <summary>
-        /// Configura el logging de CloudWatch para producción
+        /// Configura los providers de logging. Los logs van a stdout, que ECS captura
+        /// automáticamente hacia CloudWatch vía el driver awslogs del task definition.
+        /// Los niveles y filtros se configuran en appsettings.json bajo la sección "Logging".
         /// </summary>
-        public static IServiceCollection AddCloudWatchLogging(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+        public static IServiceCollection AddLoggingConfiguration(this IServiceCollection services)
         {
-            // ===== CONFIGURACIÓN BÁSICA DE LOGGING =====
             services.AddLogging(logging =>
             {
-                // Configuración básica de logging
                 logging.ClearProviders();
                 logging.AddConsole();
-
-                // Configurar nivel de log según entorno
-                var logLevel = environment.IsDevelopment() ? LogLevel.Debug : LogLevel.Information;
-                logging.SetMinimumLevel(logLevel);
-
-                // ===== CONFIGURACIÓN DE AWS CLOUDWATCH LOGS =====    
-                if (!environment.IsDevelopment())
-                {
-                    var cloudWatchConfig = configuration.GetSection("CloudWatch").Get<Modelos.InyeccionDeDependencias.CloudWatch>();
-                    var region = !string.IsNullOrEmpty(cloudWatchConfig?.Region) 
-                        ? Amazon.RegionEndpoint.GetBySystemName(cloudWatchConfig.Region) 
-                        : Amazon.RegionEndpoint.EUWest1;
-                    
-                    // Configurar logging para CloudWatch usando el provider personalizado
-                    logging.AddProvider(new Utils.Logging.CloudWatchLogsProvider(
-                        logGroupName: cloudWatchConfig.LogGroupName,
-                        region: region,
-                        logLevel: logLevel
-                    ));
-                }
             });
 
             return services;
