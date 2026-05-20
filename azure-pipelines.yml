@@ -167,7 +167,7 @@ stages:
                 echo "Service stable."
 
           - task: AWSShellScript@1
-            displayName: 'Deregister old inactive ECS task definition revisions'
+            displayName: 'Deregister old ECS task definition revisions'
             inputs:
               awsCredentials: $(awsServiceConnection)
               regionName: $(awsRegion)
@@ -179,23 +179,21 @@ stages:
                 KEEP="$(ecsTaskDefRevisionsToKeep)"
                 CURRENT_REV="$(newTaskDefRevision)"
 
-                # Sin ecs:ListTaskDefinitions: recorremos revisiones por numero (Describe + Deregister).
-                LAST_TO_DEREGISTER=$((CURRENT_REV - KEEP - 1))
+                LAST_TO_DEREGISTER=$((CURRENT_REV - KEEP))
                 if [ "${LAST_TO_DEREGISTER}" -lt 1 ]; then
                   echo "Sin limpieza: revision actual ${CURRENT_REV}, se conservan las ultimas ${KEEP}."
                   exit 0
                 fi
 
-                echo "Revision activa: ${CURRENT_REV}. Deregister INACTIVE desde :1 hasta :${LAST_TO_DEREGISTER}..."
+                echo "Revision nueva: ${CURRENT_REV}. Deregister :1..:${LAST_TO_DEREGISTER} (conservar :$((LAST_TO_DEREGISTER + 1))..:${CURRENT_REV})..."
                 DEREGISTERED=0
                 for rev in $(seq 1 "${LAST_TO_DEREGISTER}"); do
                   TD="${FAMILY}:${rev}"
-                  STATUS=$(aws ecs describe-task-definition \
+                  if ! aws ecs describe-task-definition \
                     --task-definition "${TD}" \
                     --region "${REGION}" \
-                    --query 'taskDefinition.status' \
-                    --output text 2>/dev/null || echo "MISSING")
-                  if [ "${STATUS}" != "INACTIVE" ]; then
+                    --query 'taskDefinition.taskDefinitionArn' \
+                    --output text >/dev/null 2>&1; then
                     continue
                   fi
                   echo "  deregister ${TD}"
