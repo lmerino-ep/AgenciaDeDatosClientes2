@@ -18,9 +18,16 @@
     @await RenderSectionAsync("precargas", required: false)
 
     <!--estilos.ini-->
-    <link href="~/css/critical/cabecera.css" rel="stylesheet" asp-append-version="true" />
-    <link href="~/css/main/dashboard.css" rel="stylesheet" asp-append-version="true" />
-    <link href="~/css/main/footer.css" rel="stylesheet" asp-append-version="true" />
+    <environment include="Development">
+        <link href="~/css/critical/cabecera.css" rel="stylesheet" asp-append-version="true" />
+        <link href="~/css/main/dashboard.css" rel="stylesheet" asp-append-version="true" />
+        <link href="~/css/main/footer.css" rel="stylesheet" asp-append-version="true" />
+    </environment>
+    <environment include="Staging,Production">
+        <link href="~/css/critical/cabecera.min.css" rel="stylesheet" asp-append-version="true" />
+        <link href="~/css/main/dashboard.min.css" rel="stylesheet" asp-append-version="true" />
+        <link href="~/css/main/footer.min.css" rel="stylesheet" asp-append-version="true" />
+    </environment>
 
     @await RenderSectionAsync("estilos", required: false)
     <!--estilos.fin-->

@@ -43,8 +43,16 @@ stages:
           - script: dotnet restore $(dotnetProject)
             displayName: 'dotnet restore'
 
-          - script: dotnet build $(dotnetProject) -c Release --no-restore
-            displayName: 'dotnet build (Release)'
+          # dotnet build no copia wwwroot al output: el Dockerfile espera estáticos de publish.
+          - script: |
+              dotnet publish $(dotnetProject) -c Release --no-restore
+              PUBLISH_DIR="$(dockerContextPath)/bin/Release/net9.0/publish"
+              test -f "${PUBLISH_DIR}/Dashboard.dll"
+              test -f "${PUBLISH_DIR}/wwwroot/css/critical/cabecera.min.css"
+              test -f "${PUBLISH_DIR}/wwwroot/css/main/dashboard.min.css"
+              test -f "${PUBLISH_DIR}/wwwroot/css/main/footer.min.css"
+              test -f "${PUBLISH_DIR}/wwwroot/js/include/carga-dinamica.js"
+            displayName: 'dotnet publish (Release)'
 
           - task: PublishPipelineArtifact@1
             displayName: 'Publish compiled bin/ as artifact'
