@@ -85,7 +85,7 @@ namespace Negocio
         {
             try
             {
-                _logger.LogInformation("Creando usuario con email {Email}", dto.Email);
+                _logger.LogInformation("Creando usuario");
 
                 // Verificar si el email ya existe
                 if (await _repositorio.ExisteEmailAsync(dto.Email))
@@ -113,7 +113,7 @@ namespace Negocio
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear usuario con email {Email}", dto.Email);
+                _logger.LogError(ex, "Error al crear usuario");
                 throw;
             }
         }
@@ -190,11 +190,11 @@ namespace Negocio
                             destinatariosBCC: null
                         );
 
-                        _logger.LogInformation("Email de nueva contraseña enviado a {Email}", usuario.Email);
+                        _logger.LogInformation("Email de nueva contraseña enviado al usuario {UsuarioId}", dto.IdUsuario);
                     }
                     catch (Exception exEmail)
                     {
-                        _logger.LogWarning(exEmail, "No se pudo enviar el email de nueva contraseña a {Email}", usuario.Email);
+                        _logger.LogWarning(exEmail, "No se pudo enviar el email de nueva contraseña al usuario {UsuarioId}", dto.IdUsuario);
                         // No lanzamos excepción, solo registramos el warning
                     }
                 }
@@ -359,7 +359,7 @@ namespace Negocio
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al verificar existencia de email {Email}", email);
+                _logger.LogError(ex, "Error al verificar existencia de email");
                 throw;
             }
         }

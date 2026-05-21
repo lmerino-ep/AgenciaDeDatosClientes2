@@ -248,12 +248,12 @@ namespace Negocio
                     destinatariosBCC: null
                 );
 
-                _logger.LogInformation("Email con tokens enviado a {Email}: {Resultado}", emailDestino, resultado);
+                _logger.LogInformation("Email con tokens enviado: {Resultado}", resultado);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al enviar email con tokens a {Email}", emailDestino);
+                _logger.LogError(ex, "Error al enviar email con tokens");
                 return false;
             }
         }
