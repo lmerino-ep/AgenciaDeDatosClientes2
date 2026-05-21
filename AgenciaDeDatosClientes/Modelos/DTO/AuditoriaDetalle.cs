@@ -11,16 +11,6 @@ namespace Modelos.DTO
         public string CategoriaNombre { get; set; }
         public string Descripcion { get; set; }
         public DateTime LastUpdate { get; set; }
-        
-        // Propiedades de compatibilidad (obsoletas)
-        [Obsolete("Usar AccionNombre en su lugar")]
-        public string Accion => AccionNombre;
-        
-        [Obsolete("Usar CategoriaNombre en su lugar")]
-        public string Modulo => CategoriaNombre;
-        
-        [Obsolete("Usar LastUpdate en su lugar")]
-        public DateTime FechaHora => LastUpdate;
     }
 }
 

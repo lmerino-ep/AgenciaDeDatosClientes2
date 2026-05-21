@@ -34,7 +34,7 @@ namespace Datos
                     throw new Exception(retorno.Mensaje);
                 }
 
-                var resultado = retorno.Resultado<Modelos.Auditoria>();
+                var resultado = retorno.Resultado<AgenciaDeDatosBD.Auditoria>();
                 return resultado.FirstOrDefault()?.Id ?? 0;
             }
         }

@@ -32,54 +32,6 @@ namespace Modelos
     }
 
     /// <summary>
-    /// Tipos de acciones de auditoría (OBSOLETO - Usar AuditoriaAccionEnum)
-    /// </summary>
-    [Obsolete("Usar AuditoriaAccionEnum en su lugar")]
-    public static class TiposAccionAuditoria
-    {
-        // Usuarios
-        public const string UsuarioCrear = "Usuario.Crear";
-        public const string UsuarioEditar = "Usuario.Editar";
-        public const string UsuarioEliminar = "Usuario.Eliminar";
-        public const string UsuarioCambiarContrasena = "Usuario.CambiarContrasena";
-        public const string UsuarioCambiarTipo = "Usuario.CambiarTipo";
-
-        // Roles
-        public const string RolesCrear = "Roles.Crear";
-        public const string RolesEditar = "Roles.Editar";
-        public const string RolesAsignar = "Roles.Asignar";
-        public const string RolesRemover = "Roles.Remover";
-
-        // Tokens
-        public const string TokensGenerarRefreshToken1 = "Tokens.GenerarRefreshToken1";
-        public const string TokensGenerarRefreshToken2 = "Tokens.GenerarRefreshToken2";
-        public const string TokensRevocarTokens = "Tokens.RevocarTokens";
-
-        // Métricas
-        public const string MetricasConsultar = "Metricas.Consultar";
-        public const string MetricasExportar = "Metricas.Exportar";
-
-        // Documentación
-        public const string DocumentacionSubir = "Documentacion.Subir";
-        public const string DocumentacionDescargar = "Documentacion.Descargar";
-        public const string DocumentacionEliminar = "Documentacion.Eliminar";
-        public const string DocumentacionSobrescribir = "Documentacion.Sobrescribir";
-    }
-
-    /// <summary>
-    /// Módulos del dashboard (OBSOLETO - Usar AuditoriaCategoriaEnum)
-    /// </summary>
-    [Obsolete("Usar AuditoriaCategoriaEnum en su lugar")]
-    public static class ModulosDashboard
-    {
-        public const string Usuarios = "Usuarios";
-        public const string Roles = "Roles";
-        public const string Tokens = "Tokens";
-        public const string Metricas = "Metricas";
-        public const string Documentacion = "Documentacion";
-    }
-
-    /// <summary>
     /// Resultados de acciones de auditoría
     /// </summary>
     public static class ResultadosAuditoria
