@@ -55,6 +55,49 @@
         }
     }
 
+    & > .pie-complemento {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 40px auto 0;
+        padding: 0 16px;
+        text-align: center;
+
+        & > .pie-complemento-texto {
+            margin: 0 auto 24px;
+            max-width: 880px;
+            font-size: 0.9rem;
+            line-height: 1.55;
+
+            & > em {
+                font-style: italic;
+
+                & strong {
+                    font-weight: bold;
+                }
+            }
+        }
+
+        & > .pie-complemento-logos {
+            margin: 0 auto;
+            max-width: 1062px;
+            background-color: #fff;
+            padding: 16px;
+            border-radius: 8px;
+            box-sizing: border-box;
+
+            & > .pie-complemento-imagen {
+                display: block;
+                width: 100%;
+
+                & > img {
+                    display: block;
+                    width: 100%;
+                    height: auto;
+                }
+            }
+        }
+    }
+
     & > .copyright {
         margin: 10px auto 0 auto;
         padding: 0;
@@ -135,6 +178,17 @@
                         margin-bottom: 15px;
                     }
                 }
+            }
+        }
+
+        & > .pie-complemento {
+            margin-top: 24px;
+            padding-left: 8px;
+            padding-right: 8px;
+
+            & > .pie-complemento-logos {
+                padding: 10px;
+                border-radius: 6px;
             }
         }
 

@@ -45,6 +45,42 @@
   color: black;
   text-decoration: underline;
 }
+.pie-de-pagina > .pie-complemento {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 40px auto 0;
+  padding: 0 16px;
+  text-align: center;
+}
+.pie-de-pagina > .pie-complemento > .pie-complemento-texto {
+  margin: 0 auto 24px;
+  max-width: 880px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.pie-de-pagina > .pie-complemento > .pie-complemento-texto > em {
+  font-style: italic;
+}
+.pie-de-pagina > .pie-complemento > .pie-complemento-texto > em strong {
+  font-weight: bold;
+}
+.pie-de-pagina > .pie-complemento > .pie-complemento-logos {
+  margin: 0 auto;
+  max-width: 1062px;
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.pie-de-pagina > .pie-complemento > .pie-complemento-logos > .pie-complemento-imagen {
+  display: block;
+  width: 100%;
+}
+.pie-de-pagina > .pie-complemento > .pie-complemento-logos > .pie-complemento-imagen > img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 .pie-de-pagina > .copyright {
   margin: 10px auto 0 auto;
   padding: 0;
@@ -124,6 +160,15 @@
   }
   .pie-de-pagina > .listados > .listado > .elemento > .enlace {
     margin-bottom: 15px;
+  }
+  .pie-de-pagina > .pie-complemento {
+    margin-top: 24px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .pie-de-pagina > .pie-complemento > .pie-complemento-logos {
+    padding: 10px;
+    border-radius: 6px;
   }
   .pie-de-pagina > .copyright {
     flex-direction: column;
