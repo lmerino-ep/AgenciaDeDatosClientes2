@@ -178,10 +178,11 @@ namespace Negocio
                     try
                     {
                         HelperEmail helperEmail = new HelperEmail();
+                        string passwordParaHtml = System.Net.WebUtility.HtmlEncode(dto.ConfirmarPassword);
                         string resultado = await helperEmail.Enviar(
                             asunto: "Nueva contraseña - EpData Dashboard",
-                            cuerpoHtml: $"<p>Su nueva contraseña es: <strong>{dto.NuevaPassword}</strong></p><p>Por favor, cámbiela después de iniciar sesión.</p>",
-                            cuerpoTexto: $"Su nueva contraseña es: {dto.NuevaPassword}\n\nPor favor, cámbiela después de iniciar sesión.",
+                            cuerpoHtml: $"<p>Su nueva contraseña es: <strong>{passwordParaHtml}</strong></p><p>Por favor, cámbiela después de iniciar sesión.</p>",
+                            cuerpoTexto: $"Su nueva contraseña es: {dto.ConfirmarPassword}\n\nPor favor, cámbiela después de iniciar sesión.",
                             adjuntos: null,
                             nombreOrigen: "EpData Dashboard",
                             emailOrigen: "noreply@epdata.es",

@@ -130,7 +130,7 @@ namespace Pages.Usuarios
             const string mayusculas = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
             const string minusculas = "abcdefghijkmnopqrstuvwxyz";
             const string numeros = "0123456789";
-            const string simbolos = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+            const string simbolos = "!@#$%^&*()_+-=[]{}|;:,.?";
 
             using (var rng = RandomNumberGenerator.Create())
             {
