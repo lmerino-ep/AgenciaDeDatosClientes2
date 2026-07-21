@@ -11,7 +11,6 @@ namespace Utils.Autenticacion
         {
         }
 
-        // Los claims de rol ya los añade la clase base vía UserManager.GetRolesAsync; no se repiten aquí.
         public async override Task<ClaimsPrincipal> CreateAsync(Usuario user)
         {
             var principal = await base.CreateAsync(user);
@@ -19,6 +18,11 @@ namespace Utils.Autenticacion
             if (user.FK_UsuarioTipo != null && principal.Identity is ClaimsIdentity identity)
             {
                 identity.AddClaim(new Claim("FK_UsuarioTipo", user.FK_UsuarioTipo.ToString()));
+
+                foreach (var rol in user.Roles)
+                {
+                    identity.AddClaim(new Claim(Options.ClaimsIdentity.RoleClaimType, rol.Nombre));
+                }
             }
 
             return principal;
