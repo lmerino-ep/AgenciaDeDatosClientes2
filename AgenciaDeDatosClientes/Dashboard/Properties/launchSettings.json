@@ -23,8 +23,8 @@
       "launchBrowser": true,
       "launchUrl": "https://dev-clientes.epdata.es:4435",
       "environmentVariables": {
-        "ASPNETCORE_HTTPS_PORTS": "443",
-        "ASPNETCORE_HTTP_PORTS": "80",
+        "ASPNETCORE_HTTPS_PORTS": "4435",
+        "ASPNETCORE_HTTP_PORTS": "8080",
         "ASPNETCORE_Kestrel__Certificates__Default__Path": "/app/Properties/epdata.es+1.p12",
         "ASPNETCORE_Kestrel__Certificates__Default__Password": "changeit"
       },

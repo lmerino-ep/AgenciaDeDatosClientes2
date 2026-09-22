@@ -1015,15 +1015,6 @@ namespace Utils.Servicios
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(_stripeConfig.SecretoClavePublishableKey))
-                    {
-                        var publishableKey = secretos.GetSecretValue(secretString, _stripeConfig.SecretoClavePublishableKey);
-                        if (!string.IsNullOrEmpty(publishableKey))
-                        {
-                            _stripeConfig.PublishableKey = publishableKey;
-                        }
-                    }
-
                     if (!string.IsNullOrEmpty(_stripeConfig.SecretoClaveWebhookSecret))
                     {
                         if (!string.IsNullOrWhiteSpace(_stripeConfig.WebhookSecret))

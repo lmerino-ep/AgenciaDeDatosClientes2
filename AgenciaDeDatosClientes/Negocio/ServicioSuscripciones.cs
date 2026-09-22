@@ -42,6 +42,12 @@ namespace Negocio
             _logger = logger;
         }
 
+        /// <summary>
+        /// true si la SecretKey configurada es de modo Test de Stripe (sk_test_...), false si es de modo Live.
+        /// Determina qué filas de SuscripcionTipo (EsTest) se ofrecen y se pueden contratar.
+        /// </summary>
+        private bool EsModoTest => _stripeConfig.SecretKey?.StartsWith("sk_test_", StringComparison.Ordinal) ?? true;
+
         public async Task<ContextoTarifaUsuario> ObtenerContextoTarifaAsync(int fkUsuario, string usuarioTipo)
         {
             if (TiposTrabajadorEuropaPress.Contains(usuarioTipo))
@@ -63,7 +69,7 @@ namespace Negocio
 
         public async Task<IReadOnlyList<SuscripcionTipoTarifa>> ObtenerSuscripcionesDisponiblesAsync()
         {
-            return await _repositorioSuscripciones.ObtenerSuscripcionesTipoActivasAsync();
+            return await _repositorioSuscripciones.ObtenerSuscripcionesTipoActivasAsync(EsModoTest);
         }
 
         public async Task<IReadOnlyList<HistorialDescargaItem>> ObtenerHistorialDescargasAsync(int fkUsuario, int limit = 100)
@@ -140,7 +146,7 @@ namespace Negocio
 
         public async Task<string> CrearSesionCheckoutAsync(int fkUsuario, string email, long suscripcionTipoId, string scheme, string host)
         {
-            var suscripcionTipo = await _repositorioSuscripciones.ObtenerSuscripcionTipoPorIdAsync(suscripcionTipoId);
+            var suscripcionTipo = await _repositorioSuscripciones.ObtenerSuscripcionTipoPorIdAsync(suscripcionTipoId, EsModoTest);
             if (suscripcionTipo == null || string.IsNullOrWhiteSpace(suscripcionTipo.StripePriceId))
             {
                 throw new InvalidOperationException($"No existe configuración activa de Stripe para la suscripción {suscripcionTipoId}.");
@@ -239,8 +245,31 @@ namespace Negocio
                     break;
                 }
                 case "invoice.paid":
+                {
+                    var invoice = stripeEvent.Data.Object as Invoice;
+                    var subscriptionId = invoice?.Parent?.SubscriptionDetails?.SubscriptionId;
+                    if (!string.IsNullOrWhiteSpace(subscriptionId))
+                    {
+                        _logger.LogInformation(
+                            "Pago de factura correcto. StripeSubscriptionId: {StripeSubscriptionId}, InvoiceId: {InvoiceId}",
+                            subscriptionId, invoice.Id);
+                        await SincronizarSuscripcionDesdeStripeAsync(subscriptionId, invoice.CustomerId, null);
+                    }
+
+                    break;
+                }
                 case "invoice.payment_failed":
                 {
+                    var invoice = stripeEvent.Data.Object as Invoice;
+                    var subscriptionId = invoice?.Parent?.SubscriptionDetails?.SubscriptionId;
+                    if (!string.IsNullOrWhiteSpace(subscriptionId))
+                    {
+                        _logger.LogWarning(
+                            "Fallo de pago de factura. StripeSubscriptionId: {StripeSubscriptionId}, InvoiceId: {InvoiceId}, ProximoIntento: {ProximoIntento}",
+                            subscriptionId, invoice.Id, invoice.NextPaymentAttempt);
+                        await SincronizarSuscripcionDesdeStripeAsync(subscriptionId, invoice.CustomerId, null);
+                    }
+
                     break;
                 }
             }

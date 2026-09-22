@@ -55,7 +55,7 @@ namespace Datos
             return await connection.QueryFirstOrDefaultAsync<SuscripcionActivaUsuario>(sql, new { FkUsuario = fkUsuario });
         }
 
-        public async Task<SuscripcionTipoTarifa?> ObtenerSuscripcionTipoPorIdAsync(long suscripcionTipoId)
+        public async Task<SuscripcionTipoTarifa?> ObtenerSuscripcionTipoPorIdAsync(long suscripcionTipoId, bool esTest)
         {
             const string sql = @"
                 SELECT
@@ -63,15 +63,17 @@ namespace Datos
                     Nombre,
                     Descripcion,
                     StripePriceId,
-                    Activo
+                    Activo,
+                    EsTest
                 FROM SuscripcionTipo
                 WHERE Id = @SuscripcionTipoId
                     AND Activo = 1
+                    AND EsTest = @EsTest
                 LIMIT 1
             ;";
 
             using var connection = ObtenerConexionLectura();
-            return await connection.QueryFirstOrDefaultAsync<SuscripcionTipoTarifa>(sql, new { SuscripcionTipoId = suscripcionTipoId });
+            return await connection.QueryFirstOrDefaultAsync<SuscripcionTipoTarifa>(sql, new { SuscripcionTipoId = suscripcionTipoId, EsTest = esTest });
         }
 
         public async Task<SuscripcionTipoTarifa?> ObtenerSuscripcionTipoPorStripePriceIdAsync(string stripePriceId)
@@ -82,7 +84,8 @@ namespace Datos
                     Nombre,
                     Descripcion,
                     StripePriceId,
-                    Activo
+                    Activo,
+                    EsTest
                 FROM SuscripcionTipo
                 WHERE StripePriceId = @StripePriceId
                     AND Activo = 1
@@ -93,7 +96,7 @@ namespace Datos
             return await connection.QueryFirstOrDefaultAsync<SuscripcionTipoTarifa>(sql, new { StripePriceId = stripePriceId });
         }
 
-        public async Task<IReadOnlyList<SuscripcionTipoTarifa>> ObtenerSuscripcionesTipoActivasAsync()
+        public async Task<IReadOnlyList<SuscripcionTipoTarifa>> ObtenerSuscripcionesTipoActivasAsync(bool esTest)
         {
             const string sql = @"
                 SELECT
@@ -101,16 +104,18 @@ namespace Datos
                     Nombre,
                     Descripcion,
                     StripePriceId,
-                    Activo
+                    Activo,
+                    EsTest
                 FROM SuscripcionTipo
                 WHERE Activo = 1
+                    AND EsTest = @EsTest
                     AND StripePriceId IS NOT NULL
                     AND StripePriceId <> ''
                 ORDER BY Id
             ;";
 
             using var connection = ObtenerConexionLectura();
-            var planes = await connection.QueryAsync<SuscripcionTipoTarifa>(sql);
+            var planes = await connection.QueryAsync<SuscripcionTipoTarifa>(sql, new { EsTest = esTest });
             return planes.ToList();
         }
 
