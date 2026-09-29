@@ -33,16 +33,23 @@ namespace Negocio
         {
             StripeConfiguration.ApiKey = _stripeConfig.SecretKey;
 
-            Event stripeEvent;
             try
             {
-                // throwOnApiVersionMismatch: false porque la cuenta de Stripe usa una API version antigua (2020-08-27) que no coincide con la del SDK.
-                stripeEvent = EventUtility.ConstructEvent(payload, signatureHeader, _stripeConfig.WebhookSecret, 300, throwOnApiVersionMismatch: false);
+                EventUtility.ValidateSignature(payload, signatureHeader, _stripeConfig.WebhookSecret);
             }
-            catch (StripeException ex) when (EsFalloDeVerificacionDeFirma(ex))
+            catch (StripeException ex)
             {
                 throw new FirmaWebhookInvalidaException("Firma de webhook de Stripe inválida.", ex);
             }
+
+            // La cuenta de Stripe tiene fijada api_version 2020-08-27 a nivel de cuenta (no de
+            // endpoint: crear un WebhookEndpoint con --api-version no lo cambia, comprobado en
+            // producción) y no se puede subir sin afectar a otra integración que comparte la
+            // cuenta. Se desactiva la comprobación de versión del SDK; los campos que cambiaron de
+            // forma entre esa versión y la del SDK se resuelven con reserva desde el JSON crudo
+            // (ver ServicioSuscripciones.ObtenerSubscriptionIdDeInvoice) o refrescando el recurso
+            // vía la API en vez de fiarse del payload del webhook.
+            var stripeEvent = EventUtility.ParseEvent(payload, throwOnApiVersionMismatch: false);
 
             if (await _repositorioWebhooks.EventoProcesadoAsync(stripeEvent.Id))
             {
@@ -84,16 +91,6 @@ namespace Negocio
             {
                 await _servicioSuscripciones.ProcesarEventoAsync(stripeEvent);
             }
-        }
-
-        // Stripe.net no distingue firma inválida de otros StripeException con un tipo propio; se detecta por mensaje.
-        private static bool EsFalloDeVerificacionDeFirma(StripeException ex)
-        {
-            var mensaje = ex.Message ?? string.Empty;
-            return mensaje.Contains("expected signature", StringComparison.OrdinalIgnoreCase)
-                || mensaje.Contains("signature header format", StringComparison.OrdinalIgnoreCase)
-                || mensaje.Contains("outside of the allowed tolerance", StringComparison.OrdinalIgnoreCase)
-                || mensaje.Contains("signature cannot be safely calculated", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using Datos;
 using Microsoft.Extensions.Logging;
 using Modelos.DTO.Suscripciones;
@@ -213,9 +214,10 @@ namespace Negocio
                 }
                 case "customer.subscription.deleted":
                 {
-                    var subscription = stripeEvent.Data.Object as Subscription;
-                    if (subscription != null)
+                    var subscriptionId = (stripeEvent.Data.Object as Subscription)?.Id;
+                    if (!string.IsNullOrWhiteSpace(subscriptionId))
                     {
+                        var subscription = await ObtenerSuscripcionFrescaAsync(subscriptionId);
                         await ActualizarSuscripcionTrasEliminacionEnStripeAsync(subscription);
                     }
 
@@ -224,10 +226,13 @@ namespace Negocio
                 case "customer.subscription.created":
                 case "customer.subscription.updated":
                 {
-                    var subscription = stripeEvent.Data.Object as Subscription;
-                    if (subscription != null)
+                    // Se refresca desde la API en vez de usar el objeto embebido en el webhook:
+                    // con esta cuenta, fijada en api_version 2020-08-27, subscription.items.data[].current_period_end
+                    // (estructura introducida después) llega vacío en el payload del webhook.
+                    var subscriptionId = (stripeEvent.Data.Object as Subscription)?.Id;
+                    if (!string.IsNullOrWhiteSpace(subscriptionId))
                     {
-                        await SincronizarSuscripcionAsync(subscription, null);
+                        await SincronizarSuscripcionDesdeStripeAsync(subscriptionId, null, null);
                     }
 
                     break;
@@ -235,7 +240,7 @@ namespace Negocio
                 case "invoice.paid":
                 {
                     var invoice = stripeEvent.Data.Object as Invoice;
-                    var subscriptionId = invoice?.Parent?.SubscriptionDetails?.SubscriptionId;
+                    var subscriptionId = ObtenerSubscriptionIdDeInvoice(invoice);
                     if (!string.IsNullOrWhiteSpace(subscriptionId))
                     {
                         _logger.LogInformation(
@@ -249,7 +254,7 @@ namespace Negocio
                 case "invoice.payment_failed":
                 {
                     var invoice = stripeEvent.Data.Object as Invoice;
-                    var subscriptionId = invoice?.Parent?.SubscriptionDetails?.SubscriptionId;
+                    var subscriptionId = ObtenerSubscriptionIdDeInvoice(invoice);
                     if (!string.IsNullOrWhiteSpace(subscriptionId))
                     {
                         _logger.LogWarning(
@@ -263,6 +268,30 @@ namespace Negocio
             }
         }
 
+        /// <summary>
+        /// Esta cuenta de Stripe tiene fijada api_version 2020-08-27 (no se puede subir: la comparte
+        /// otra integración) y Stripe.net 51 ya no modela el campo plano <c>invoice.subscription</c>
+        /// de esa versión, solo <see cref="InvoiceParent.SubscriptionDetails"/> (introducido después).
+        /// Si el modelo tipado no lo resuelve, se recurre al JSON crudo que Stripe.net conserva.
+        /// </summary>
+        private static string ObtenerSubscriptionIdDeInvoice(Invoice invoice)
+        {
+            var subscriptionId = invoice?.Parent?.SubscriptionDetails?.SubscriptionId;
+            if (!string.IsNullOrWhiteSpace(subscriptionId))
+            {
+                return subscriptionId;
+            }
+
+            if (invoice?.RawJsonElement is { } json
+                && json.TryGetProperty("subscription", out var valor)
+                && valor.ValueKind == JsonValueKind.String)
+            {
+                return valor.GetString();
+            }
+
+            return null;
+        }
+
         private async Task ActualizarSuscripcionTrasEliminacionEnStripeAsync(Subscription subscription)
         {
             var estado = string.IsNullOrWhiteSpace(subscription.Status) ? "canceled" : subscription.Status;
@@ -273,11 +302,15 @@ namespace Negocio
 
         private async Task SincronizarSuscripcionDesdeStripeAsync(string subscriptionId, string customerId, Dictionary<string, string> metadata)
         {
+            var subscription = await ObtenerSuscripcionFrescaAsync(subscriptionId);
+            await SincronizarSuscripcionAsync(subscription, metadata, customerId);
+        }
+
+        private async Task<Subscription> ObtenerSuscripcionFrescaAsync(string subscriptionId)
+        {
             var client = new StripeClient(_stripeConfig.SecretKey);
             var subscriptionService = new SubscriptionService(client);
-            var subscription = await subscriptionService.GetAsync(subscriptionId);
-
-            await SincronizarSuscripcionAsync(subscription, metadata, customerId);
+            return await subscriptionService.GetAsync(subscriptionId);
         }
 
         private async Task SincronizarSuscripcionAsync(Subscription subscription, Dictionary<string, string> metadata, string customerIdFromEvent = null)
