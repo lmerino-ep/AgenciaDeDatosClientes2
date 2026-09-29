@@ -30,6 +30,7 @@ namespace Utils.Servicios
         private readonly Modelos.InyeccionDeDependencias.S3 _s3Config;
         private readonly Modelos.InyeccionDeDependencias.Cdn _cdnConfig;
         private readonly Modelos.InyeccionDeDependencias.Stripe _stripeConfig;
+        private readonly Modelos.InyeccionDeDependencias.LemonSqueezy _lemonSqueezyConfig;
         private readonly ILogger<InfrastructureInitializationService> _logger;
         private readonly IServiceProvider _serviceProviderTemporal;
         private readonly IServiceCollection _serviceCollection;
@@ -50,6 +51,7 @@ namespace Utils.Servicios
             Modelos.InyeccionDeDependencias.S3 s3Config,
             Modelos.InyeccionDeDependencias.Cdn cdnConfig,
             Modelos.InyeccionDeDependencias.Stripe stripeConfig,
+            Modelos.InyeccionDeDependencias.LemonSqueezy lemonSqueezyConfig,
             ILogger<InfrastructureInitializationService> logger,
             IServiceProvider serviceProviderTemporal,
             IServiceCollection serviceCollection)
@@ -67,6 +69,7 @@ namespace Utils.Servicios
             _s3Config = s3Config;
             _cdnConfig = cdnConfig;
             _stripeConfig = stripeConfig;
+            _lemonSqueezyConfig = lemonSqueezyConfig;
             _logger = logger;
             _serviceProviderTemporal = serviceProviderTemporal;
             _serviceCollection = serviceCollection;
@@ -131,19 +134,21 @@ namespace Utils.Servicios
                 var s3Task = InitializeS3Async(cts.Token);
                 var cdnTask = InitializeCdnAsync(cts.Token);
                 var stripeTask = InitializeStripeAsync(cts.Token);
+                var lemonSqueezyTask = InitializeLemonSqueezyAsync(cts.Token);
 
                 await Task.WhenAll(
-                    redisTask, 
-                    sqsTask, 
-                    auroraTask, 
-                    zillizTask, 
-                    openAITask, 
-                    anthropicTask, 
-                    googleTask, 
-                    autoLoginTask, 
-                    s3Task, 
+                    redisTask,
+                    sqsTask,
+                    auroraTask,
+                    zillizTask,
+                    openAITask,
+                    anthropicTask,
+                    googleTask,
+                    autoLoginTask,
+                    s3Task,
                     cdnTask,
-                    stripeTask
+                    stripeTask,
+                    lemonSqueezyTask
                 );
 
                 _logger.LogInformation("Toda la infraestructura inicializada correctamente");
@@ -1036,6 +1041,47 @@ namespace Utils.Servicios
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error inicializando Stripe");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Inicializa LemonSqueezy resolviendo claves desde Secrets Manager si es necesario.
+        /// </summary>
+        private async Task InitializeLemonSqueezyAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Inicializando LemonSqueezy...");
+
+                if (_lemonSqueezyConfig.UseSecretsManager && !string.IsNullOrEmpty(_lemonSqueezyConfig.NombreDelSecreto))
+                {
+                    var secretosLogger = _serviceProviderTemporal.GetRequiredService<ILogger<Secretos.Secretos>>();
+                    var secretos = new Secretos.Secretos(_secretsManager, secretosLogger);
+                    var secretString = await secretos.GetSecretAsync(_lemonSqueezyConfig.NombreDelSecreto, cancellationToken);
+
+                    if (!string.IsNullOrEmpty(_lemonSqueezyConfig.SecretoClaveApiKey))
+                    {
+                        var apiKey = secretos.GetSecretValue(secretString, _lemonSqueezyConfig.SecretoClaveApiKey);
+                        if (!string.IsNullOrEmpty(apiKey))
+                        {
+                            _lemonSqueezyConfig.ApiKey = apiKey;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(_lemonSqueezyConfig.SecretoClaveSigningSecret))
+                    {
+                        var signingSecret = secretos.GetSecretValue(secretString, _lemonSqueezyConfig.SecretoClaveSigningSecret);
+                        if (!string.IsNullOrEmpty(signingSecret))
+                        {
+                            _lemonSqueezyConfig.SigningSecret = signingSecret;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inicializando LemonSqueezy");
                 throw;
             }
         }

@@ -14,5 +14,8 @@ namespace Modelos.InyeccionDeDependencias
         public int LimiteSeriesParaRealizarCargaAsincrona { get; set; }
 
         public string UrlBasePublicacionEpData { get; set; } = "https://www.epdata.es";
+
+        // Pasarela activa para Resultados Empresariales: "Stripe" o "LemonSqueezy" (bloqueado, tienda sin verificar).
+        public string ProveedorPagoResultados { get; set; } = "Stripe";
     }
 }

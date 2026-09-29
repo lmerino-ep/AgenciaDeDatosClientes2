@@ -151,29 +151,6 @@ namespace Datos
             return historial.ToList();
         }
 
-        public async Task RegistrarEventoWebhookAsync(string eventId, string eventType)
-        {
-            using var bd = new BD(_aurora.Lectura, _aurora.Escritura);
-            Retorno retorno = await bd.StripeWebhookEvento().Crear(eventId, eventType);
-            if (!retorno.Correcto)
-            {
-                throw new Exception(retorno.Mensaje);
-            }
-        }
-
-        public async Task<bool> EventoWebhookProcesadoAsync(string eventId)
-        {
-            const string sql = @"
-                SELECT COUNT(1)
-                FROM StripeWebhookEvento
-                WHERE EventId = @EventId
-            ;";
-
-            using var connection = ObtenerConexionLectura();
-            var total = await connection.ExecuteScalarAsync<int>(sql, new { EventId = eventId });
-            return total > 0;
-        }
-
         public async Task UpsertSuscripcionAsync(SuscripcionTarifa suscripcion)
         {
             const string selectSql = @"

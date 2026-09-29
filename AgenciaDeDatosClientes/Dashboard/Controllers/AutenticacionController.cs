@@ -119,6 +119,14 @@ namespace Controllers
                             Icono = "historial-acciones",
                             Pagina = "/clientes/historial"
                         });
+
+                        // Resultados empresariales
+                        opciones.Add(new OpcionMiCuenta
+                        {
+                            Texto = "Resultados empresariales",
+                            Icono = "gestion-listados",
+                            Pagina = "/Clientes/ResultadosEmpresariales"
+                        });
                     }
                     else
                     {

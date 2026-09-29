@@ -1,0 +1,68 @@
+@page "/clientes/resultados-empresariales/producto/{id:int}"
+@model Pages.Clientes.ResultadosEmpresarialesProductoModel
+@{
+    ViewData["Title"] = Model.Producto?.Titulo ?? "Resultado empresarial";
+}
+
+@section estilos {
+    <link href="~/css/main/resultados-empresariales.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">@Model.Producto?.Titulo</h1>
+    <p class="page-description">@Model.Producto?.SectorNombre</p>
+</div>
+
+<section class="seccion-info">
+    <div class="card ficha-producto">
+        <dl class="detalle-producto">
+            <dt>Empresa</dt>
+            <dd>@Model.Producto?.EmpresaNombre</dd>
+
+            <dt>Sector</dt>
+            <dd>@Model.Producto?.SectorNombre</dd>
+
+            <dt>Periodo</dt>
+            <dd>@Model.Producto?.PeriodoNombre @Model.Producto?.Anio</dd>
+
+            <dt>Precio</dt>
+            <dd>@((Model.Producto?.PrecioCentimos / 100m)?.ToString("N2")) €</dd>
+        </dl>
+
+        @if (Model.Documentos.Count > 0)
+        {
+            <div class="documentos-incluidos">
+                <h2 class="titulo-documentos">Qué incluye (@Model.Documentos.Count @(Model.Documentos.Count == 1 ? "documento" : "documentos"))</h2>
+                <ul class="lista-documentos">
+                    @foreach (var documento in Model.Documentos)
+                    {
+                        <li>
+                            <span class="nombre-documento">@documento.NombreVisible</span>
+                            <span class="badge badge-tipo">@documento.TipoDocumento</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (Model.Producto?.YaComprado == true)
+        {
+            <p class="badge badge-exito">Ya has comprado este resultado</p>
+        }
+
+        <div class="acciones-producto">
+            @if (Model.Producto?.YaComprado == true)
+            {
+                <a href="@Model.UrlVerMisResultadosEpData" class="boton boton-primario" rel="noopener">Ver mis resultados</a>
+            }
+            else
+            {
+                <form method="post" action="@Model.RutaFormularioCheckout/@Model.Producto?.ResultadoId">
+                    <button type="submit" class="boton boton-primario">Comprar por @((Model.Producto?.PrecioCentimos / 100m)?.ToString("N2")) €</button>
+                </form>
+            }
+
+            <a href="/clientes/resultados-empresariales" class="boton boton-secundario">Volver al catálogo</a>
+        </div>
+    </div>
+</section>

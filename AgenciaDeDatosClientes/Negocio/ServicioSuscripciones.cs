@@ -198,20 +198,8 @@ namespace Negocio
             return session.Url;
         }
 
-        public async Task ProcesarWebhookAsync(string payload, string signatureHeader)
+        public async Task ProcesarEventoAsync(Event stripeEvent)
         {
-            StripeConfiguration.ApiKey = _stripeConfig.SecretKey;
-            var stripeEvent = EventUtility.ConstructEvent(
-                payload,
-                signatureHeader,
-                _stripeConfig.WebhookSecret);
-
-            if (await _repositorioSuscripciones.EventoWebhookProcesadoAsync(stripeEvent.Id))
-            {
-                _logger.LogInformation("Evento Stripe ya procesado: {EventId}", stripeEvent.Id);
-                return;
-            }
-
             switch (stripeEvent.Type)
             {
                 case "checkout.session.completed":
@@ -273,8 +261,6 @@ namespace Negocio
                     break;
                 }
             }
-
-            await _repositorioSuscripciones.RegistrarEventoWebhookAsync(stripeEvent.Id, stripeEvent.Type);
         }
 
         private async Task ActualizarSuscripcionTrasEliminacionEnStripeAsync(Subscription subscription)

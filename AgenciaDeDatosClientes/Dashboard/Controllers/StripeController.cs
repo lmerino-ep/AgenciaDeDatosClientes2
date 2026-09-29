@@ -9,15 +9,21 @@ namespace Controllers
     public class StripeController : Controller
     {
         private readonly IServicioSuscripciones _servicioSuscripciones;
+        private readonly IServicioComprasResultados _servicioComprasResultados;
+        private readonly IServicioWebhookStripe _servicioWebhookStripe;
         private readonly UserManager<Modelos.Autenticacion.Usuario> _userManager;
         private readonly ILogger<StripeController> _logger;
 
         public StripeController(
             IServicioSuscripciones servicioSuscripciones,
+            IServicioComprasResultados servicioComprasResultados,
+            IServicioWebhookStripe servicioWebhookStripe,
             UserManager<Modelos.Autenticacion.Usuario> userManager,
             ILogger<StripeController> logger)
         {
             _servicioSuscripciones = servicioSuscripciones;
+            _servicioComprasResultados = servicioComprasResultados;
+            _servicioWebhookStripe = servicioWebhookStripe;
             _userManager = userManager;
             _logger = logger;
         }
@@ -46,6 +52,40 @@ namespace Controllers
                 Request.Host.ToString());
 
             return Redirect(checkoutUrl);
+        }
+
+        [Authorize]
+        [HttpPost("checkout-resultados/{resultadoId:int}")]
+        public async Task<IActionResult> CrearCheckoutResultados(int resultadoId)
+        {
+            var userIdString = _userManager.GetUserId(HttpContext.User);
+            if (!int.TryParse(userIdString, out var fkUsuario))
+            {
+                return Unauthorized();
+            }
+
+            var email = User?.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return BadRequest("No se pudo resolver el email del usuario autenticado.");
+            }
+
+            try
+            {
+                var checkoutUrl = await _servicioComprasResultados.CrearCheckoutAsync(
+                    fkUsuario,
+                    email,
+                    resultadoId,
+                    Request.Scheme,
+                    Request.Host.ToString());
+
+                return Redirect(checkoutUrl);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "No se pudo crear el checkout de Stripe para el resultado {ResultadoId}.", resultadoId);
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize]
@@ -80,13 +120,18 @@ namespace Controllers
 
             try
             {
-                await _servicioSuscripciones.ProcesarWebhookAsync(payload, signatureHeader);
+                await _servicioWebhookStripe.ProcesarAsync(payload, signatureHeader);
                 return Ok();
+            }
+            catch (FirmaWebhookInvalidaException ex)
+            {
+                _logger.LogWarning(ex, "Webhook de Stripe rechazado: firma inválida.");
+                return BadRequest();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error procesando webhook de Stripe.");
-                return BadRequest();
+                _logger.LogError(ex, "Error inesperado procesando webhook de Stripe.");
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
     }

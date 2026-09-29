@@ -17,5 +17,9 @@ namespace Modelos.InyeccionDeDependencias
         public string CheckoutSuccessPath { get; set; }
 
         public string CheckoutCancelPath { get; set; }
+
+        public string CheckoutSuccessPathResultados { get; set; }
+
+        public string CheckoutCancelPathResultados { get; set; }
     }
 }

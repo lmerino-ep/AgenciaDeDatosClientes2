@@ -38,5 +38,9 @@
   {
     "outputFile": "wwwroot/css/main/suscripciones-landing.css",
     "inputFile": "wwwroot/less/main/suscripciones-landing.less"
+  },
+  {
+    "outputFile": "wwwroot/css/main/resultados-empresariales.css",
+    "inputFile": "wwwroot/less/main/resultados-empresariales.less"
   }
 ]

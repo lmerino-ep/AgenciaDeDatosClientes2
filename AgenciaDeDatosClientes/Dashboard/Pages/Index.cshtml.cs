@@ -1,5 +1,3 @@
-using AutoLogin.Token;
-using AutoLogin.Verification.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
@@ -24,6 +22,7 @@ namespace Pages
         private readonly IServicioAuditoria _servicioAuditoria;
         private readonly IServicioSuscripciones _servicioSuscripciones;
         private readonly IServicioContextoDashboard _servicioContextoDashboard;
+        private readonly Utils.Autologin.CreadorEnlaceAutologin _creadorEnlaceAutologin;
 
         // Propiedades para las métricas del dashboard
         public int UsuariosActivos { get; set; }
@@ -63,6 +62,8 @@ namespace Pages
         // Opciones de acciones rápidas
         public List<OpcionAccionRapida> OpcionesAccionesRapidas { get; set; } = new List<OpcionAccionRapida>();
 
+        public string UrlEpDataConAutologin { get; set; } = "https://www.epdata.es";
+
         /// <summary>Título de la pestaña del navegador (ViewData Title).</summary>
         public string TituloPaginaDashboard { get; set; } = "Dashboard";
 
@@ -90,15 +91,14 @@ namespace Pages
             Zilliz zilliz,
             Configuracion configuracion,
             Transparent transparentCDN,
-            ITokenHandler autoLoginTokenHandler,
-            ITokenDbService autoLoginTokenDbService,
             S3 s3,
             ISqs sqs,
             Modelos.InyeccionDeDependencias.Sqs sqsConfig,
             IServicioMetricas servicioMetricas,
             IServicioAuditoria servicioAuditoria,
             IServicioSuscripciones servicioSuscripciones,
-            IServicioContextoDashboard servicioContextoDashboard
+            IServicioContextoDashboard servicioContextoDashboard,
+            Utils.Autologin.CreadorEnlaceAutologin creadorEnlaceAutologin
         )
         {
             _logger = logger;
@@ -106,6 +106,7 @@ namespace Pages
             _servicioAuditoria = servicioAuditoria;
             _servicioSuscripciones = servicioSuscripciones;
             _servicioContextoDashboard = servicioContextoDashboard;
+            _creadorEnlaceAutologin = creadorEnlaceAutologin;
 
             HelperS3 amazonS3 = new HelperS3(
                 s3.Bucket,
@@ -156,6 +157,7 @@ namespace Pages
                     var contextoTarifa = await _servicioSuscripciones.ObtenerContextoTarifaAsync(fkUsuario, usuarioTipo);
                     EsTrabajadorEuropaPress = contextoTarifa.EsTrabajadorEuropaPress;
                     TieneSuscripcionActiva = contextoTarifa.TieneSuscripcionActiva;
+                    UrlEpDataConAutologin = _creadorEnlaceAutologin.ObtenerUrlAutologinHaciaEpData(fkUsuario, "/");
                 }
 
                 if (User.IsInRole("Dashboard - Consulta de Métricas") ||
@@ -315,6 +317,15 @@ namespace Pages
                     Icono = "historial-acciones",
                     Pagina = "/clientes/historial",
                     Descripcion = "Consulta tu historial de descargas de series, datos y gráficos"
+                });
+
+                // Resultados empresariales
+                OpcionesAccionesRapidas.Add(new OpcionAccionRapida
+                {
+                    Texto = "Resultados Empresariales",
+                    Icono = "gestion-listados",
+                    Pagina = "/Clientes/ResultadosEmpresariales",
+                    Descripcion = "Compra y consulta los resultados empresariales disponibles"
                 });
             }
             else

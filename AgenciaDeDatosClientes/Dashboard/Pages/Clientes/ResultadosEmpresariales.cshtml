@@ -1,0 +1,136 @@
+@page "/clientes/resultados-empresariales"
+@using Modelos.DTO.ResultadosEmpresariales
+@model Pages.Clientes.ResultadosEmpresarialesModel
+@{
+    ViewData["Title"] = "Resultados empresariales";
+}
+
+@section estilos {
+    <link href="~/css/main/resultados-empresariales.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<div class="page-header">
+    <h1 class="page-title">Resultados empresariales</h1>
+    <p class="page-description">
+        Compra los resultados de las empresas que te interesen y descárgalos desde tu cuenta de EpData.
+    </p>
+</div>
+
+<section class="seccion-filtros">
+    <div class="card">
+        <h2 class="titulo-seccion">Filtros</h2>
+        <form method="get" class="form-filtros">
+            <div class="grid-filtros">
+                <div class="form-group">
+                    <label for="TextoBusqueda">Empresa:</label>
+                    <input type="text" name="TextoBusqueda" id="TextoBusqueda" class="form-control" value="@Model.TextoBusqueda" placeholder="Buscar por nombre de empresa...">
+                </div>
+
+                <div class="form-group">
+                    <label for="FkSector">Sector:</label>
+                    <select name="FkSector" id="FkSector" class="form-control">
+                        <option value="">Todos los sectores</option>
+                        @foreach (var sector in Model.Sectores)
+                        {
+                            <option value="@sector.Id" selected="@(Model.FkSector == sector.Id)">@sector.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="Orden">Ordenar por:</label>
+                    <select name="Orden" id="Orden" class="form-control">
+                        <option value="@OrdenCatalogoResultados.EmpresaAscendente" selected="@(Model.Orden == OrdenCatalogoResultados.EmpresaAscendente)">Empresa (A-Z)</option>
+                        <option value="@OrdenCatalogoResultados.EmpresaDescendente" selected="@(Model.Orden == OrdenCatalogoResultados.EmpresaDescendente)">Empresa (Z-A)</option>
+                        <option value="@OrdenCatalogoResultados.SectorAscendente" selected="@(Model.Orden == OrdenCatalogoResultados.SectorAscendente)">Sector</option>
+                        <option value="@OrdenCatalogoResultados.MasRecientes" selected="@(Model.Orden == OrdenCatalogoResultados.MasRecientes)">Más recientes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="FechaDesde">Resultado desde:</label>
+                    <input type="date" name="FechaDesde" id="FechaDesde" class="form-control" value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))">
+                </div>
+
+                <div class="form-group">
+                    <label for="FechaHasta">Resultado hasta:</label>
+                    <input type="date" name="FechaHasta" id="FechaHasta" class="form-control" value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="boton boton-primario">Filtrar</button>
+                <a href="/clientes/resultados-empresariales" class="boton boton-secundario">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="seccion-tabla">
+    <div class="card">
+        <h2 class="titulo-seccion">Catálogo (@Model.TotalResultados)</h2>
+
+        @if (Model.Catalogo.Count == 0)
+        {
+            <div class="mensaje-vacio">
+                <p>No se han encontrado resultados empresariales con los filtros especificados.</p>
+            </div>
+        }
+        else
+        {
+            <div class="tabla-responsive">
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Empresa</th>
+                            <th>Sector</th>
+                            <th>Periodo</th>
+                            <th>Precio</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Catalogo)
+                        {
+                            <tr>
+                                <td><a href="/clientes/resultados-empresariales/producto/@item.ResultadoId">@item.EmpresaNombre</a></td>
+                                <td>@item.SectorNombre</td>
+                                <td>@item.PeriodoNombre @item.Anio</td>
+                                <td>@((item.PrecioCentimos / 100m).ToString("N2")) €</td>
+                                <td>
+                                    @if (item.YaComprado)
+                                    {
+                                        <span class="badge badge-exito">Ya comprado</span>
+                                    }
+                                    else
+                                    {
+                                        <form method="post" action="@Model.RutaFormularioCheckout/@item.ResultadoId">
+                                            <button type="submit" class="boton boton-primario">Comprar</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (Model.TotalPaginas > 1)
+            {
+                <div class="paginacion">
+                    @if (Model.PaginaActual > 1)
+                    {
+                        <a asp-page="/Clientes/ResultadosEmpresariales" asp-all-route-data="Model.FiltrosDeRuta(Model.PaginaActual - 1)" class="boton boton-secundario">Anterior</a>
+                    }
+
+                    <span class="info-paginacion">Página @Model.PaginaActual de @Model.TotalPaginas</span>
+
+                    @if (Model.PaginaActual < Model.TotalPaginas)
+                    {
+                        <a asp-page="/Clientes/ResultadosEmpresariales" asp-all-route-data="Model.FiltrosDeRuta(Model.PaginaActual + 1)" class="boton boton-secundario">Siguiente</a>
+                    }
+                </div>
+            }
+        }
+    </div>
+</section>

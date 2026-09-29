@@ -16,10 +16,6 @@ namespace Datos
 
         Task<IReadOnlyList<HistorialDescargaItem>> ObtenerHistorialDescargasAsync(int fkUsuario, int limit = 100);
 
-        Task RegistrarEventoWebhookAsync(string eventId, string eventType);
-
-        Task<bool> EventoWebhookProcesadoAsync(string eventId);
-
         Task UpsertSuscripcionAsync(SuscripcionTarifa suscripcion);
 
         Task ActualizarEstadoSuscripcionAsync(string stripeSubscriptionId, string estado, DateTime? fechaFin);

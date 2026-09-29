@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AgenciaDeDatosBDS" Version="5.0.4.60" />
+    <PackageReference Include="AgenciaDeDatosBDS" Version="5.0.4.69" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="9.0.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.1" />
     <PackageReference Include="Stripe.net" Version="51.0.0" />

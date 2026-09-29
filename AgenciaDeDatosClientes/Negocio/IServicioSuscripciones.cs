@@ -1,4 +1,5 @@
 using Modelos.DTO.Suscripciones;
+using Stripe;
 
 namespace Negocio
 {
@@ -18,6 +19,7 @@ namespace Negocio
 
         Task<string> CrearUrlPortalGestionSuscripcionAsync(string stripeCustomerId, string returnUrl);
 
-        Task ProcesarWebhookAsync(string payload, string signatureHeader);
+        // Evento ya verificado y deduplicado por IServicioWebhookStripe.
+        Task ProcesarEventoAsync(Event stripeEvent);
     }
 }

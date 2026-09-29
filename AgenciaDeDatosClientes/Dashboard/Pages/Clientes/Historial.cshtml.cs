@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Modelos.DTO.Suscripciones;
-using Modelos.InyeccionDeDependencias;
 using Negocio;
 using System.Globalization;
 using System.Security.Claims;
@@ -12,14 +11,15 @@ namespace Pages.Clientes
     public class HistorialModel : PageModel
     {
         private readonly IServicioSuscripciones _servicioSuscripciones;
-        private readonly Configuracion _configuracion;
+        private readonly Utils.Autologin.CreadorEnlaceAutologin _creadorEnlaceAutologin;
+        private int _fkUsuario;
 
         public IReadOnlyList<HistorialDescargaItem> Descargas { get; private set; } = [];
 
-        public HistorialModel(IServicioSuscripciones servicioSuscripciones, Configuracion configuracion)
+        public HistorialModel(IServicioSuscripciones servicioSuscripciones, Utils.Autologin.CreadorEnlaceAutologin creadorEnlaceAutologin)
         {
             _servicioSuscripciones = servicioSuscripciones;
-            _configuracion = configuracion;
+            _creadorEnlaceAutologin = creadorEnlaceAutologin;
         }
 
         public string? UrlPublicaRepresentacion(HistorialDescargaItem item)
@@ -29,9 +29,9 @@ namespace Pages.Clientes
                 return null;
             }
 
-            var baseUrl = _configuracion.UrlBasePublicacionEpData?.TrimEnd('/') ?? "https://www.epdata.es";
             var slug = item.RepresentacionTituloUrl.Trim().Trim('/');
-            return $"{baseUrl}/{slug}/{item.RepresentacionGuid:D}";
+            var rutaRelativa = $"/{slug}/{item.RepresentacionGuid:D}";
+            return _creadorEnlaceAutologin.ObtenerUrlAutologinHaciaEpData(_fkUsuario, rutaRelativa);
         }
 
         public string FormatoInstanteUtcIso(DateTime fechaGuardadaEnUtc)
@@ -53,6 +53,7 @@ namespace Pages.Clientes
                 return;
             }
 
+            _fkUsuario = fkUsuario;
             Descargas = await _servicioSuscripciones.ObtenerHistorialDescargasAsync(fkUsuario, 200);
         }
     }

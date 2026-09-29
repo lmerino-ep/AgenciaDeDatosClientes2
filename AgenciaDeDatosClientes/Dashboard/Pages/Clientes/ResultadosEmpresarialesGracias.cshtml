@@ -1,0 +1,40 @@
+@page "/clientes/resultados-empresariales/gracias"
+@model Pages.Clientes.ResultadosEmpresarialesGraciasModel
+@{
+    ViewData["Title"] = "Compra de resultados empresariales";
+}
+
+@section estilos {
+    <link href="~/css/main/resultados-empresariales.css" rel="stylesheet" asp-append-version="true" nonce="@HttpContext.Items["CSP_NONCE"]?.ToString()" />
+}
+
+<section class="seccion-gracias">
+    <div class="card tarjeta-gracias">
+        @if (Model.CompraConfirmada)
+        {
+            <div class="icono-gracias icono-exito" aria-hidden="true">&#10003;</div>
+            <h1 class="titulo-gracias">Compra confirmada</h1>
+            <p class="texto-gracias">
+                Gracias por tu compra. Ya puedes descargar los documentos desde
+                <strong>Mis resultados empresariales</strong>, en tu cuenta de EpData.
+            </p>
+            <div class="acciones-gracias">
+                <a href="@Model.UrlDescargasEpData" class="boton boton-primario" rel="noopener">Ver mis resultados empresariales</a>
+                <a href="/clientes/resultados-empresariales" class="boton boton-secundario">Volver al catálogo</a>
+            </div>
+        }
+        else
+        {
+            <div class="icono-gracias icono-espera" aria-hidden="true">&#8987;</div>
+            <h1 class="titulo-gracias">Estamos confirmando tu pago</h1>
+            <p class="texto-gracias">
+                En unos segundos estará disponible para descargar. Si tarda más de unos minutos,
+                recarga esta página.
+            </p>
+            <div class="acciones-gracias">
+                <a href="" class="boton boton-primario">Recargar</a>
+                <a href="/clientes/resultados-empresariales" class="boton boton-secundario">Volver al catálogo</a>
+            </div>
+        }
+    </div>
+</section>

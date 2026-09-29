@@ -443,6 +443,7 @@ namespace Utils.Servicios
                     autoLoginConfig.SecretKeys
                 )
             );
+            services.AddSingleton<Utils.Autologin.CreadorEnlaceAutologin>();
             return services;
         }
 
@@ -465,6 +466,7 @@ namespace Utils.Servicios
             //services.AddSingleton(tempServiceProvider.GetRequiredService<Modelos.InyeccionDeDependencias.Api>());
             services.AddSingleton(tempServiceProvider.GetRequiredService<Modelos.InyeccionDeDependencias.Cdn>());
             services.AddSingleton(tempServiceProvider.GetRequiredService<Modelos.InyeccionDeDependencias.Stripe>());
+            services.AddSingleton(tempServiceProvider.GetRequiredService<Modelos.InyeccionDeDependencias.LemonSqueezy>());
 
             // ===== REGISTRAR SERVICIOS AWS NUEVAMENTE =====
             // CRÍTICO: NO transferir IAmazonSQS,IAmazonSecretsManager,IAmazonCloudWatchLogs desde tempServiceProvider 

@@ -76,6 +76,7 @@ var s3Config = builder.Configuration.GetSection("S3").Get<Modelos.InyeccionDeDep
 var aplicacionConfig = builder.Configuration.GetSection("Configuracion").Get<Configuracion>();
 var cdnConfig = builder.Configuration.GetSection("CDN").Get<Modelos.InyeccionDeDependencias.Cdn>();
 var stripeConfig = builder.Configuration.GetSection("Stripe").Get<Modelos.InyeccionDeDependencias.Stripe>();
+var lemonSqueezyConfig = builder.Configuration.GetSection("LemonSqueezy").Get<Modelos.InyeccionDeDependencias.LemonSqueezy>();
 
 // Registrar configuraciones en el ServiceProvider temporal
 tempServices.AddSingleton(redisConfig);
@@ -90,6 +91,7 @@ tempServices.AddSingleton(s3Config);
 tempServices.AddSingleton(aplicacionConfig);
 tempServices.AddSingleton(cdnConfig);
 tempServices.AddSingleton(stripeConfig);
+tempServices.AddSingleton(lemonSqueezyConfig);
 tempServices.AddSingleton<Utils.Secretos.ISecretos, Utils.Secretos.Secretos>();
 
 // Agregar servicios AWS necesarios para la inicialización
@@ -137,6 +139,7 @@ var initializationService = new Utils.Servicios.InfrastructureInitializationServ
     s3Config,
     cdnConfig,
     stripeConfig,
+    lemonSqueezyConfig,
     tempServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Utils.Servicios.InfrastructureInitializationService>>(),
     tempServiceProvider,
     tempServices);
