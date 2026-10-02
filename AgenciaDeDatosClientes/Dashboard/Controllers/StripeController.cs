@@ -55,6 +55,7 @@ namespace Controllers
         }
 
         [Authorize]
+        [HttpGet("checkout-resultados/{resultadoId:int}")]
         [HttpPost("checkout-resultados/{resultadoId:int}")]
         public async Task<IActionResult> CrearCheckoutResultados(int resultadoId)
         {
