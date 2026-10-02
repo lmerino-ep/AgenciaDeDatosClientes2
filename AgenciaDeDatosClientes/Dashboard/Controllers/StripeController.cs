@@ -54,8 +54,16 @@ namespace Controllers
             return Redirect(checkoutUrl);
         }
 
+        // GET puente sin mutación: solo renderiza un form que se auto-envía por POST al mismo origen (ver CrearCheckoutResultados).
         [Authorize]
         [HttpGet("checkout-resultados/{resultadoId:int}")]
+        public IActionResult PuenteCheckoutResultados(int resultadoId)
+        {
+            var html = $"<!DOCTYPE html><html><body onload=\"document.forms[0].submit()\"><form method=\"post\" action=\"/stripe/checkout-resultados/{resultadoId}\"></form></body></html>";
+            return Content(html, "text/html");
+        }
+
+        [Authorize]
         [HttpPost("checkout-resultados/{resultadoId:int}")]
         public async Task<IActionResult> CrearCheckoutResultados(int resultadoId)
         {
